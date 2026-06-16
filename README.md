@@ -35,6 +35,7 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 
 <your-project>/.brain/          ← AN INSTANCE (created by the script; committed with the project)
 ├── CLAUDE.md                   ← loads when you run `claude` at the project root
+├── Clippings/                  ← Web Clipper staging zone (gitignored, pre-raw-sources)
 ├── raw-sources/                ← immutable inputs
 ├── wiki/ {index,log,dashboard, sources,concepts,entities,syntheses}
 └── memory/                     ← durable project facts/decisions
@@ -63,7 +64,8 @@ This creates `myproduct/.brain/` — an empty, project-named brain.
 cd C:\code\myproduct
 claude            # .brain\CLAUDE.md loads as the operating manual
 ```
-- Drop a doc/article/spec into `.brain\raw-sources\` (or paste it in chat) → say **"ingest this"**.
+- Drop a doc/article/spec into `.brain\raw-sources\` (or clip it via Obsidian Web Clipper into
+  `.brain\Clippings\`, or paste it in chat) → say **"ingest this"**.
 - Ask questions → answers cite the wiki; good answers get **filed back** as new pages.
 - Say **"lint the brain"** periodically to catch contradictions, orphans, and stale claims.
 

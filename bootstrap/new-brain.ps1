@@ -91,7 +91,7 @@ Write-Host ""
 Write-Host "Created .brain for '$Name'  ($pageCount seed pages)" -ForegroundColor Green
 Write-Host "Next:" -ForegroundColor Green
 Write-Host "  1. cd `"$Project`"; claude        # .brain\CLAUDE.md loads automatically"
-Write-Host "  2. Drop a doc in .brain\raw-sources\ (or paste in chat), say 'ingest this'"
+Write-Host "  2. Drop a doc in .brain\raw-sources\ (or Web-Clip into .brain\Clippings\, or paste in chat), say 'ingest this'"
 Write-Host "  3. Open .brain\ as an Obsidian vault to browse the graph"
 Write-Host ""
 Write-Host "Note: when you launch claude from the project root, confirm the brain's CLAUDE.md"

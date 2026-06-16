@@ -7,8 +7,9 @@
 .DS_Store
 Thumbs.db
 
-# Obsidian artifacts: 0-byte stray files materialized from unresolved [[links]]
-# (the lint script flags these; this keeps accidental ones out of commits)
+# Obsidian artifacts: 0-byte stray files materialized from unresolved [[links]].
+# No git pattern catches these reliably (filenames vary) — lint-brain.ps1 flags them
+# under "ROOT STRAY .md FILES"; delete by hand after a lint pass.
 
 # NOTE on project instances:
 # A project's own .brain/ is committed WITH that project's repo, not here.

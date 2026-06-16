@@ -32,6 +32,7 @@ project root, telling me how to maintain this brain.
 ```
 .brain/
 ├── CLAUDE.md             # ← this operating manual (loads with `claude` at project root)
+├── Clippings/            # Obsidian Web Clipper drop zone — staging before raw-sources/.
 ├── raw-sources/          # IMMUTABLE inputs. Read-only. The source of truth.
 │   └── assets/           # Local images/attachments.
 ├── wiki/                 # MAINTAINER-OWNED. I create & maintain everything here.
@@ -46,6 +47,8 @@ project root, telling me how to maintain this brain.
 ```
 
 **Layer rules**
+- **Clippings** — transient staging only. Never the canonical copy; not committed (its own
+  `.gitignore` keeps drops out of git). On ingest, copy the canonical file into `raw-sources/`.
 - **raw-sources** — never edit. On ingest, copy the canonical file here so the layer is self-contained.
 - **wiki** — I own it. Create, update, cross-link, keep consistent.
 - **memory** — short durable notes (decisions, constraints, "why") that guide future work.
@@ -92,7 +95,8 @@ markdown links (`../../raw-sources/...`), NOT `[[wikilinks]]`.
 ## 4. The Knowledge SDLC
 
 ### Ingest (compile) — when a source is added
-1. Read it fully. 2. Copy into `raw-sources/`. 3. Write a `wiki/sources/` summary.
+1. Read it fully. 2. Copy into `raw-sources/` (canonicalize from `Clippings/` if that's where it
+landed, or from a direct paste/fetch). 3. Write a `wiki/sources/` summary.
 4. **Cross-link 5–10+ pages** (create/update concepts & entities, reciprocal links, flag
 contradictions, set `status: stale` where superseded). 5. Update `wiki/index.md`.
 6. Append `wiki/log.md` (`## [YYYY-MM-DD] ingest | <Title>`). 7. Offer a commit.
