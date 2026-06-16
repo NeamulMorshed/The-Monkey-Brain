@@ -44,7 +44,7 @@ Built on the [[llm-wiki-pattern|LLM Wiki pattern]] · 9 sources · 51 pages · 2
 - Cross-references, contradiction flags, and synthesis exist **before** you ask
 - Maintenance bookkeeping → near-zero cost for an LLM that never gets bored
 
-> See [[llm-wiki-pattern]] · kin to Vannevar Bush's **Memex** (1945)
+> See [[llm-wiki-pattern]] · kin to Vannevar Bush's **[[memex-as-we-may-think|Memex]]** (1945)
 
 ---
 

@@ -5,7 +5,7 @@ status: active
 tags: [methodology, knowledge-base, founding]
 created: 2026-06-17
 updated: 2026-06-17
-sources: ["[[llm-wiki]]"]
+sources: ["[[llm-wiki]]", "[[memex-as-we-may-think]]"]
 related: ["[[knowledge-sdlc]]", "[[raw-sources-layer]]", "[[wiki-layer]]", "[[schema-layer]]", "[[index-and-log]]"]
 aliases: ["the pattern", "compounding wiki"]
 ---
@@ -36,8 +36,9 @@ richer with every source added and every question asked.
 The bottleneck of knowledge bases is **maintenance bookkeeping**, not reading or thinking.
 Humans abandon wikis because maintenance grows faster than value. LLMs don't get bored and
 can touch 15 files in one pass, so maintenance cost approaches zero. Kin to Vannevar Bush's
-**Memex** (1945): a private, curated store where the *connections* between documents are as
-valuable as the documents — Bush couldn't solve who maintains it; the LLM does.
+**[[memex-as-we-may-think|Memex]]** (1945): a private, curated store where the
+*connections* between documents are as valuable as the documents — Bush couldn't solve who
+maintains it; the LLM does.
 
 ## How it relates
 - [[knowledge-sdlc]] — the operations (ingest/query/lint) that run the pattern.

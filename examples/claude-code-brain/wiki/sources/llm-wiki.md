@@ -35,7 +35,8 @@ between you and your sources. Knowledge is compiled once and kept current, not r
 - **[[index-and-log|index.md + log.md]]** navigate the vault: index is content-oriented, log
   is chronological. The index *is* the search engine at moderate scale (~100 sources).
 - **Why it works:** the bottleneck of knowledge bases is *maintenance bookkeeping*, which
-  humans abandon and LLMs do tirelessly. Related in spirit to Vannevar Bush's **Memex** (1945).
+  humans abandon and LLMs do tirelessly. Related in spirit to Vannevar Bush's
+  **[[memex-as-we-may-think|Memex]]** (1945).
 - Optional tooling ([[search-tooling|qmd]]), [[obsidian-ecosystem|Obsidian]] niceties
   (Web Clipper, graph view, Marp, Dataview), and git versioning round it out.
 

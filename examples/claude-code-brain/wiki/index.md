@@ -5,8 +5,8 @@ status: active
 tags: [index, navigation, moc]
 created: 2026-06-17
 updated: 2026-06-17
-source_count: 12
-page_count: 60
+source_count: 13
+page_count: 61
 ---
 
 # 🐵 The Monkey Brain — Index
@@ -16,7 +16,7 @@ The content catalog for this [[llm-wiki-pattern|LLM wiki]]. **Read this first** 
 [[ingest-compile|ingest]]. For the chronological view, see [[log]]. For conventions, see
 [`schema/CLAUDE.md`](../schema/CLAUDE.md).
 
-> **Stats:** 12 sources · 60 wiki pages · last updated 2026-06-17.
+> **Stats:** 13 sources · 61 wiki pages · last updated 2026-06-17.
 
 ```mermaid
 mindmap
@@ -59,6 +59,7 @@ Distilled summaries of each immutable [[raw-sources-layer|raw source]].
 | [[sources/permissions-reference\|Permissions Reference]] | allow/ask/deny syntax, per-tool patterns, settings precedence, managed policy. |
 | [[sources/mcp-guide\|MCP Guide]] | Transports, scopes, OAuth, resources/prompts, Tool Search. |
 | [[sources/subagents-guide\|Subagents Guide]] | Definition files, frontmatter, scopes, built-in agents, startup. |
+| [[sources/memex-as-we-may-think\|As We May Think (Bush, 1945)]] | Citation stub: the memex, associative trails — primary-source provenance for the [[llm-wiki-pattern]] kinship claim. |
 
 ---
 
@@ -140,7 +141,7 @@ Filed-back analyses and comparisons (see [[query-deploy]]).
 ---
 
 ## 🗺️ Categories at a glance
-- **12** sources · **38** concept pages (incl. [[concepts]] MOC) · **4** entity pages (incl. [[entities]] MOC)
-  · **3** synthesis pages (incl. [[syntheses]] MOC) · plus this [[index]], the [[log]], and the [[dashboard]] = **60** total.
+- **13** sources · **38** concept pages (incl. [[concepts]] MOC) · **4** entity pages (incl. [[entities]] MOC)
+  · **3** synthesis pages (incl. [[syntheses]] MOC) · plus this [[index]], the [[log]], and the [[dashboard]] = **61** total.
 - Category maps-of-content: [[concepts]] · [[entities]] · [[syntheses]].
 - Biggest hubs: [[claude-code]], [[knowledge-sdlc]], [[context-window]], [[skills]], [[plugins]].

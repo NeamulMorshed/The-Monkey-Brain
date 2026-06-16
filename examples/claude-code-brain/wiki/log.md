@@ -149,3 +149,15 @@ traced to a source.
 - **Suggested next sources / questions:** Claude Code Hooks reference; Skills authoring guide;
   the qmd README (to plan the [[search-tooling]] upgrade); a Memex primary source for
   [[llm-wiki-pattern]] provenance.
+
+## [2026-06-17] ingest | As We May Think (Bush, 1945) — first real Clippings/ run
+Clipped via Web Clipper into `Clippings/As We May Think - Vannevar Bush.md` (title/URL/note
+only), then canonicalized into [Memex - As We May Think (Bush 1945).md](../raw-sources/Memex%20-%20As%20We%20May%20Think%20%28Bush%201945%29.md)
+as a **citation stub** — the 1945 Atlantic essay is still copyrighted, so the raw source holds
+metadata + an original factual summary instead of the full text, with the canonical URL for the
+curator to read in full. The transient `Clippings/` copy was deleted after canonicalizing, per
+the layer rule. Summary → [[sources/memex-as-we-may-think]]. **Resolves the long-standing
+asserted-but-unsourced claim** in [[llm-wiki-pattern]] and [[sources/llm-wiki]] that this vault
+is "kin to Vannevar Bush's Memex" — now backed by a primary citation. Reciprocal links added
+from [[llm-wiki-pattern]], [[sources/llm-wiki]], [[vault-overview-deck]]. Vault now 13 sources /
+61 pages. Touched: 5 pages.
