@@ -1,0 +1,15 @@
+# Obsidian workspace noise (keep config, drop transient state)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Obsidian artifacts: 0-byte stray files materialized from unresolved [[links]]
+# (the lint script flags these; this keeps accidental ones out of commits)
+
+# NOTE on project instances:
+# A project's own .brain/ is committed WITH that project's repo, not here.
+# This engine repo only tracks the template, scripts, schema, and the bundled example.

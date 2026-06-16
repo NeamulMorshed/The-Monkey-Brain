@@ -1,0 +1,17 @@
+---
+title: "Superpowers – Claude Plugin"
+source: "https://claude.com/plugins/superpowers"
+author:
+published:
+created: 2026-06-17
+description: "Claude learns brainstorming, subagent development with code review, debugging, TDD, and skill authoring through Superpowers.. Install this plugin to extend your workflow."
+tags:
+  - "clippings"
+---
+Superpowers is a comprehensive skills framework that teaches Claude structured software development methodologies. It provides composable skills for test-driven development (TDD), systematic debugging, brainstorming, subagent-driven development with built-in code review, and the ability to author new skills.
+
+The plugin enforces disciplined practices like "red-green-refactor" TDD cycles where tests must fail before implementation, a four-phase debugging methodology that requires root cause investigation before any fixes, and Socratic brainstorming sessions that refine requirements before coding begins.
+
+**How to use:** Invoke skills with slash commands like `/brainstorming` to explore requirements and design before implementation, or `/execute-plan` to run batched implementation plans with review checkpoints. The framework includes a code-reviewer agent that evaluates implementations against plans, coding standards, and architectural principles.
+
+For debugging, the systematic methodology guides you through root cause investigation, pattern analysis, hypothesis testing, and implementation—with safeguards that trigger architectural review after three failed fix attempts. The writing-skills module teaches you to author and test new skills using TDD principles applied to documentation.
