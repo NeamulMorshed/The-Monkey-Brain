@@ -11,3 +11,5 @@
   Phase 2.
 - Placeholders documenting what lands where: `skills/` (Phase 3), `agents/`
   (Phase 3–5.5), `.mcp.json` (Phase 5 qmd).
+- MIT licensed: `LICENSE` at the repo root and in `plugin/` (the copy that
+  ships with installs), `license` field in both manifests.
