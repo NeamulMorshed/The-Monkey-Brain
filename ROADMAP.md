@@ -42,7 +42,7 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | --- | --- | --- |
 | **P9.2** Research ingests: Caveman, MewVault, ui-ux-pro-max → example brain; filed `monkey-brain-vs-mewvault` synthesis + `domain-expertise-packs` concept | ✅ 2026-07-17 | 4 commits (`ingest:` ×3, `query:` ×1); vault 16 sources / 69 pages |
 | **P1** Plugin skeleton: `plugin/` (plugin.json, hooks.json, skills/, agents/, .mcp.json), root `marketplace.json`, Node hook runtime | ✅ 2026-07-17 | plugin named **`brain`** (→ `/brain:*` commands), displayName "The Monkey Brain", marketplace **`monkey-brain`** → install `brain@monkey-brain`; both manifests pass `claude plugin validate --strict`; MIT licensed; Node.js 24.18.0 LTS installed 2026-07-17 |
-| **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check first; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | 🔶 in progress | **#1/#3/#4 shipped 2026-07-17** (v0.2.0) — 23-check selftest ALL GREEN (`node plugin/hooks/scripts/selftest.js`); gates degrade gracefully (plan gate dormant until P4 `specs/`; TDD gate deferred to P4 tiers). Remaining: #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track |
+| **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check, #8 resume; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | 🔶 in progress | **#1/#3/#4/#8 shipped 2026-07-17** (v0.3.0) — 36-check selftest ALL GREEN (`node plugin/hooks/scripts/selftest.js`); gates degrade gracefully (plan gate dormant until P4 `specs/`; TDD gate deferred to P4 tiers). #8 = resume system (resume.md injected on startup/clear + ask-to-continue; task/session events auto-logged). Remaining: #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track |
 | **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | ⬜ **next** | start with the 5 core SDLC skills; `/brain:init` wraps `bootstrap/` via `${CLAUDE_PLUGIN_ROOT}`; then wire hooks #2 trigger-router + #6 wrap (P2 remainder) to them |
 | **P4** Schema v2 template: specs/ projects/ sessions/ decisions/ instincts/ + tiers; `-Update` migration | ⬜ | |
 | **P5** Memory tiers + qmd MCP · **P5.5** model routing & parallel fan-out | ⬜ | |
@@ -68,8 +68,15 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   failures block into context; TODO `[[links]]` advisory). **Verified:**
   `node plugin/hooks/scripts/selftest.js` → 23/23 GREEN; both manifests pass
   `claude plugin validate --strict`.
+- **P2 hook #8 — resume system** (v0.3.0): `resume.js` injects `resume.md` into
+  startup/clear sessions with an ask-to-continue directive (own ≤1.2k budget);
+  `resume-log.js` auto-appends TaskCreated/TaskCompleted/SessionEnd lines and auto-creates
+  the file inside brains; template seeded + `new-brain.ps1 -Update` migration; the engine
+  repo root now carries its own `resume.md`. Selftest 36/36 GREEN.
 
-**▶ Resume here (next session):** build **Phase 3 core skills** —
+**▶ Resume here (next session):** the live pointer is **`resume.md` at the repo root** —
+hook #8 injects it and asks to continue once the plugin is installed; until then, read it
+first. Next: build **Phase 3 core skills** —
 `plugin/skills/{init,ingest,query,lint,wrap}/SKILL.md` (`/brain:init` wraps `bootstrap/`
 via `${CLAUDE_PLUGIN_ROOT}`), then hooks **#2 trigger-router** (natural phrases → those
 skills) and **#6 wrap**. After that: #5 snapshot, #7 agent-track, then P4 schema v2.
@@ -198,6 +205,7 @@ The three goals reinforce rather than compete, if the mechanisms are assigned co
 | 5 | `PreCompact` | `snapshot.js` | Write a semantic snapshot (open task, decisions, next steps) to `.brain/sessions/` so nothing is lost to compaction. |
 | 6 | `Stop` / `SessionEnd` | `wrap.js` | Append session entry to `log.md`, refresh `index.md` stats, re-index semantic search, remind/perform conventional commit (`ingest:`/`query:`/`lint:`/`session:`). |
 | 7 | `PreToolUse` (Agent) | `agent-track.js` | Log agent dispatches; require explicit model choice for expensive spawns. |
+| 8 | `SessionStart` (startup\|clear) + `TaskCreated`/`TaskCompleted`/`SessionEnd` | `resume.js` + `resume-log.js` | **Resume system.** Reader: injects `resume.md` (`.brain/` or project root) into fresh sessions with a directive to **ask the user: continue or start fresh?** Auto-logger: appends one line per task/session event to `## Task log (auto)`, bumps `updated:`; auto-creates the file inside brains. Narrative sections stay model-owned (`/brain:wrap`). |
 
 ## Phase 3 — Skills: SDLC verbs + development workflows
 

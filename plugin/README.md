@@ -22,10 +22,11 @@ the primary interface once the Phase 2 trigger-router hook lands.
 plugin/
 ├── .claude-plugin/plugin.json   # manifest (name: brain)          ✅ Phase 1
 ├── hooks/
-│   ├── hooks.json               # registers #1 / #3 / #4              ✅ Phase 2 (tranche 1)
+│   ├── hooks.json               # registers #1 / #3 / #4 / #8         ✅ Phase 2 (tranches 1–2)
 │   └── scripts/                 # Node runtime (stdlib-only): lib,
 │                                #   brain-status, guards, wiki-check,
-│                                #   selftest (23 checks)              ✅
+│                                #   resume + resume-log,
+│                                #   selftest (36 checks)              ✅
 ├── skills/                      # /brain:* skills                  ⬜ Phase 3
 ├── agents/                      # brain-librarian, brain-researcher ⬜ Phase 3–5.5
 └── .mcp.json                    # qmd semantic search              ⬜ Phase 5
@@ -62,4 +63,9 @@ wraps it.
 - Validate before committing: `claude plugin validate ./plugin --strict` and
   `claude plugin validate . --strict` (marketplace).
 - Test before committing: `node hooks/scripts/selftest.js` — builds a temp
-  `.brain` fixture and drives every hook with synthetic events (23 checks).
+  `.brain` fixture and drives every hook with synthetic events (36 checks).
+- **Resume system (hook #8):** `resume.md` is the live work-in-progress
+  pointer. `resume.js` injects it on fresh sessions (startup/clear) and asks
+  whether to continue; `resume-log.js` appends task/session events to its
+  `## Task log (auto)` automatically. The narrative sections belong to the
+  model — `/brain:wrap` (Phase 3) rewrites them at session end.

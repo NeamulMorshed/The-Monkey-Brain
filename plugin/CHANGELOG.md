@@ -1,5 +1,24 @@
 # Changelog — brain plugin
 
+## 0.3.0 — 2026-07-17 (Phase 2, hook #8: resume system)
+
+- **Hook #8a `resume.js`** (SessionStart, matcher `startup|clear`): finds
+  `resume.md` (`.brain/resume.md`, falling back to the project root — works in
+  brainless projects too) and injects it with a directive to **ask the user
+  whether to continue from the notes or start fresh**. Own budget (≤1,200
+  tokens): task log trimmed to its tail first, narrative hard-truncated with a
+  pointer to the file; the ask-directive is never dropped. Silent when no file
+  exists, on resume/compact sources, and on any internal error.
+- **Hook #8b `resume-log.js`** (TaskCreated / TaskCompleted / SessionEnd):
+  deterministically appends one line per event to `## Task log (auto)` and
+  bumps the frontmatter `updated:` stamp — zero model tokens. Inside a brain
+  the first event auto-creates `resume.md` from a seed; outside a brain it only
+  appends to an existing file (never litters foreign repos).
+- `schema/brain-template/resume.md` seeded (with `{{PROJECT}}`/`{{DATE}}`);
+  `new-brain.ps1 -Update` now adds `resume.md` to existing brains when missing
+  (never overwrites live state).
+- Selftest grows to 36 checks (13 new resume cases).
+
 ## 0.2.0 — 2026-07-17 (Phase 2, first tranche)
 
 - **Hook #1 `brain-status.js`** (SessionStart): detects `.brain/` and injects a

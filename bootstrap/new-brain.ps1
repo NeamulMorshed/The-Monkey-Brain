@@ -64,6 +64,14 @@ if ($Update) {
   Copy-Item (Join-Path $template 'CLAUDE.md')   (Join-Path $brain 'CLAUDE.md')   -Force
   Copy-Item (Join-Path $template 'templates\*') (Join-Path $brain 'templates')   -Recurse -Force
   Expand-Placeholders (Join-Path $brain 'CLAUDE.md') $Name $today
+  # resume.md holds live work state: add it only when missing, never overwrite.
+  $resumeSrc = Join-Path $template 'resume.md'
+  $resumeDst = Join-Path $brain 'resume.md'
+  if ((Test-Path $resumeSrc) -and (-not (Test-Path $resumeDst))) {
+    Copy-Item $resumeSrc $resumeDst
+    Expand-Placeholders $resumeDst $Name $today
+    Write-Host "Added resume.md (new in schema v2)." -ForegroundColor Green
+  }
   Write-Host "Done. CLAUDE.md + templates/ refreshed for '$Name'." -ForegroundColor Green
   return
 }

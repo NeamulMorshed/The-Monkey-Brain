@@ -144,6 +144,61 @@ try {
 
   r = run('wiki-check.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Edit', tool_input: { file_path: path.join(BRAIN, 'wiki', 'index.md') } }));
   check('index is orphan-exempt', r.status === 0 && r.stdout === '', `status=${r.status} stdout=${r.stdout}`);
+
+  // ---------- hook #8: resume system ----------
+  console.log('resume.js / resume-log.js (#8 SessionStart + task events)');
+  const RESUME = path.join(BRAIN, 'resume.md');
+
+  r = run('resume.js', evt({ hook_event_name: 'SessionStart', source: 'startup' }));
+  check('silent when no resume.md exists', r.status === 0 && r.stdout === '', `status=${r.status} stdout=${JSON.stringify(r.stdout)}`);
+
+  r = run('resume-log.js', evt({ hook_event_name: 'TaskCompleted', task: { subject: 'Build Phase 3 skills' } }));
+  check('TaskCompleted auto-creates resume.md inside a brain', r.status === 0 && fs.existsSync(RESUME), `status=${r.status}`);
+  let resumeText = fs.existsSync(RESUME) ? fs.readFileSync(RESUME, 'utf8') : '';
+  check('task line appended under Task log', /## Task log \(auto\)[\s\S]*✔ Build Phase 3 skills/.test(resumeText), resumeText.slice(-200));
+  check('frontmatter updated stamp bumped', /updated: \d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(resumeText));
+
+  r = run('resume-log.js', evt({ hook_event_name: 'SessionEnd', reason: 'exit' }));
+  resumeText = fs.existsSync(RESUME) ? fs.readFileSync(RESUME, 'utf8') : '';
+  check('SessionEnd stamps the log', r.status === 0 && /■ session ended \(exit\)/.test(resumeText), `status=${r.status}`);
+
+  const PLAIN_D = path.join(ROOT, 'plain-d');
+  fs.mkdirSync(PLAIN_D, { recursive: true });
+  r = run('resume-log.js', { cwd: PLAIN_D, hook_event_name: 'TaskCompleted', task: { subject: 'x' } });
+  check('no auto-create outside a brain', r.status === 0 && !fs.existsSync(path.join(PLAIN_D, 'resume.md')), `status=${r.status}`);
+
+  fs.writeFileSync(
+    RESUME,
+    '---\ntitle: "Resume — project"\ntype: resume\nupdated: 2026-07-17 21:40\n---\n\n## Where we left off\nBuilt hooks 1/3/4.\n\n## Next steps\n- [ ] Phase 3 skills\n\n## Task log (auto)\n- [2026-07-17 20:00] ✔ old entry\n',
+    'utf8'
+  );
+  r = run('resume.js', evt({ hook_event_name: 'SessionStart', source: 'clear' }));
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  const rctx = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('injects resume header (📌 + updated stamp)', rctx.includes('📌') && rctx.includes('2026-07-17 21:40'));
+  check('injects the ask-the-user directive', /ask the user/.test(rctx) && /continue from these notes/.test(rctx));
+  check('injects Next steps content', rctx.includes('Phase 3 skills'));
+
+  r = run('resume.js', evt({ hook_event_name: 'SessionStart', source: 'compact' }));
+  check('silent on compact source', r.status === 0 && r.stdout === '', `status=${r.status}`);
+
+  const PLAIN_C = path.join(ROOT, 'plain-c');
+  fs.mkdirSync(PLAIN_C, { recursive: true });
+  fs.writeFileSync(path.join(PLAIN_C, 'resume.md'), '---\nupdated: 2026-07-17\n---\n\n## Next steps\n- [ ] root fallback works\n', 'utf8');
+  r = run('resume.js', { cwd: PLAIN_C, hook_event_name: 'SessionStart', source: 'startup' });
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  check('root resume.md fallback (brainless project)', ((out.hookSpecificOutput || {}).additionalContext || '').includes('root fallback works'), (r.stdout || '').slice(0, 200));
+
+  fs.writeFileSync(
+    RESUME,
+    '---\nupdated: 2026-07-17 22:00\n---\n\n## Where we left off\n' + 'monkey banana '.repeat(900) + '\n\n## Next steps\n- [ ] tiny\n',
+    'utf8'
+  );
+  r = run('resume.js', evt({ hook_event_name: 'SessionStart', source: 'startup' }));
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  const bigCtx = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('oversized resume stays within budget', bigCtx.length > 0 && Math.ceil(bigCtx.length / 4) <= 1280, `${Math.ceil(bigCtx.length / 4)} tokens`);
+  check('truncation points back to the file', bigCtx.includes('truncated'));
 } finally {
   fs.rmSync(ROOT, { recursive: true, force: true });
 }
