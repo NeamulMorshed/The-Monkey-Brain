@@ -4,7 +4,7 @@ type: log
 status: active
 tags: [log, audit, chronological]
 created: 2026-06-17
-updated: 2026-06-17
+updated: 2026-07-17
 ---
 
 # 🐵 The Monkey Brain — Log
@@ -161,3 +161,12 @@ asserted-but-unsourced claim** in [[llm-wiki-pattern]] and [[sources/llm-wiki]] 
 is "kin to Vannevar Bush's Memex" — now backed by a primary citation. Reciprocal links added
 from [[llm-wiki-pattern]], [[sources/llm-wiki]], [[vault-overview-deck]]. Vault now 13 sources /
 61 pages. Touched: 5 pages.
+
+## [2026-07-17] ingest | Caveman README
+Web-fetched https://github.com/JuliusBrussee/caveman → [Caveman README.md](../raw-sources/Caveman%20README.md).
+Opens the **v2 enhancement research cluster** (token economy · enforcement · expertise packs —
+the three benchmarks behind the engine's `ROADMAP.md` v0.2). Summary → [[sources/caveman-readme]].
+**New entity** [[caveman]]. Cross-linked [[skills]] (per-turn skill cost), [[plugins]]
+(repo-as-marketplace), [[claude-md]] (compress-memory-files play, ~46% permanent input savings),
+[[context-window]] (output/input/reasoning are separate budgets). Noted the honest-numbers
+nuance: the 65% headline is output-only. Vault now 14 sources / 63 pages. Touched: 9 pages.

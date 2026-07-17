@@ -4,9 +4,9 @@ type: concept
 status: active
 tags: [claude-code, extension, plugins, packaging]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[extend-claude-code]]", "[[frontend-design-plugin]]", "[[superpowers-plugin]]"]
-related: ["[[skills]]", "[[hooks]]", "[[subagents]]", "[[mcp]]", "[[frontend-design]]", "[[superpowers]]"]
+updated: 2026-07-17
+sources: ["[[extend-claude-code]]", "[[frontend-design-plugin]]", "[[superpowers-plugin]]", "[[caveman-readme]]"]
+related: ["[[skills]]", "[[hooks]]", "[[subagents]]", "[[mcp]]", "[[frontend-design]]", "[[superpowers]]", "[[caveman]]"]
 aliases: ["plugin", "plugins", "marketplace"]
 ---
 
@@ -24,7 +24,10 @@ a `<name>@skills-dir` plugin.
   - [[frontend-design]] — auto-activating design [[skills|skill]] for distinctive UI.
   - [[superpowers]] — TDD/debugging/brainstorming [[skills|skills]] + a code-reviewer
     [[subagents|agent]].
+  - [[caveman]] — token-discipline skill whose repo doubles as its own marketplace
+    (`claude plugin marketplace add JuliusBrussee/caveman`), plus installers for 30+
+    non-Claude agents.
   - Code-intelligence plugins activate the [[code-intelligence|LSP tool]] per language.
 
 ## Sources
-- [[extend-claude-code]], [[frontend-design-plugin]], [[superpowers-plugin]]
+- [[extend-claude-code]], [[frontend-design-plugin]], [[superpowers-plugin]], [[caveman-readme]]
