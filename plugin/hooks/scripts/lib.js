@@ -67,6 +67,55 @@ function readJsonSafe(file, fallback = null) {
   }
 }
 
+/** Read a text file as UTF-8; return '' on any failure. */
+function readTextSafe(file) {
+  try {
+    return fs.readFileSync(file, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Parse simple scalar YAML frontmatter (the wiki's schema §3 subset).
+ * Returns {} when there is no leading --- block. Quoted strings are unquoted;
+ * true/false and integers are typed; anything else (arrays, dates) stays a
+ * raw string the caller can regex.
+ */
+function parseFrontmatter(text) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(String(text || ''));
+  if (!m) return {};
+  const fm = {};
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(line);
+    if (!kv) continue;
+    let v = kv[2].trim();
+    if ((/^".*"$/.test(v)) || (/^'.*'$/.test(v))) v = v.slice(1, -1);
+    else if (v === 'true') v = true;
+    else if (v === 'false') v = false;
+    else if (/^-?\d+$/.test(v)) v = Number(v);
+    fm[kv[1]] = v;
+  }
+  return fm;
+}
+
+/** All files under dir (recursive), optionally filtered by extension. */
+function listFilesRecursive(dir, ext) {
+  const out = [];
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const e of entries) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) out.push(...listFilesRecursive(p, ext));
+    else if (!ext || e.name.endsWith(ext)) out.push(p);
+  }
+  return out;
+}
+
 /**
  * Rough token estimate (chars / 4). Good enough to enforce the Phase 2
  * injection budget; receipts use real counts later (Phase 8 doctor).
@@ -94,7 +143,19 @@ function block(reason) {
   process.exit(EXIT.BLOCK);
 }
 
-module.exports = { EXIT, readStdinJson, findBrainDir, readJsonSafe, estimateTokens, today, succeed, block };
+module.exports = {
+  EXIT,
+  readStdinJson,
+  findBrainDir,
+  readJsonSafe,
+  readTextSafe,
+  parseFrontmatter,
+  listFilesRecursive,
+  estimateTokens,
+  today,
+  succeed,
+  block,
+};
 
 // Self-test: `node lib.js` prints OK without touching anything.
 if (require.main === module) {
@@ -103,7 +164,11 @@ if (require.main === module) {
   assert.strictEqual(estimateTokens(''), 0);
   assert.match(today(), /^\d{4}-\d{2}-\d{2}$/);
   assert.strictEqual(readJsonSafe(path.join(__dirname, 'no-such-file.json'), 'fb'), 'fb');
-  // findBrainDir returns null here (the engine repo itself has no .brain/).
+  assert.strictEqual(readTextSafe(path.join(__dirname, 'no-such-file.md')), '');
+  const fm = parseFrontmatter('---\ntitle: "T"\ntype: concept\nplan_approved: true\npage_count: 69\n---\nbody');
+  assert.deepStrictEqual(fm, { title: 'T', type: 'concept', plan_approved: true, page_count: 69 });
+  assert.deepStrictEqual(parseFrontmatter('no frontmatter'), {});
+  assert.ok(listFilesRecursive(__dirname, '.js').some((f) => f.endsWith('lib.js')));
   assert.strictEqual(typeof findBrainDir, 'function');
   console.log('lib.js self-test OK');
 }

@@ -22,8 +22,10 @@ the primary interface once the Phase 2 trigger-router hook lands.
 plugin/
 ├── .claude-plugin/plugin.json   # manifest (name: brain)          ✅ Phase 1
 ├── hooks/
-│   ├── hooks.json               # hook registration (empty until Phase 2)
-│   └── scripts/lib.js           # shared Node runtime (stdlib-only) ✅ Phase 1
+│   ├── hooks.json               # registers #1 / #3 / #4              ✅ Phase 2 (tranche 1)
+│   └── scripts/                 # Node runtime (stdlib-only): lib,
+│                                #   brain-status, guards, wiki-check,
+│                                #   selftest (23 checks)              ✅
 ├── skills/                      # /brain:* skills                  ⬜ Phase 3
 ├── agents/                      # brain-librarian, brain-researcher ⬜ Phase 3–5.5
 └── .mcp.json                    # qmd semantic search              ⬜ Phase 5
@@ -59,3 +61,5 @@ wraps it.
   nothing, never error.
 - Validate before committing: `claude plugin validate ./plugin --strict` and
   `claude plugin validate . --strict` (marketplace).
+- Test before committing: `node hooks/scripts/selftest.js` — builds a temp
+  `.brain` fixture and drives every hook with synthetic events (23 checks).
