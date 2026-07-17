@@ -1,0 +1,208 @@
+---
+title: "Enhancement Roadmap — Monkey Brain v2"
+type: schema
+status: draft
+tags: [roadmap, plugin, hooks, skills, mcp, context-engineering]
+created: 2026-07-17
+updated: 2026-07-17
+version: 0.1
+---
+
+# 🐵 Monkey Brain v2 — Enhancement Roadmap
+
+Step-by-step guide to evolve the Monkey Brain from a **method + bootstrap script** into a
+**self-enforcing, token-disciplined, full-lifecycle knowledge engine** that works automatically
+in any project or product — development, products, and games.
+
+**References studied:**
+- [Caveman](https://github.com/juliusbrussee/caveman) — token discipline: ~65% output
+  compression, `/caveman-compress` cuts memory-file input tokens ~46% *permanently*,
+  cache-aware design, stats receipts.
+- [MewVault](https://github.com/mewking2099/MewVault) — the quality bar: *enforcement over
+  advice*. 7 lifecycle hooks, hard quality gates (plan-before-code, TDD, secrets,
+  immutability), spec-driven workflow, project tiers, semantic memory (SQLite-vec MCP),
+  instinct system, 15-check doctor, 3k-token budgeted session injection.
+- Our own wiki: `claude-md-vs-skills-vs-hooks`, `hooks`, `skill-authoring`, `plugins`,
+  `mcp-tool-search`, `search-tooling` (qmd upgrade path), `schema/CLAUDE.md` §8.
+
+**North star:** MewVault enforces quality; Caveman enforces economy; the LLM wiki compounds
+knowledge. Monkey Brain v2 does all three in one plugin, portable to any project.
+
+---
+
+## Design principles (decide these first — they resolve every later trade-off)
+
+1. **Enforcement over advice.** Any rule that must hold every time becomes a hook or deny
+   rule, never a CLAUDE.md sentence. (Our own synthesis page already says this.)
+2. **"Read every .md before any task" = context engineering, not literal reads.** Literally
+   reading the whole vault per task explodes tokens (anti-Caveman). Instead: a SessionStart
+   hook injects a **budgeted brain-status block** (≤3,000 tokens: index stats, active
+   tasks/specs, last log entries, pending clippings, relevant memories), the **index stays
+   the map**, and **semantic search (qmd MCP)** makes any page reachable on demand. The brain
+   is *always aware of everything* and *reads deeply only what the task needs*.
+3. **Cache-aware injection order.** Static content (rules, persona, schema digest) first so
+   the prompt cache hits; dynamic content (status, tasks, health) after. Over budget →
+   low-priority sections drop entirely, never the trigger map.
+4. **Everything leaves a trace.** Every session, ingest, plan, build, review appends to
+   `log.md` / `sessions/` automatically via hooks — not by hoping the model remembers.
+5. **The plugin is the engine's distribution.** Install once (user scope) → every project
+   gets the brain automatically; `.brain/` instances stay isolated per project.
+
+---
+
+## Phase 1 — Repackage as a plugin
+
+1. Create `plugin/` in this repo:
+   ```
+   plugin/
+   ├── .claude-plugin/plugin.json      # name: monkey-brain
+   ├── skills/                         # Phase 3
+   ├── hooks/hooks.json + scripts/     # Phase 2 (Node.js for cross-platform, like MewVault)
+   ├── agents/                         # brain-librarian, brain-researcher
+   └── .mcp.json                       # qmd semantic search (Phase 5)
+   ```
+2. Add `.claude-plugin/marketplace.json` at repo root so the repo doubles as a marketplace
+   (`/plugin marketplace add NeamulMorshed/The-Monkey-Brain`).
+3. Keep `bootstrap/` — `/brain:init` calls it via `${CLAUDE_SKILL_DIR}`.
+4. Write hook scripts in **Node.js** (single runtime on Win/mac/Linux) instead of paired
+   .ps1/.sh; keep `lint-brain.ps1` as a thin wrapper for humans.
+
+## Phase 2 — Hooks: the enforcement layer (match & beat MewVault's 7)
+
+| # | Event | Script | What it enforces / injects |
+| --- | --- | --- | --- |
+| 1 | `SessionStart` | `brain-status.js` | Detect `.brain/` → inject budgeted status block (stats, active specs/tasks, unprocessed `Clippings/`, last 3 log entries, active instincts). **Kills the CLAUDE.md loading caveat.** |
+| 2 | `UserPromptSubmit` | `trigger-router.js` | Natural-phrase routing: "ingest this"→ingest skill, "wrap up"→wrap, "standup"→brief, "spec X"→plan skill, "lint the brain"→lint, "doctor"→health. No memorized commands. |
+| 3 | `PreToolUse` (Edit\|Write) | `guards.js` | **Immutability**: deny writes to `.brain/raw-sources/**`; `log.md` append-only. **Secrets**: block content matching `sk-`, `ghp_`, `AKIA`, private-key headers. **Plan gate**: architecture-tier projects require `plan_approved: true` in the spec before source writes. **TDD gate** (feature+ tiers): warn/block source files without a test. |
+| 4 | `PostToolUse` (wiki writes) | `wiki-check.js` | Link/orphan check on the touched page; failures land in context → self-healing same turn. Track activity for the session log. |
+| 5 | `PreCompact` | `snapshot.js` | Write a semantic snapshot (open task, decisions, next steps) to `.brain/sessions/` so nothing is lost to compaction. |
+| 6 | `Stop` / `SessionEnd` | `wrap.js` | Append session entry to `log.md`, refresh `index.md` stats, re-index semantic search, remind/perform conventional commit (`ingest:`/`query:`/`lint:`/`session:`). |
+| 7 | `PreToolUse` (Agent) | `agent-track.js` | Log agent dispatches; require explicit model choice for expensive spawns. |
+
+## Phase 3 — Skills: SDLC verbs + development workflows
+
+**Brain SDLC** (namespaced `/brain:*`, auto-activating via `description`/`when_to_use`):
+- `/brain:init` — scaffold `.brain/` (wraps bootstrap), drop root `@.brain/CLAUDE.md` import,
+  offer the recommended plugin set (Phase 6).
+- `/brain:ingest [path|url]` — the 8-step compile, now checklist-enforced by hook #4.
+- `/brain:lint` — mechanical scan injected via `` !`node lint.js` `` first, then reasoning
+  over contradictions/staleness.
+- `/brain:query` + file-back — index-first answering; novel answers → `syntheses/`.
+- `/brain:wrap` — definition-of-done: verify acceptance criteria, run typecheck/lint/test,
+  update log + index, commit.
+- `/brain:doctor` — health monitor (Phase 8).
+
+**Development lifecycle** (the analysis → research → plan → build spine):
+- `/brain:research <topic>` — web + codebase research, filed to `wiki/research/` with sources.
+- `/brain:plan <feature>` — produce `specs/<feature>.md` with **numbered acceptance criteria**
+  (AC-1, AC-2…) and tier; requires curator approval → sets `plan_approved: true`.
+- `/brain:build <spec>` — TDD loop against the spec's criteria (superpowers plugin does the
+  methodology; our skill wires it to the spec + gates).
+- `/brain:review` — code review filed back as a wiki page + PR comments (github plugin).
+
+**Token discipline (Caveman-inspired):**
+- `/brain:terse [level]` — output-compression mode persisted per session.
+- `/brain:compress <file>` — rewrite CLAUDE.md/memory/wiki hub pages tersely (~46% permanent
+  input savings); run it on `brain-template/CLAUDE.md` itself.
+- Keep every SKILL.md < 150 lines; details in referenced files loaded on demand.
+
+## Phase 4 — Schema v2: brain-template upgrade
+
+New instance layout (additions ★):
+```
+.brain/
+├── CLAUDE.md            # slimmed: identity + layer map + trigger table (compressed)
+├── Clippings/ raw-sources/ memory/
+├── wiki/ {index,log,dashboard,sources,concepts,entities,syntheses, research★}
+├── specs/★              # acceptance-criteria specs (plan gate reads these)
+├── projects/★           # Project_Status.md per workstream: tier, phase, audit fields
+├── sessions/★           # auto-written session logs + compaction snapshots
+├── decisions/★          # ADRs distilled at session end
+└── instincts/★          # {pending,active}/ auto-learned correction rules
+```
+- **Project tiers** (gate strictness): `quick` (<2h, warn only) · `feature` (plan verbal,
+  TDD blocks) · `architecture` (hard plan gate).
+- Frontmatter additions: `tier`, `phase`, `plan_approved`, `audit_score`.
+- Log prefixes extended: `session |`, `research |`, `plan |`, `build |`, `review |`.
+- Bump `schema/CLAUDE.md` to v2.0; `new-brain.ps1 -Update` migrates existing brains
+  (creates missing folders, never touches knowledge).
+
+## Phase 5 — Memory & context engineering
+
+1. **Three memory tiers:** wiki (durable compiled knowledge) · `memory/` + `decisions/`
+   (project facts, ADRs) · `instincts/` (auto-learned corrections: 3+ rewrites of the same
+   file → candidate rule in `pending/`, curator promotes to `active/` → injected at start).
+2. **Auto-distillation:** session-end hook extracts decisions made this session into
+   `decisions/` and refreshes the memory index — no manual "remember this" needed.
+3. **Semantic search:** bundle qmd as MCP in `.mcp.json` (BM25 + vector, on-device — already
+   our documented §8 upgrade path). Instruction: *consult memory before substantive work.*
+   Index refresh in the session-end hook. Deferred tool loading keeps context cost ~0.
+4. **Compaction survival:** PreCompact snapshot (hook #5) + sessions/ folder.
+5. **Budget receipts:** doctor reports injection size, cache-hit ratio, tokens saved
+   (Caveman-style stats line).
+
+## Phase 6 — Bundled capability plugins (auto-firing per task type)
+
+Ship a **recommended-plugins manifest** the `/brain:init` skill offers to install (plugins
+auto-activate by their own skill descriptions; our trigger-router nudges them):
+
+| Plugin | Auto-fires when | Brain integration |
+| --- | --- | --- |
+| [github](https://claude.com/plugins/github) | PR/issue/CI work | reviews & PR links filed to wiki; wrap posts status |
+| [frontend-design](https://claude.com/plugins/frontend-design) | any UI build | design decisions → `decisions/`; audit scores in Project_Status |
+| [superpowers](https://claude.com/plugins/superpowers) | build/debug phases | TDD methodology behind `/brain:build` |
+| [security-guidance](https://claude.com/plugins/security-guidance) | auth/crypto/input-handling code | findings filed as wiki pages; P0s block wrap (MewVault-style audit gate) |
+| [product-tracking-skills](https://claude.com/plugins/product-tracking-skills) | product/metrics work | tracking plans live in `projects/` |
+| [code-modernization](https://claude.com/plugins/code-modernization) | legacy refactors | migration notes → `wiki/research/` |
+| [productivity](https://claude.com/plugins/productivity) | standup/planning triggers | feeds the "standup" brief |
+| [product-management](https://claude.com/plugins/product-management) | PRD/roadmap requests | PRDs land in `raw-sources/` → ingested |
+
+Rule: **plugins do the craft; the brain records the knowledge.** Every plugin output that
+represents a decision, finding, or artifact gets filed into the instance by our skills/hooks.
+
+## Phase 7 — Domain workflows: products & games
+
+- **Product pipeline:** idea (`wiki/research/`) → PRD (product-management → `raw-sources/` →
+  ingest) → `/brain:plan` spec → `/brain:build` → track (product-tracking) → `/brain:wrap`.
+- **Game pipeline:** concept → **GDD** template (`schema/templates/gdd.md`: loops, mechanics,
+  progression, art direction) → prototype spec (tiered) → build → **playtest logs** filed as
+  sources → balance decisions as ADRs. Engine entity pages (Godot/Unity/web) in `entities/`.
+- **Analysis/research/planning process** codified once in `/brain:research` + `/brain:plan`
+  and reused by both pipelines — research is always filed, plans always have numbered
+  acceptance criteria, approval always gates architecture-tier code.
+
+## Phase 8 — Quality & health: `/brain:doctor`
+
+Automated checks (target 15, MewVault parity):
+broken links · orphans · stale/contradiction flags · index freshness vs page count ·
+Clippings backlog · log gaps (sessions without entries) · uncommitted `.brain/` changes ·
+hook registration · injection size vs budget · semantic index freshness · WIP limits
+(≤3 active projects, none idle 21+ days) · instinct-queue overflow · specs without tests ·
+open P0 findings · schema version vs engine.
+Failures inject a health report into the next session (hook #1 carries it).
+
+## Phase 9 — Rollout (dogfood everything)
+
+1. Work on `monkey-brain-enhancement`; **commit per phase step** with conventions.
+2. **Ingest Caveman + MewVault as sources** into `examples/claude-code-brain/` — the
+   competitor analysis becomes wiki knowledge (research → synthesis page:
+   `monkey-brain-vs-mewvault`).
+3. Build Phase 1–2 first (plugin skeleton + hooks 1, 3, 4 = biggest payoff), then 3, 4, 5;
+   6–8 iterate after.
+4. Test on a scratch project: `/brain:init` → ingest → plan → build a toy feature → wrap;
+   verify every gate fires and every log updates.
+5. Update README + `schema/CLAUDE.md` (v2.0), run `/brain:lint` on the example brain,
+   open PR to `main`.
+
+---
+
+## How we beat MewVault (the scorecard)
+
+| Dimension | MewVault | Monkey Brain v2 |
+| --- | --- | --- |
+| Portability | Fixed workspace of silos | **Plugin — any repo, any machine, `.brain/` travels with the project's git** |
+| Knowledge | Wiki synced at session end | **Full LLM-wiki SDLC: compile-time cross-linking, contradiction flags, provenance frontmatter** |
+| Token economy | 3k budget injection | Budget injection **+ Caveman-style output/memory compression + deferred MCP tools** |
+| Enforcement | 7 hooks, hard gates | Same gate set **+ self-healing wiki checks (PostToolUse fixes in-turn)** |
+| Capability breadth | Impeccable design + Godot | **8 bundled marketplace plugins routed by task type** |
+| Auditability | Generated logs | Logs **+ append-only guarantee (hook-enforced) + git commit conventions** |
