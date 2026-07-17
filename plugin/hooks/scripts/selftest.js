@@ -433,6 +433,41 @@ try {
     check('qmd installed — real handoff path (stub-fallback test skipped)', true);
   }
 
+  // ---------- skill routing frontmatter (P5.5) ----------
+  console.log('skill routing frontmatter (P5.5 model/effort policy)');
+  const MODELS = new Set(['haiku', 'sonnet', 'opus']);
+  const EFFORTS = new Set(['low', 'medium', 'high']);
+  const routing = {
+    build: { model: 'sonnet', effort: 'medium' },
+    ingest: { model: 'sonnet', effort: 'medium' },
+    research: { model: 'sonnet', effort: 'medium' },
+    init: { model: 'sonnet', effort: 'low' },
+    terse: { model: 'haiku', effort: 'low' },
+    plan: { effort: 'high' },
+    review: { effort: 'high' },
+    wrap: { effort: 'high' },
+    query: { effort: 'high' },
+    lint: { effort: 'high' },
+    compress: { effort: 'high' },
+  };
+  const fmGet = (text, key) => { const head = text.split(/\r?\n---/)[0] || ''; const m = new RegExp(`^${key}:\\s*(\\S+)\\s*$`, 'm').exec(head); return m ? m[1] : undefined; };
+  let routingOk = 0;
+  const routingBad = [];
+  for (const name of Object.keys(routing)) {
+    const p = path.join(SKILLS, name, 'SKILL.md');
+    const text = fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '';
+    const model = fmGet(text, 'model');
+    const effort = fmGet(text, 'effort');
+    const exp = routing[name];
+    const modelOk = exp.model ? model === exp.model : model === undefined;
+    const effortOk = effort === exp.effort && EFFORTS.has(effort) && (model === undefined || MODELS.has(model));
+    if (modelOk && effortOk) routingOk++;
+    else routingBad.push(`${name}(model=${model},effort=${effort})`);
+  }
+  check('all 11 skills declare the expected model/effort routing', routingOk === Object.keys(routing).length, routingBad.join(' '));
+  const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
+  check('judgment skills inherit the main model (no downgrade)', judgmentPinned.length === 0, `pinned: ${judgmentPinned.join(',')}`);
+
   // ---------- /brain:init scaffold ----------
   console.log('new-brain.js (skill /brain:init scaffold)');
   const INITP = path.join(ROOT, 'init-proj');

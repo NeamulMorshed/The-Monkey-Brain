@@ -2,6 +2,8 @@
 description: Scaffold a Monkey Brain instance (.brain/) into the current project — the per-project LLM wiki + memory that this plugin's hooks and skills operate on. Use when the user asks to set up / initialize / create a brain for a project, or accepts the session-start offer. Also refreshes an existing brain's schema without touching its knowledge.
 argument-hint: "[project-path] [--name <display-name>] [--update]"
 allowed-tools: Bash(node:*)
+model: sonnet
+effort: low
 ---
 
 # /brain:init — scaffold a Monkey Brain instance

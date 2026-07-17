@@ -1,6 +1,7 @@
 ---
 description: Answer a question from the project's Monkey Brain — index-first retrieval with citations, filing novel answers back as synthesis pages so explorations compound. Use when the user asks what the brain/wiki knows, wants a comparison or overview drawn from accumulated knowledge, or says "ask the brain" / "search the brain".
 argument-hint: "<question>"
+effort: high
 ---
 
 # /brain:query — deploy knowledge from the wiki

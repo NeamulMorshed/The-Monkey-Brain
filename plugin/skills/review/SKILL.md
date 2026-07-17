@@ -1,6 +1,7 @@
 ---
 description: Verify a built spec and review its code — AC-by-AC verification with evidence, findings filed back into the Monkey Brain (review synthesis page, ADRs, instinct candidates), and the spec closed out honestly. Use when the user says "review the changes/spec/branch", after /brain:build finishes, or before merging feature work.
 argument-hint: "[spec-slug | branch | scope]"
+effort: high
 ---
 
 # /brain:review — verify, judge, file it back

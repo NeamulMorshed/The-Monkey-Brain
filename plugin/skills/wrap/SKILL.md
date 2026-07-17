@@ -1,6 +1,7 @@
 ---
 description: Definition-of-done for a Monkey Brain work session — verify the work, sync the bookkeeping (wiki log, index stats, resume narrative), and commit with the vault's conventions. Use when the user says "wrap up", "end the session", "call it a day", or after completing a milestone.
 argument-hint: "[one-line summary of the session]"
+effort: high
 ---
 
 # /brain:wrap — close the loop on a session

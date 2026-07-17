@@ -1,6 +1,8 @@
 ---
 description: Switch this session's output to terse mode (Caveman-style, roughly 65% shorter) — or back off. Prose compresses; code, commands, file paths, error messages, and acceptance criteria never do. Use when the user says "be terse", "terse mode", "shorter answers", or complains about verbosity.
 argument-hint: "[off]"
+model: haiku
+effort: low
 ---
 
 # /brain:terse — output compression mode

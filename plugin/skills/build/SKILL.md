@@ -1,6 +1,8 @@
 ---
 description: Implement a spec from .brain/specs/ as a test-first loop against its numbered acceptance criteria, keeping the spec's phase and the bookkeeping current. Use when the user says "build/implement the spec", "start building <feature>", or work begins on a planned feature. The TDD and plan gates are active — work with them, not around them.
 argument-hint: "<spec-slug>"
+model: sonnet
+effort: medium
 ---
 
 # /brain:build — work the spec, test-first

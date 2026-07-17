@@ -1,6 +1,7 @@
 ---
 description: Turn a feature idea into specs/<feature>.md with numbered acceptance criteria (AC-1…) and a tier — the record the plan and TDD gates read. Use when the user says "spec X", "write/draft a spec", "plan the feature", or before any non-trivial implementation. Architecture tiers need explicit curator approval; only the curator's word flips plan_approved.
 argument-hint: "<feature>"
+effort: high
 ---
 
 # /brain:plan — a spec the gates can read

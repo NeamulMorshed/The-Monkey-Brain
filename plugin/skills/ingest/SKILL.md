@@ -1,6 +1,8 @@
 ---
 description: Compile a source into the project's Monkey Brain wiki — the 8-step ingest of the knowledge SDLC. Use when the user says "ingest this", shares an article / doc / URL / paste to add to the brain, or asks to process Clippings. Requires a .brain/ instance (offer /brain:init when missing).
 argument-hint: "[path | url | clippings]"
+model: sonnet
+effort: medium
 ---
 
 # /brain:ingest — compile a source into the wiki

@@ -24,3 +24,24 @@ Conventions: SKILL.md < 150 lines (body stays in context); bundled scripts run
 via `${CLAUDE_SKILL_DIR}` and are covered by `hooks/scripts/selftest.js`;
 `schema/brain-template/` stays the canonical template master
 (`new-brain.js --sync-template` refreshes the bundle; selftest fails on drift).
+
+## Model routing (Phase 5.5)
+
+Each skill declares its place in the routing policy via `model:` / `effort:`
+frontmatter, so the right model does each kind of work **by default** (and the
+`effort` budget is spent only where judgment lives). Hook #7 `agent-track`
+enforces the same policy on subagent dispatches; deterministic checks already
+run in scripts at zero model cost.
+
+| Work class | Skills | Frontmatter | Why |
+| --- | --- | --- | --- |
+| **Judgment & synthesis** | `plan` · `review` · `wrap` · `query` · `lint` · `compress` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression — never downgraded |
+| **Routine execution** | `ingest` · `research` · `build` | `model: sonnet` · `effort: medium` | summaries, research reads, standard implementation — pinned to Sonnet regardless of the session model |
+| **Mechanical** | `init` | `model: sonnet` · `effort: low` | scaffolding runs a Node script; little reasoning |
+| **Trivial** | `terse` | `model: haiku` · `effort: low` | flips an output mode |
+
+**Parallel fan-out** (subagents in `../agents/`, run concurrently; only summaries
+return): `research` fans out to **`brain-researcher`** (Sonnet, read-only) and
+synthesizes on the main model; batch `ingest` delegates to **`brain-librarian`**
+(Sonnet) so the main session sees only log entries; `build` + `review` pair a
+Sonnet implementer with a main-model auditor. See `../agents/README.md`.

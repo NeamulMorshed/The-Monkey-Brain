@@ -1,6 +1,8 @@
 ---
 description: Investigate a topic for the project and file the findings into the Monkey Brain — wiki first, then codebase, then web — as a wiki/research/ page with sources and a recommendation. Use when the user says "research X", asks to investigate options or approaches before building, or a plan needs evidence. Requires a .brain/ (offer /brain:init when missing).
 argument-hint: "<topic or question>"
+model: sonnet
+effort: medium
 ---
 
 # /brain:research — investigate, then file it

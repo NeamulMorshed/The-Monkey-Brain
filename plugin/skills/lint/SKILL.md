@@ -1,6 +1,7 @@
 ---
 description: Health-check the project's Monkey Brain — a mechanical scan (broken wikilinks, orphans, frontmatter gaps, index drift, backlog, strays) followed by reasoning over contradictions and staleness, with fixes applied. Use when the user says "lint the brain/wiki", asks for a brain health check, or after a large ingest batch.
 argument-hint: "[scope]"
+effort: high
 ---
 
 # /brain:lint — test the wiki
