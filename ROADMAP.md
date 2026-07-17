@@ -43,9 +43,9 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P9.2** Research ingests: Caveman, MewVault, ui-ux-pro-max → example brain; filed `monkey-brain-vs-mewvault` synthesis + `domain-expertise-packs` concept | ✅ 2026-07-17 | 4 commits (`ingest:` ×3, `query:` ×1); vault 16 sources / 69 pages |
 | **P1** Plugin skeleton: `plugin/` (plugin.json, hooks.json, skills/, agents/, .mcp.json), root `marketplace.json`, Node hook runtime | ✅ 2026-07-17 | plugin named **`brain`** (→ `/brain:*` commands), displayName "The Monkey Brain", marketplace **`monkey-brain`** → install `brain@monkey-brain`; both manifests pass `claude plugin validate --strict`; MIT licensed; Node.js 24.18.0 LTS installed 2026-07-17 |
 | **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check, #8 resume; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | ✅ 2026-07-17 | **Complete, 8/8.** #1/#3/#4/#8 v0.3.0; #2/#5/#6/#7 v0.4.0 — trigger routing (phrases → skills), pre-compact snapshots → `sessions/`, once-per-session unlogged-work stop gate + SessionEnd index-stat self-heal, agent dispatch log + explicit-model gate. #1 grew the no-brain `/brain:init` offer (`.no-brain` silences). Selftest **79/79 GREEN** |
-| **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | 🔶 **next** (remainder) | **Core 5 shipped 2026-07-17 (v0.4.0):** `/brain:{init,ingest,query,lint,wrap}`. `init` is self-contained (bundled `brain-template/` + Node `new-brain.js` — marketplace installs don't ship `bootstrap/`; `schema/brain-template/` stays master, selftest fails on drift, `--sync-template` refreshes). `lint` injects `scripts/lint.js` via `` !`…` ``. Remaining: research/plan/build/review (P4 schema now in place), terse/compress |
+| **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | ✅ 2026-07-17 | **Complete, 11 skills.** Core 5 (v0.4.0): `/brain:{init,ingest,query,lint,wrap}` — `init` self-contained (bundled template + Node `new-brain.js`; `--sync-template` guard), `lint` injects `scripts/lint.js` via `` !`…` ``. Develop lifecycle (v0.6.0): `/brain:{research,plan,build,review}` — research filed with sources; specs with AC-n + tier, **approval curator-owned**; build test-first with the gates; review files back (synthesis + ADRs + `instincts/pending/` — Gap #9 loop live). Token discipline (v0.6.0): `/brain:terse` (compression guard), `/brain:compress` (permanent, with receipts). Router phrases for all. Selftest **95/95 GREEN** |
 | **P4** Schema v2 template: specs/ projects/ sessions/ decisions/ instincts/ + tiers; `-Update` migration | ✅ 2026-07-17 | v0.5.0 — record layers `specs/ projects/ sessions/ decisions/ instincts/{pending,active} wiki/research/` + templates (spec w/ AC-n·tier·`plan_approved`·`tdd`, decision/ADR, project-status, instinct, research); log prefixes `session\|research\|plan\|build\|review`; **tier gates live**: plan (architecture) + new **TDD gate** (feature+, new code files need a test companion; `tdd: false` opts out); both update paths (`-Update`/`--update`) migrate v1→v2 structure, never touching knowledge; CLAUDE.md ×2 → **v2.0** (section numbers stable); brain-status shows active projects. Selftest **88/88 GREEN** |
-| **P5** Memory tiers + qmd MCP · **P5.5** model routing & parallel fan-out | ⬜ | |
+| **P5** Memory tiers + qmd MCP · **P5.5** model routing & parallel fan-out | ⬜ **next** | memory tiers partially in place via P4 (`decisions/`, `instincts/` folders + templates); remaining: auto-distillation, qmd `.mcp.json`, routing frontmatter + agents |
 | **P6** Bundled-plugin manifest · **P6.5** product-design pack | ⬜ | |
 | **P7** Product & game pipelines | ⬜ | |
 | **P8** `/brain:doctor` (15 checks) | ⬜ | |
@@ -53,7 +53,18 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 
 ### Session log (engine work, newest first — instances get `sessions/` in P4)
 
-**[2026-07-17] Session 2 — Phase 3 core skills + Phase 2 completion + Phase 4 schema v2 (v0.4.0 → v0.5.0)**
+**[2026-07-17] Session 2 — Phases 2+3+4 completed (v0.4.0 → v0.6.0)**
+- **P3 complete (v0.6.0):** develop-lifecycle skills `/brain:{research,plan,build,review}`
+  — research wiki-first→codebase→web, every finding cited, filed to `wiki/research/`;
+  plan writes `specs/` with AC-n + tier and keeps `plan_approved` **curator-owned**
+  (never self-set); build runs red→green→refactor per AC treating the TDD gate as the
+  reminder; review verifies AC-by-AC with evidence and files back (review synthesis,
+  `decisions/` ADRs, 3+-repeat corrections → `instincts/pending/` — the Gap-#9 feedback
+  loop is live). Token discipline: `/brain:terse` (output mode + compression guard),
+  `/brain:compress` (permanent instruction-file compression with byte/token receipts).
+  trigger-router learned the phrases ("research X", "write a spec", "implement the
+  spec", "review the changes", "be terse" — works brainless, "compress CLAUDE.md").
+  Selftest **95/95 GREEN**.
 - **P4 schema v2 (v0.5.0):** template gains `specs/ projects/ sessions/ decisions/
   instincts/{pending,active} wiki/research/` with five new templates (spec/decision/
   project-status/instinct/research); instance CLAUDE.md rewritten at `engine_version: 2.0`
@@ -106,11 +117,11 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 
 **▶ Resume here (next session):** the live pointer is **`resume.md` at the repo root** —
 hook #8 injects it and asks to continue once the plugin is installed; until then, read it
-first. Next: **Phase 4 schema v2** — brain-template additions (`specs/` `projects/`
-`sessions/` `decisions/` `instincts/` + project tiers, frontmatter fields `tier`/`phase`/
-`plan_approved`/`audit_score`, extended log prefixes), migrate via `new-brain` update path
-(both .ps1 and the plugin's `new-brain.js`), bump `schema/CLAUDE.md` to v2.0 — then the
-P4-dependent skills (`/brain:research`, `/brain:plan`, `/brain:build`, `/brain:review`).
+first. Phases 1–4 are done (plugin v0.6.0, 11 skills, 8 hooks, selftest 95/95). Next:
+**Phase 5** memory engineering — auto-distillation of decisions at session end, qmd
+semantic search bundled via `plugin/.mcp.json` (deferred tool loading), budget receipts —
+and **Phase 5.5** model routing: `model:`/`effort:` frontmatter on skills, the
+`brain-librarian` + `brain-researcher` agents (Sonnet), parallel fan-out patterns.
 Optional dogfood at any point:
 `/plugin marketplace add "F:\The Monkey Brain\The-Monkey-Brain"` → `/plugin install brain@monkey-brain`.
 
