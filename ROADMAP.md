@@ -36,6 +36,23 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 
 ---
 
+## Execution status (tracker — update per commit; any session can resume from here)
+
+| Step | Status | Notes |
+| --- | --- | --- |
+| **P9.2** Research ingests: Caveman, MewVault, ui-ux-pro-max → example brain; filed `monkey-brain-vs-mewvault` synthesis + `domain-expertise-packs` concept | ✅ 2026-07-17 | 4 commits (`ingest:` ×3, `query:` ×1); vault 16 sources / 69 pages |
+| **P1** Plugin skeleton: `plugin/` (plugin.json, hooks.json, skills/, agents/, .mcp.json), root `marketplace.json`, Node hook runtime | ⬜ **next** | |
+| **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check first; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | ⬜ | gates must degrade gracefully until P4 folders exist |
+| **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | ⬜ | |
+| **P4** Schema v2 template: specs/ projects/ sessions/ decisions/ instincts/ + tiers; `-Update` migration | ⬜ | |
+| **P5** Memory tiers + qmd MCP · **P5.5** model routing & parallel fan-out | ⬜ | |
+| **P6** Bundled-plugin manifest · **P6.5** product-design pack | ⬜ | |
+| **P7** Product & game pipelines | ⬜ | |
+| **P8** `/brain:doctor` (15 checks) | ⬜ | |
+| **P9** Dogfood on scratch project → docs v2.0 → lint example brain → PR to `main` | ⬜ | |
+
+---
+
 ## Design principles (decide these first — they resolve every later trade-off)
 
 1. **Enforcement over advice.** Any rule that must hold every time becomes a hook or deny
