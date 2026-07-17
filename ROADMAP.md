@@ -41,8 +41,8 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | Step | Status | Notes |
 | --- | --- | --- |
 | **P9.2** Research ingests: Caveman, MewVault, ui-ux-pro-max → example brain; filed `monkey-brain-vs-mewvault` synthesis + `domain-expertise-packs` concept | ✅ 2026-07-17 | 4 commits (`ingest:` ×3, `query:` ×1); vault 16 sources / 69 pages |
-| **P1** Plugin skeleton: `plugin/` (plugin.json, hooks.json, skills/, agents/, .mcp.json), root `marketplace.json`, Node hook runtime | ⬜ **next** | |
-| **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check first; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | ⬜ | gates must degrade gracefully until P4 folders exist |
+| **P1** Plugin skeleton: `plugin/` (plugin.json, hooks.json, skills/, agents/, .mcp.json), root `marketplace.json`, Node hook runtime | ✅ 2026-07-17 | plugin named **`brain`** (→ `/brain:*` commands), displayName "The Monkey Brain", marketplace **`monkey-brain`** → install `brain@monkey-brain`; both manifests pass `claude plugin validate --strict`; `hooks/scripts/lib.js` runtime foundation. ⚠ Node.js not installed on this machine — required before Phase 2 hooks can run |
+| **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check first; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | ⬜ **next** | gates must degrade gracefully until P4 folders exist; needs Node ≥18 on PATH |
 | **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | ⬜ | |
 | **P4** Schema v2 template: specs/ projects/ sessions/ decisions/ instincts/ + tiers; `-Update` migration | ⬜ | |
 | **P5** Memory tiers + qmd MCP · **P5.5** model routing & parallel fan-out | ⬜ | |
@@ -150,7 +150,7 @@ The three goals reinforce rather than compete, if the mechanisms are assigned co
 1. Create `plugin/` in this repo:
    ```
    plugin/
-   ├── .claude-plugin/plugin.json      # name: monkey-brain
+   ├── .claude-plugin/plugin.json      # name: brain (→ /brain:* namespace); displayName "The Monkey Brain"
    ├── skills/                         # Phase 3
    ├── hooks/hooks.json + scripts/     # Phase 2 (Node.js for cross-platform, like MewVault)
    ├── agents/                         # brain-librarian, brain-researcher
