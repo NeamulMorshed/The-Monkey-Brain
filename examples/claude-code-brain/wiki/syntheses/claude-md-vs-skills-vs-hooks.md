@@ -4,8 +4,8 @@ type: synthesis
 status: active
 tags: [claude-code, comparison, extensions, decision-guide]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[extend-claude-code]]", "[[context-window]]"]
+updated: 2026-07-17
+sources: ["[[extend-claude-code]]", "[[context-window]]", "[[mewvault-readme]]"]
 related: ["[[claude-md]]", "[[skills]]", "[[hooks]]", "[[subagents]]", "[[agent-teams]]", "[[mcp]]", "[[rules]]"]
 aliases: ["skill-vs-subagent", "claude-md-vs-skills", "claude-md-vs-rules-vs-skills", "subagent-vs-agent-team", "mcp-vs-skill", "hook-vs-skill", "extension comparison"]
 question: "When should I use CLAUDE.md vs a skill vs a hook (and the other extension features)?"
@@ -67,6 +67,11 @@ on save, reject `rm -rf /`). A [[skills|skill]] is interpreted by Claude (a `/re
 checklist). **Guardrails belong in hooks** — a prompt instruction is a request, a hook is
 enforcement. Hook *output* lands in context as text Claude reads.
 
+> **Validated in production:** [[mewvault]] builds a whole workspace on exactly this rule —
+> seven lifecycle hooks and OS-level gates (plan-approval, TDD, secrets, immutability),
+> because CLAUDE.md sentences are requests Claude can forget while `PreToolUse` blocks cannot
+> be talked past ([[mewvault-readme|source]]).
+
 ## How they combine
 - **Skill + MCP** — MCP connects; skill teaches usage.
 - **Skill + Subagent** — `/audit` skill spawns security/perf/style subagents.
@@ -74,4 +79,4 @@ enforcement. Hook *output* lands in context as text Claude reads.
 - **Hook + MCP** — post-edit hook posts a Slack notification.
 
 ## Sources
-- [[extend-claude-code]], [[context-window]]
+- [[extend-claude-code]], [[context-window]], [[mewvault-readme]]

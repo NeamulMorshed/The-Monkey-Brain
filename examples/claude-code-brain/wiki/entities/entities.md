@@ -22,6 +22,8 @@ thing worth tracking. See the full catalog in [[index]].
 - [[qmd]] — on-device hybrid search engine; the vault's [[search-tooling|search upgrade path]].
 - [[caveman]] — token-discipline skill/plugin: output compression + permanent memory-file
   compression, with receipts.
+- [[mewvault]] — federated Claude Code workspace: 7-hook enforcement, gates, tiers,
+  semantic memory, 15-check doctor.
 
 Sibling categories: [[concepts]] · [[syntheses]].
 

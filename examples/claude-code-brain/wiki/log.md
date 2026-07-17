@@ -170,3 +170,13 @@ the three benchmarks behind the engine's `ROADMAP.md` v0.2). Summary → [[sourc
 (repo-as-marketplace), [[claude-md]] (compress-memory-files play, ~46% permanent input savings),
 [[context-window]] (output/input/reasoning are separate budgets). Noted the honest-numbers
 nuance: the 65% headline is output-only. Vault now 14 sources / 63 pages. Touched: 9 pages.
+
+## [2026-07-17] ingest | MewVault README
+Web-fetched https://github.com/mewking2099/MewVault → [MewVault README.md](../raw-sources/MewVault%20README.md).
+The **enforcement benchmark** of the v2 research cluster. Summary → [[sources/mewvault-readme]].
+**New entity** [[mewvault]]. **Expanded** [[hooks]] (a production 7-hook architecture),
+[[claude-md-vs-skills-vs-hooks]] ("guardrails belong in hooks" now validated at workspace
+scale), [[memory]] (semantic memory + instinct tiers). Captured the prompt-cache postmortem
+rule: *optimize by injecting less, never by transforming the prompt.* Design difference flagged
+(session-end synced read-layer wiki vs. our compile-time wiki) — to be reconciled in
+[[monkey-brain-vs-mewvault]]. Vault now 15 sources / 65 pages. Touched: 8 pages.
