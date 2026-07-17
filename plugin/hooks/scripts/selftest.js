@@ -70,6 +70,10 @@ write(
   '---\ntitle: "Todo Page"\ntype: concept\nupdated: 2026-07-17\n---\n\nLinks [[index]] and a TODO marker: [[missing-target]]. Code is ignored: `[[not-a-link]]`.\n'
 );
 write('project-notes.md', '# notes outside the brain\n');
+write(
+  '.brain/projects/site.md',
+  '---\ntitle: "Site"\ntype: project\nstatus: active\ntier: feature\nphase: build\n---\n\nWorkstream.\n'
+);
 
 const evt = (extra) => ({ cwd: PROJ, session_id: 'selftest', ...extra });
 
@@ -85,6 +89,7 @@ try {
   check('injects index stats', ctx.includes('1 sources') && ctx.includes('5 wiki pages'));
   check('flags unprocessed Clippings', ctx.includes('📎') && ctx.includes('1 unprocessed'));
   check('includes recent log heads', ctx.includes('ingest | one'));
+  check('lists active projects with tier/phase', ctx.includes('Active projects') && ctx.includes('site') && ctx.includes('feature'), ctx.slice(0, 400));
   check('within budget', (ctx.length / 4) <= 3000, `${Math.ceil(ctx.length / 4)} tokens`);
 
   r = run('brain-status.js', evt({ cwd: os.tmpdir(), hook_event_name: 'SessionStart' }));
@@ -122,9 +127,31 @@ try {
   r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'notes.md'), content: 'docs are exempt' } }));
   check('plan gate exempts docs', r.status === 0, `status=${r.status} stderr=${r.stderr}`);
 
-  write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: architecture\nstatus: active\nplan_approved: true\n---\n\n- AC-1 …\n');
+  // tdd: false isolates this check to the plan gate (the TDD gate has its own below).
+  write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: architecture\nstatus: active\nplan_approved: true\ntdd: false\n---\n\n- AC-1 …\n');
   r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'src', 'main.js'), content: 'code' } }));
   check('plan gate opens once approved', r.status === 0, `status=${r.status} stderr=${r.stderr}`);
+
+  // TDD gate (feature+ tiers, schema §4.4): new code files need a test companion.
+  write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: feature\nstatus: active\n---\n\n- AC-1 …\n');
+  const tddEvt = (file) => evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, file), content: 'export {}' } });
+  r = run('guards.js', tddEvt('src/widget.js'));
+  check('TDD gate blocks a new source file without a test', r.status === 2 && /tdd/i.test(r.stderr), `status=${r.status}`);
+  write('tests/widget.test.js', 'test("w", () => {});\n');
+  r = run('guards.js', tddEvt('src/widget.js'));
+  check('a test companion opens the TDD gate', r.status === 0, `status=${r.status} stderr=${r.stderr}`);
+  write('src/legacy.js', 'existing file\n');
+  r = run('guards.js', tddEvt('src/legacy.js'));
+  check('TDD gate skips existing files', r.status === 0, `status=${r.status} stderr=${r.stderr}`);
+  r = run('guards.js', tddEvt('tests/more.test.js'));
+  check('test files themselves are exempt', r.status === 0, `status=${r.status} stderr=${r.stderr}`);
+  write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: quick\nstatus: active\n---\n\n- AC-1 …\n');
+  r = run('guards.js', tddEvt('src/another.js'));
+  check('quick tier has no TDD gate', r.status === 0, `status=${r.status} stderr=${r.stderr}`);
+  write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: feature\nstatus: active\ntdd: false\n---\n\n- AC-1 …\n');
+  r = run('guards.js', tddEvt('src/another.js'));
+  check('spec tdd:false opts out of the gate', r.status === 0, `status=${r.status} stderr=${r.stderr}`);
+  write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: architecture\nstatus: active\nplan_approved: true\n---\n\n- AC-1 …\n');
 
   // ---------- hook #4: wiki-check ----------
   console.log('wiki-check.js (#4 PostToolUse)');
@@ -310,6 +337,7 @@ try {
   const claudeMd = fs.existsSync(path.join(NB, 'CLAUDE.md')) ? fs.readFileSync(path.join(NB, 'CLAUDE.md'), 'utf8') : '';
   check('placeholders expanded', claudeMd.includes('Widget Co') && !claudeMd.includes('{{PROJECT}}'));
   check('seed wiki + staging + resume in place', ['wiki/index.md', 'wiki/log.md', 'wiki/dashboard.md', 'Clippings/.gitignore', 'resume.md', 'templates/source.md'].every((f) => fs.existsSync(path.join(NB, f))));
+  check('v2 record layers scaffolded', ['specs/.gitkeep', 'projects/.gitkeep', 'sessions/.gitkeep', 'decisions/.gitkeep', 'instincts/pending/.gitkeep', 'instincts/active/.gitkeep', 'wiki/research/.gitkeep', 'templates/spec.md', 'templates/decision.md', 'templates/project-status.md', 'templates/instinct.md', 'templates/research.md'].every((f) => fs.existsSync(path.join(NB, f))));
   lr = spawnSync(process.execPath, [LINT, '--brain', NB, '--strict'], { encoding: 'utf8', timeout: 20000 });
   check('fresh scaffold lints clean (strict)', lr.status === 0 && /LINT CLEAN/.test(lr.stdout), lr.stdout.slice(-200));
   n = spawnSync(process.execPath, [NEWBRAIN, '--project', INITP], { encoding: 'utf8', timeout: 20000 });
@@ -317,6 +345,15 @@ try {
   fs.writeFileSync(path.join(NB, 'wiki', 'concepts', 'my-knowledge.md'), '---\ntype: concept\nupdated: 2026-07-17\n---\n\nSee [[index]].\n', 'utf8');
   n = spawnSync(process.execPath, [NEWBRAIN, '--project', INITP, '--name', 'Widget Co', '--update'], { encoding: 'utf8', timeout: 20000 });
   check('--update keeps knowledge, refreshes schema', n.status === 0 && fs.existsSync(path.join(NB, 'wiki', 'concepts', 'my-knowledge.md')) && fs.readFileSync(path.join(NB, 'CLAUDE.md'), 'utf8').includes('Widget Co'), `status=${n.status} ${n.stderr}`);
+  // v1 → v2 migration: strip the v2 layers, --update must restore structure only.
+  for (const d of ['specs', 'projects', 'sessions', 'decisions', 'instincts', path.join('wiki', 'research')]) {
+    fs.rmSync(path.join(NB, d), { recursive: true, force: true });
+  }
+  fs.rmSync(path.join(NB, 'templates', 'spec.md'), { force: true });
+  n = spawnSync(process.execPath, [NEWBRAIN, '--project', INITP, '--name', 'Widget Co', '--update'], { encoding: 'utf8', timeout: 20000 });
+  const v2dirs = ['specs', 'projects', 'sessions', 'decisions', path.join('instincts', 'pending'), path.join('instincts', 'active'), path.join('wiki', 'research')];
+  check('--update migrates v1 → v2 structure', n.status === 0 && v2dirs.every((d) => fs.existsSync(path.join(NB, d, '.gitkeep'))) && fs.existsSync(path.join(NB, 'templates', 'spec.md')), `status=${n.status} ${n.stdout.slice(0, 200)}`);
+  check('migration leaves knowledge untouched', fs.existsSync(path.join(NB, 'wiki', 'concepts', 'my-knowledge.md')));
   const master = path.resolve(HERE, '..', '..', '..', 'schema', 'brain-template');
   const bundled = path.join(SKILLS, 'init', 'brain-template');
   if (fs.existsSync(master)) {

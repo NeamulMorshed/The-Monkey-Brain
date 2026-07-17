@@ -115,6 +115,29 @@ function main() {
 
   if (a.update) {
     if (!fs.existsSync(brain)) fail(`No .brain at ${brain} to update. Run without --update to create it.`);
+    // Structure migration (e.g. v1 → v2): ensure every template directory
+    // exists and add missing STRUCTURAL files (.gitkeep, Clippings/.gitignore).
+    // Seed wiki .md pages are never added — an existing brain owns its wiki.
+    const added = [];
+    (function walk(dir) {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const src = path.join(dir, e.name);
+        const rel = path.relative(template, src);
+        const dst = path.join(brain, rel);
+        if (e.isDirectory()) {
+          if (!fs.existsSync(dst)) {
+            fs.mkdirSync(dst, { recursive: true });
+            added.push(rel.split(path.sep).join('/') + '/');
+          }
+          walk(src);
+        } else if (!e.name.endsWith('.md') && !fs.existsSync(dst)) {
+          fs.copyFileSync(src, dst);
+          added.push(rel.split(path.sep).join('/'));
+        }
+      }
+    })(template);
+    if (added.length) console.log(`Migrated structure, ${added.length} addition(s): ${added.join(', ')}`);
+    // Refresh the schema copies: operating manual + page templates.
     fs.copyFileSync(path.join(template, 'CLAUDE.md'), path.join(brain, 'CLAUDE.md'));
     expandPlaceholders(path.join(brain, 'CLAUDE.md'), name, date);
     fs.cpSync(path.join(template, 'templates'), path.join(brain, 'templates'), { recursive: true });

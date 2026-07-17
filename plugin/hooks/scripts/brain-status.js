@@ -83,6 +83,17 @@ async function main() {
     if (lines.length) sections.push([1, `**Active specs:**\n${lines.slice(0, 5).join('\n')}`]);
   }
 
+  const projectsDir = path.join(brain, 'projects');
+  if (fs.existsSync(projectsDir)) {
+    const lines = [];
+    for (const f of lib.listFilesRecursive(projectsDir, '.md')) {
+      const fm = lib.parseFrontmatter(lib.readTextSafe(f));
+      if (['done', 'paused'].includes(String(fm.status))) continue;
+      lines.push(`- \`${path.basename(f, '.md')}\` — tier: ${fm.tier ?? '?'} · phase: ${fm.phase ?? '?'}`);
+    }
+    if (lines.length) sections.push([1, `**Active projects:**\n${lines.slice(0, 5).join('\n')}`]);
+  }
+
   const instincts = lib
     .listFilesRecursive(path.join(brain, 'instincts', 'active'), '.md')
     .map((f) => path.basename(f, '.md'));

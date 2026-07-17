@@ -30,7 +30,7 @@ plugin/
 │                                #   #4 wiki-check, #5 snapshot,
 │                                #   #6 wrap, #7 agent-track,
 │                                #   #8 resume + resume-log,
-│                                #   selftest (79 checks)              ✅
+│                                #   selftest (88 checks)              ✅
 ├── skills/                      # /brain:* skills                     🔶 Phase 3 (core 5 ✅)
 │   ├── init/                    #   + bundled brain-template + scaffold script
 │   ├── ingest/  query/  wrap/
@@ -45,7 +45,7 @@ plugin/
 | --- | --- | --- | --- |
 | 1 | SessionStart | `brain-status` | budgeted ≤3k status block; `/brain:init` offer in brainless projects (`.no-brain` silences) |
 | 2 | UserPromptSubmit | `trigger-router` | natural phrases → `/brain:*` routing hints (never blocks) |
-| 3 | PreToolUse Write\|Edit | `guards` | secrets everywhere · raw-sources add-only · log append-only · plan gate |
+| 3 | PreToolUse Write\|Edit | `guards` | secrets everywhere · raw-sources add-only · log append-only · plan gate (architecture tier) · TDD gate (feature+ tiers, new code files need a test) |
 | 4 | PostToolUse Write\|Edit | `wiki-check` | self-healing wiki: frontmatter/orphan block, TODO links advisory |
 | 5 | PreCompact | `snapshot` | deterministic working-state snapshot → `.brain/sessions/` |
 | 6 | Stop + SessionEnd | `wrap` | once-per-session unlogged-work stop gate; index stat self-heal |
@@ -57,8 +57,8 @@ plugin/
 `/brain:init` (self-contained scaffold — bundled template + Node script, works
 from a marketplace install) · `/brain:ingest` (8-step compile) · `/brain:query`
 (index-first + file-back) · `/brain:lint` (mechanical scan injected, reasoning
-follows) · `/brain:wrap` (definition-of-done). Remaining Phase 3:
-research / plan / build / review + terse / compress (after the Phase 4 schema).
+follows) · `/brain:wrap` (definition-of-done). Remaining Phase 3 (next, now that
+the v2 schema exists): research / plan / build / review + terse / compress.
 
 ### Planned agents (Phase 3–5.5)
 
@@ -92,7 +92,7 @@ wraps it.
   `claude plugin validate . --strict` (marketplace).
 - Test before committing: `node hooks/scripts/selftest.js` — builds a temp
   `.brain` fixture and drives every hook and skill script with synthetic
-  events (79 checks).
+  events (88 checks).
 - **Template bundling:** `schema/brain-template/` is the canonical master;
   `skills/init/brain-template/` is the copy that ships with installs. Selftest
   fails on drift — refresh with

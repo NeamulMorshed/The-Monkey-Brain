@@ -12,7 +12,12 @@
  *                   old_string) or a frontmatter `updated:` date bump.
  *   4. PLAN GATE  — while an architecture-tier spec in .brain/specs/ lacks
  *                   plan_approved: true, project source writes are blocked
- *                   (docs/tests exempt). Dormant until Phase 4 creates specs/.
+ *                   (docs/tests exempt).
+ *   5. TDD GATE   — feature+ tier specs (schema §4.4): creating a NEW project
+ *                   code file with no test companion is blocked (same-dir
+ *                   <name>.test/.spec, sibling __tests__/, or a root-level
+ *                   test|tests|spec|specs dir). Spec `tdd: false` opts out;
+ *                   quick tier is advisory-only.
  *
  * Gates degrade gracefully: no .brain/ (or no specs/) → the rule is skipped.
  * Blocking = exit 2 with the reason on stderr (shown to Claude).
@@ -45,6 +50,41 @@ function gatherNewText(ti) {
 function editIsAppendOnly(oldS, newS) {
   if (String(newS).includes(String(oldS))) return true; // pure insertion
   return /^updated:\s*["']?\d{4}-\d{2}-\d{2}["']?$/.test(String(oldS).trim()); // frontmatter bump
+}
+
+/** Is this path a test file (by directory or by naming convention)? */
+function isTestPath(abs) {
+  const base = path.basename(abs);
+  return (
+    /(^|[\\/])(tests?|__tests__|specs?)([\\/])/i.test(abs) ||
+    /(\.|_|-)(test|spec)\.[^.]+$/i.test(base) ||
+    /^test_/i.test(base) ||
+    /^(test|spec)s?\.[^.]+$/i.test(base)
+  );
+}
+
+/** Recognized code extensions for the TDD gate (config/docs/styles stay free). */
+const CODE_EXT = /\.(js|jsx|ts|tsx|mjs|cjs|py|go|rs|java|kt|rb|cs|c|h|cc|cpp|hpp|swift|php)$/i;
+
+/** Does a test companion exist for this source file? Cheap, bounded lookups. */
+function hasTestCompanion(projRoot, abs) {
+  const base = path.basename(abs).replace(/\.[^.]+$/, '').toLowerCase();
+  const dir = path.dirname(abs);
+  try {
+    for (const f of fs.readdirSync(dir)) {
+      const fl = f.toLowerCase();
+      if (fl.startsWith(`${base}.test.`) || fl.startsWith(`${base}.spec.`)) return true;
+    }
+  } catch {}
+  try {
+    if (fs.readdirSync(path.join(dir, '__tests__')).some((f) => f.toLowerCase().includes(base))) return true;
+  } catch {}
+  for (const name of ['test', 'tests', 'spec', 'specs', '__tests__']) {
+    const td = path.join(projRoot, name);
+    if (!fs.existsSync(td)) continue;
+    if (lib.listFilesRecursive(td).some((f) => path.basename(f).toLowerCase().includes(base))) return true;
+  }
+  return false;
 }
 
 async function main() {
@@ -107,23 +147,40 @@ async function main() {
     }
   }
 
-  // 4) PLAN GATE — project source writes while an architecture-tier spec is unapproved.
+  // 4+5) TIER GATES — plan + TDD on project source writes (schema §4.4).
   const pbrain = brain || lib.findBrainDir(input.cwd);
   if (pbrain && !abs.startsWith(pbrain + path.sep)) {
     const specsDir = path.join(pbrain, 'specs');
     const isDoc = /\.(md|mdx|txt|rst)$/i.test(abs);
-    const isTest = /(^|[\\/])(tests?|__tests__|spec|specs)([\\/]|\.)/i.test(abs);
-    if (fs.existsSync(specsDir) && !isDoc && !isTest) {
-      for (const f of lib.listFilesRecursive(specsDir, '.md')) {
-        const fm = lib.parseFrontmatter(lib.readTextSafe(f));
-        const active = !['done', 'closed', 'superseded'].includes(String(fm.status));
-        if (String(fm.tier) === 'architecture' && active && fm.plan_approved !== true) {
+    if (fs.existsSync(specsDir) && !isDoc && !isTestPath(abs)) {
+      const specs = lib
+        .listFilesRecursive(specsDir, '.md')
+        .map((f) => ({ f, fm: lib.parseFrontmatter(lib.readTextSafe(f)) }))
+        .filter((s) => !['done', 'closed', 'superseded'].includes(String(s.fm.status)));
+
+      // 4) PLAN GATE — architecture tier needs curator approval before source writes.
+      for (const s of specs) {
+        if (String(s.fm.tier) === 'architecture' && s.fm.plan_approved !== true) {
           lib.block(
-            `🐵 guard[plan]: architecture-tier spec \`${path.basename(f)}\` is not approved ` +
+            `🐵 guard[plan]: architecture-tier spec \`${path.basename(s.f)}\` is not approved ` +
               `(missing \`plan_approved: true\`). Get the curator's explicit approval on the spec before ` +
               `writing source files — or lower the spec's tier if this is not architecture-level work.`
           );
         }
+      }
+
+      // 5) TDD GATE — feature+ tiers: a NEW code file needs a test companion first.
+      const isNewFile = tool === 'Write' && !fs.existsSync(abs);
+      const gated = specs.find(
+        (s) => ['feature', 'architecture'].includes(String(s.fm.tier)) && s.fm.tdd !== false
+      );
+      if (isNewFile && CODE_EXT.test(abs) && gated && !hasTestCompanion(path.dirname(pbrain), abs)) {
+        lib.block(
+          `🐵 guard[tdd]: spec \`${path.basename(gated.f)}\` is tier ${gated.fm.tier} — write the failing test FIRST. ` +
+            `No test found for \`${path.basename(abs)}\` (looked for <name>.test/.spec beside it, a sibling __tests__/, ` +
+            `and test|tests|spec|specs dirs at the project root). Create the test, then this file — ` +
+            `or set \`tdd: false\` in the spec / lower its tier to quick if TDD genuinely doesn't apply.`
+        );
       }
     }
   }

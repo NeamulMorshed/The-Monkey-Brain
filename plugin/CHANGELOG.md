@@ -1,5 +1,32 @@
 # Changelog — brain plugin
 
+## 0.5.0 — 2026-07-17 (Phase 4: schema v2 + tier gates)
+
+- **Schema v2 template** (master `schema/brain-template/`, bundle re-synced):
+  new record layers `specs/`, `projects/`, `sessions/`, `decisions/`,
+  `instincts/{pending,active}/`, `wiki/research/`; new templates `spec`
+  (numbered ACs, `tier`, `plan_approved`, `tdd`), `decision` (ADR),
+  `project-status`, `instinct`, `research`; log prefixes extended with
+  `session | research | plan | build | review`; instance CLAUDE.md rewritten
+  at `engine_version: 2.0` (records table, develop lifecycle, tier table).
+  Engine master `schema/CLAUDE.md` bumped to v2.0 with the same conventions —
+  section numbers kept stable (hooks/skills cite them).
+- **Migration:** `new-brain.js --update` and `bootstrap/new-brain.ps1 -Update`
+  now ensure every template directory exists and add missing structural files
+  (`.gitkeep`, `Clippings/.gitignore`) — seed wiki pages are never added to an
+  existing brain, knowledge is never touched.
+- **TDD gate** (guards rule 5, schema §4.4): while an active
+  feature/architecture-tier spec exists (without `tdd: false`), creating a NEW
+  project code file with no test companion is blocked — looks for same-dir
+  `<name>.test/.spec`, a sibling `__tests__/`, and root-level
+  `test|tests|spec|specs` dirs. Quick tier stays advisory-only. Test-file
+  detection strengthened for both gates (`foo.spec.ts`, `test_foo.py`,
+  `test.js` now recognized).
+- **brain-status:** new "Active projects" section (tier · phase per
+  workstream, read from `projects/`).
+- Selftest 79 → **88 checks** (TDD gate ×6, projects section, v2 scaffold,
+  v1→v2 migration ×2).
+
 ## 0.4.0 — 2026-07-17 (Phase 3 core skills + Phase 2 hook set complete)
 
 **Skills — the SDLC verbs land** (`/brain:*`, all auto-activating):

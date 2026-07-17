@@ -10,7 +10,8 @@ updated: {{DATE}}
 # 🐵 {{PROJECT}} — Log
 
 Append-only audit trail. Newest at the bottom. Each entry is prefixed for grep:
-`grep "^## \[" log.md | tail -5`. Prefixes: `ingest | query | lint | schema | feat`.
+`grep "^## \[" log.md | tail -5`. Prefixes:
+`ingest | query | lint | schema | feat | session | research | plan | build | review`.
 
 ---
 

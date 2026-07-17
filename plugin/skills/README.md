@@ -11,10 +11,10 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `query` | Index-first answering with citations; novel answers filed back to `syntheses/` | ✅ |
 | `lint` | Mechanical scan (`scripts/lint.js`, injected via `` !`…` ``) + reasoning over contradictions/staleness | ✅ |
 | `wrap` | Definition-of-done: verify, sync log + index + resume narrative, commit | ✅ |
-| `research` | Web + codebase research filed to `wiki/research/` | ⬜ after P4 |
-| `plan` | Spec with numbered acceptance criteria; arms the plan gate | ⬜ after P4 |
-| `build` | TDD loop against a spec's criteria | ⬜ after P4 |
-| `review` | Code review filed back as a wiki page | ⬜ after P4 |
+| `research` | Web + codebase research filed to `wiki/research/` | ⬜ next |
+| `plan` | Spec with numbered acceptance criteria; arms the plan gate | ⬜ next |
+| `build` | TDD loop against a spec's criteria | ⬜ next |
+| `review` | Code review filed back as a wiki page | ⬜ next |
 | `terse` / `compress` | Caveman-style output mode / permanent memory-file compression | ⬜ |
 | `doctor` | Health monitor with token receipts (Phase 8) | ⬜ |
 | `packs/<domain>/` | Domain expertise packs — product-design first (Phase 6.5) | ⬜ |
