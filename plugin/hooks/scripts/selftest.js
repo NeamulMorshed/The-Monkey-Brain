@@ -342,6 +342,8 @@ try {
   const snapText = snaps.length ? fs.readFileSync(path.join(SESS, snaps[0]), 'utf8') : '';
   check('snapshot carries open next steps', snapText.includes('tiny'), snapText.slice(0, 200));
   check('snapshot carries recent wiki log heads', snapText.includes('ingest | one'));
+  check('snapshot carries active specs in flight', snapText.includes('Active specs') && snapText.includes('big-feature'), snapText.slice(0, 500));
+  check('snapshot carries active projects', snapText.includes('Active projects') && snapText.includes('site'));
   s = run('snapshot.js', { cwd: PLAIN_D, hook_event_name: 'PreCompact', trigger: 'manual' });
   check('no brain ⇒ no snapshot, silent', s.status === 0 && s.stdout === '', `status=${s.status}`);
 

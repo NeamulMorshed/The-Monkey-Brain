@@ -6,7 +6,8 @@
  * summarized, write a deterministic snapshot of the working state to
  * .brain/sessions/ so nothing is lost if the summary drops it. A script can't
  * write narrative — it preserves the live pointers instead: resume.md's open
- * next steps + task-log tail, the wiki log's recent heads, and the backlog.
+ * next steps + task-log tail, the in-flight specs/projects, the wiki log's
+ * recent heads, and the backlog.
  *
  * The sessions/ folder is created on demand (its full role arrives with the
  * Phase 4 schema; adding files early is harmless — knowledge is never touched).
@@ -71,6 +72,23 @@ async function main() {
       .slice(-5);
     if (tail.length) out.push('', '## Recent task log', ...tail);
   }
+
+  // In-flight work items — the "what was I building" most costly to lose.
+  const specLines = [];
+  for (const f of lib.listFilesRecursive(path.join(brain, 'specs'), '.md')) {
+    const fm = lib.parseFrontmatter(lib.readTextSafe(f));
+    if (['done', 'closed', 'superseded'].includes(String(fm.status))) continue;
+    specLines.push(`- \`${path.basename(f, '.md')}\` — tier: ${fm.tier ?? '?'} · phase: ${fm.phase ?? '?'} · plan_approved: ${fm.plan_approved === true}`);
+  }
+  if (specLines.length) out.push('', '## Active specs (in flight)', ...specLines.slice(0, 8));
+
+  const projLines = [];
+  for (const f of lib.listFilesRecursive(path.join(brain, 'projects'), '.md')) {
+    const fm = lib.parseFrontmatter(lib.readTextSafe(f));
+    if (['done', 'paused'].includes(String(fm.status))) continue;
+    projLines.push(`- \`${path.basename(f, '.md')}\` — tier: ${fm.tier ?? '?'} · phase: ${fm.phase ?? '?'}`);
+  }
+  if (projLines.length) out.push('', '## Active projects', ...projLines.slice(0, 8));
 
   const logHeads = (lib.readTextSafe(path.join(brain, 'wiki', 'log.md')).match(/^## \[.*$/gm) || []).slice(-3);
   if (logHeads.length) out.push('', '## Recent wiki log', ...logHeads.map((h) => `- ${h.replace(/^## /, '')}`));
