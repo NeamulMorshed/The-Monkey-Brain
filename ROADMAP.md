@@ -43,8 +43,8 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P9.2** Research ingests: Caveman, MewVault, ui-ux-pro-max → example brain; filed `monkey-brain-vs-mewvault` synthesis + `domain-expertise-packs` concept | ✅ 2026-07-17 | 4 commits (`ingest:` ×3, `query:` ×1); vault 16 sources / 69 pages |
 | **P1** Plugin skeleton: `plugin/` (plugin.json, hooks.json, skills/, agents/, .mcp.json), root `marketplace.json`, Node hook runtime | ✅ 2026-07-17 | plugin named **`brain`** (→ `/brain:*` commands), displayName "The Monkey Brain", marketplace **`monkey-brain`** → install `brain@monkey-brain`; both manifests pass `claude plugin validate --strict`; MIT licensed; Node.js 24.18.0 LTS installed 2026-07-17 |
 | **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check, #8 resume; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | ✅ 2026-07-17 | **Complete, 8/8.** #1/#3/#4/#8 v0.3.0; #2/#5/#6/#7 v0.4.0 — trigger routing (phrases → skills), pre-compact snapshots → `sessions/`, once-per-session unlogged-work stop gate + SessionEnd index-stat self-heal, agent dispatch log + explicit-model gate. #1 grew the no-brain `/brain:init` offer (`.no-brain` silences). Selftest **79/79 GREEN** |
-| **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | 🔶 in progress | **Core 5 shipped 2026-07-17 (v0.4.0):** `/brain:{init,ingest,query,lint,wrap}`. `init` is self-contained (bundled `brain-template/` + Node `new-brain.js` — marketplace installs don't ship `bootstrap/`; `schema/brain-template/` stays master, selftest fails on drift, `--sync-template` refreshes). `lint` injects `scripts/lint.js` via `` !`…` ``. Remaining: research/plan/build/review (need P4 `specs/`), terse/compress |
-| **P4** Schema v2 template: specs/ projects/ sessions/ decisions/ instincts/ + tiers; `-Update` migration | ⬜ **next** | `sessions/` already auto-created on demand by hooks #5/#7 |
+| **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | 🔶 **next** (remainder) | **Core 5 shipped 2026-07-17 (v0.4.0):** `/brain:{init,ingest,query,lint,wrap}`. `init` is self-contained (bundled `brain-template/` + Node `new-brain.js` — marketplace installs don't ship `bootstrap/`; `schema/brain-template/` stays master, selftest fails on drift, `--sync-template` refreshes). `lint` injects `scripts/lint.js` via `` !`…` ``. Remaining: research/plan/build/review (P4 schema now in place), terse/compress |
+| **P4** Schema v2 template: specs/ projects/ sessions/ decisions/ instincts/ + tiers; `-Update` migration | ✅ 2026-07-17 | v0.5.0 — record layers `specs/ projects/ sessions/ decisions/ instincts/{pending,active} wiki/research/` + templates (spec w/ AC-n·tier·`plan_approved`·`tdd`, decision/ADR, project-status, instinct, research); log prefixes `session\|research\|plan\|build\|review`; **tier gates live**: plan (architecture) + new **TDD gate** (feature+, new code files need a test companion; `tdd: false` opts out); both update paths (`-Update`/`--update`) migrate v1→v2 structure, never touching knowledge; CLAUDE.md ×2 → **v2.0** (section numbers stable); brain-status shows active projects. Selftest **88/88 GREEN** |
 | **P5** Memory tiers + qmd MCP · **P5.5** model routing & parallel fan-out | ⬜ | |
 | **P6** Bundled-plugin manifest · **P6.5** product-design pack | ⬜ | |
 | **P7** Product & game pipelines | ⬜ | |
@@ -53,7 +53,18 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 
 ### Session log (engine work, newest first — instances get `sessions/` in P4)
 
-**[2026-07-17] Session 2 — Phase 3 core skills + Phase 2 completion (v0.4.0)**
+**[2026-07-17] Session 2 — Phase 3 core skills + Phase 2 completion + Phase 4 schema v2 (v0.4.0 → v0.5.0)**
+- **P4 schema v2 (v0.5.0):** template gains `specs/ projects/ sessions/ decisions/
+  instincts/{pending,active} wiki/research/` with five new templates (spec/decision/
+  project-status/instinct/research); instance CLAUDE.md rewritten at `engine_version: 2.0`
+  (records table, develop lifecycle research→plan→build→review, tier table); engine
+  `schema/CLAUDE.md` → v2.0 with section numbers kept stable (hooks/skills cite §1/§3/§4/§5).
+  **Tier gates:** plan gate (architecture) joined by the **TDD gate** — feature+ specs block
+  NEW code files lacking a test companion (same-dir `.test/.spec`, `__tests__/`, root test
+  dirs; `tdd: false` opts out, quick tier advisory). Migration: `new-brain.js --update` and
+  `new-brain.ps1 -Update` ensure template dirs + structural files, never seed wiki pages
+  (verified on a real pre-v2 scratch brain). brain-status adds "Active projects" (tier·phase).
+  Selftest **88/88 GREEN**.
 - **P3 core skills:** `/brain:{init,ingest,query,lint,wrap}` shipped. `init` is
   self-contained — bundled `brain-template/` + Node `scripts/new-brain.js`
   (create / `--update` / `--force` / `--sync-template`) because marketplace installs ship
