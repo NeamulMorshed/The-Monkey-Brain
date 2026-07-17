@@ -1,5 +1,29 @@
 # Changelog — brain plugin
 
+## 0.8.0 — 2026-07-17 (Phase 5.5: model routing & parallel fan-out)
+
+The right model does each kind of work by default, and routine work can fan out
+to Sonnet subagents in parallel.
+
+- **Routing frontmatter across all 11 skills** (`model`/`effort` are honored
+  skill fields): judgment & synthesis (`plan`, `review`, `wrap`, `query`,
+  `lint`, `compress`) run at `effort: high` on the session's main model — never
+  downgraded; routine execution (`ingest`, `research`, `build`) pins
+  `model: sonnet` · `effort: medium`; `init` sonnet/low; `terse` haiku/low.
+  Hook #7 already enforces the same policy on subagent dispatches.
+- **Two Sonnet fan-out subagents** (`agents/`): `brain-researcher` (read-only —
+  one focused research slice → cited findings; spawn several in parallel) and
+  `brain-librarian` (batch ingest — the 8-step compile in an isolated window,
+  respecting raw-sources immutability + append-only log). Each pins
+  `model: sonnet`, so hook #7 passes them through while still logging the
+  dispatch to `sessions/agents.md`.
+- **Fan-out patterns documented** in the skills + READMEs: research fan-out (N
+  researchers → main-model synthesis), batch ingest (one librarian per source),
+  build+review pair (Sonnet implementer vs main-model auditor), competing
+  hypotheses. Spawn concurrently in one message; only summaries return.
+- Routing table in `skills/README.md`; agents in `README.md`.
+- Selftest 115 → **120 checks** (routing ×2, agents ×3); validates `--strict`.
+
 ## 0.7.0 — 2026-07-17 (Phase 5: memory & context engineering)
 
 The three memory tiers (wiki · decisions/memory · instincts) become

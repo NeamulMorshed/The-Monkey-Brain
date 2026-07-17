@@ -23,36 +23,41 @@ skills deterministically.
 plugin/
 ├── .claude-plugin/plugin.json   # manifest (name: brain)              ✅ Phase 1
 ├── hooks/
-│   ├── hooks.json               # registers all 8 hooks               ✅ Phase 2 complete
+│   ├── hooks.json               # registers 8 hook events             ✅ Phase 2+5
 │   └── scripts/                 # Node runtime (stdlib-only): lib,
-│                                #   #1 brain-status (+ no-brain offer),
-│                                #   #2 trigger-router, #3 guards,
-│                                #   #4 wiki-check, #5 snapshot,
-│                                #   #6 wrap, #7 agent-track,
-│                                #   #8 resume + resume-log,
-│                                #   selftest (95 checks)              ✅
+│                                #   #1 brain-status (+ decisions +
+│                                #     injection receipts), #2 trigger-
+│                                #     router, #3 guards, #4 wiki-check
+│                                #     + instinct-track, #5 snapshot,
+│                                #   #6 wrap (+ decision nudge + qmd
+│                                #     re-index), #7 agent-track,
+│                                #   #8 resume+resume-log; qmd-mcp;
+│                                #   selftest (120 checks)             ✅
 ├── skills/                      # /brain:* skills                     ✅ Phase 3 complete
 │   ├── init/                    #   + bundled brain-template + scaffold script
 │   ├── ingest/  query/  wrap/
 │   ├── lint/                    #   + mechanical lint.js (injected via !`…`)
 │   ├── research/  plan/  build/  review/    # develop lifecycle (v2 schema)
 │   └── terse/  compress/        #   token discipline (Caveman-inspired)
-├── agents/                      # brain-librarian, brain-researcher   ⬜ Phase 3–5.5
-└── .mcp.json                    # qmd semantic search                 ⬜ Phase 5
+├── agents/                      # brain-librarian, brain-researcher   ✅ Phase 5.5
+└── .mcp.json                    # brain-search (opt-in qmd)           ✅ Phase 5
 ```
 
-### The 8 hooks (Phase 2, complete)
+### The hooks (Phase 2 + Phase 5)
 
 | # | Event | Script | Does |
 | --- | --- | --- | --- |
-| 1 | SessionStart | `brain-status` | budgeted ≤3k status block; `/brain:init` offer in brainless projects (`.no-brain` silences) |
+| 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, semantic-search state); `/brain:init` offer in brainless projects; writes an **injection-size receipt** to `sessions/injection-stats.json` |
 | 2 | UserPromptSubmit | `trigger-router` | natural phrases → `/brain:*` routing hints (never blocks) |
 | 3 | PreToolUse Write\|Edit | `guards` | secrets everywhere · raw-sources add-only · log append-only · plan gate (architecture tier) · TDD gate (feature+ tiers, new code files need a test) |
-| 4 | PostToolUse Write\|Edit | `wiki-check` | self-healing wiki: frontmatter/orphan block, TODO links advisory |
-| 5 | PreCompact | `snapshot` | deterministic working-state snapshot → `.brain/sessions/` |
-| 6 | Stop + SessionEnd | `wrap` | once-per-session unlogged-work stop gate; index stat self-heal |
+| 4 | PostToolUse Write\|Edit | `wiki-check` + `instinct-track` | self-healing wiki (frontmatter/orphan block, TODO advisory); **instinct advisory** when a file is revised across 3+ sessions |
+| 5 | PreCompact | `snapshot` | working-state snapshot (next steps, **active specs/projects**, log heads) → `.brain/sessions/` |
+| 6 | Stop + SessionEnd | `wrap` | once-per-session unlogged-work stop gate + **decision-distillation nudge**; index stat self-heal; **`qmd update` re-index** when opted in |
 | 7 | PreToolUse Agent | `agent-track` | dispatch log → `sessions/agents.md`; heavy spawns need an explicit model (once-per-session gate) |
 | 8 | SessionStart + Task events | `resume` / `resume-log` | resume.md injection + ask-to-continue; auto task log |
+
+Plus **`qmd-mcp`** — the opt-in `brain-search` MCP server registered in `.mcp.json`,
+dormant unless the brain enables qmd (`.qmd` marker / `MONKEY_BRAIN_QMD=1` + qmd on PATH).
 
 ### The skills (Phase 3, complete)
 
@@ -109,7 +114,7 @@ wraps it.
   `claude plugin validate . --strict` (marketplace).
 - Test before committing: `node hooks/scripts/selftest.js` — builds a temp
   `.brain` fixture and drives every hook and skill script with synthetic
-  events (95 checks).
+  events (120 checks), and checks skill routing frontmatter + agent definitions.
 - **Template bundling:** `schema/brain-template/` is the canonical master;
   `skills/init/brain-template/` is the copy that ships with installs. Selftest
   fails on drift — refresh with
