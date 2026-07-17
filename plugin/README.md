@@ -13,24 +13,52 @@ that project's repo.
 ```
 
 Skill commands are namespaced `/brain:*` (plugin name `brain`; the marketplace
-is `monkey-brain`). Natural phrases ("ingest this", "wrap up", "doctor") are
-the primary interface once the Phase 2 trigger-router hook lands.
+is `monkey-brain`). Natural phrases ("ingest this", "wrap up", "lint the
+brain") are the primary interface — the trigger-router hook maps them to the
+skills deterministically.
 
 ## Layout & phase status
 
 ```
 plugin/
-├── .claude-plugin/plugin.json   # manifest (name: brain)          ✅ Phase 1
+├── .claude-plugin/plugin.json   # manifest (name: brain)              ✅ Phase 1
 ├── hooks/
-│   ├── hooks.json               # registers #1 / #3 / #4 / #8         ✅ Phase 2 (tranches 1–2)
+│   ├── hooks.json               # registers all 8 hooks               ✅ Phase 2 complete
 │   └── scripts/                 # Node runtime (stdlib-only): lib,
-│                                #   brain-status, guards, wiki-check,
-│                                #   resume + resume-log,
-│                                #   selftest (36 checks)              ✅
-├── skills/                      # /brain:* skills                  ⬜ Phase 3
-├── agents/                      # brain-librarian, brain-researcher ⬜ Phase 3–5.5
-└── .mcp.json                    # qmd semantic search              ⬜ Phase 5
+│                                #   #1 brain-status (+ no-brain offer),
+│                                #   #2 trigger-router, #3 guards,
+│                                #   #4 wiki-check, #5 snapshot,
+│                                #   #6 wrap, #7 agent-track,
+│                                #   #8 resume + resume-log,
+│                                #   selftest (79 checks)              ✅
+├── skills/                      # /brain:* skills                     🔶 Phase 3 (core 5 ✅)
+│   ├── init/                    #   + bundled brain-template + scaffold script
+│   ├── ingest/  query/  wrap/
+│   └── lint/                    #   + mechanical lint.js (injected via !`…`)
+├── agents/                      # brain-librarian, brain-researcher   ⬜ Phase 3–5.5
+└── .mcp.json                    # qmd semantic search                 ⬜ Phase 5
 ```
+
+### The 8 hooks (Phase 2, complete)
+
+| # | Event | Script | Does |
+| --- | --- | --- | --- |
+| 1 | SessionStart | `brain-status` | budgeted ≤3k status block; `/brain:init` offer in brainless projects (`.no-brain` silences) |
+| 2 | UserPromptSubmit | `trigger-router` | natural phrases → `/brain:*` routing hints (never blocks) |
+| 3 | PreToolUse Write\|Edit | `guards` | secrets everywhere · raw-sources add-only · log append-only · plan gate |
+| 4 | PostToolUse Write\|Edit | `wiki-check` | self-healing wiki: frontmatter/orphan block, TODO links advisory |
+| 5 | PreCompact | `snapshot` | deterministic working-state snapshot → `.brain/sessions/` |
+| 6 | Stop + SessionEnd | `wrap` | once-per-session unlogged-work stop gate; index stat self-heal |
+| 7 | PreToolUse Agent | `agent-track` | dispatch log → `sessions/agents.md`; heavy spawns need an explicit model (once-per-session gate) |
+| 8 | SessionStart + Task events | `resume` / `resume-log` | resume.md injection + ask-to-continue; auto task log |
+
+### The core skills (Phase 3, first tranche)
+
+`/brain:init` (self-contained scaffold — bundled template + Node script, works
+from a marketplace install) · `/brain:ingest` (8-step compile) · `/brain:query`
+(index-first + file-back) · `/brain:lint` (mechanical scan injected, reasoning
+follows) · `/brain:wrap` (definition-of-done). Remaining Phase 3:
+research / plan / build / review + terse / compress (after the Phase 4 schema).
 
 ### Planned agents (Phase 3–5.5)
 
@@ -63,7 +91,12 @@ wraps it.
 - Validate before committing: `claude plugin validate ./plugin --strict` and
   `claude plugin validate . --strict` (marketplace).
 - Test before committing: `node hooks/scripts/selftest.js` — builds a temp
-  `.brain` fixture and drives every hook with synthetic events (36 checks).
+  `.brain` fixture and drives every hook and skill script with synthetic
+  events (79 checks).
+- **Template bundling:** `schema/brain-template/` is the canonical master;
+  `skills/init/brain-template/` is the copy that ships with installs. Selftest
+  fails on drift — refresh with
+  `node skills/init/scripts/new-brain.js --sync-template`.
 - **Resume system (hook #8):** `resume.md` is the live work-in-progress
   pointer. `resume.js` injects it on fresh sessions (startup/clear) and asks
   whether to continue; `resume-log.js` appends task/session events to its

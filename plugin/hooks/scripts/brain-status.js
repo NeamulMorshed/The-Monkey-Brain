@@ -9,7 +9,9 @@
  *   - over budget, whole low-priority sections drop — the identity/manual
  *     and index lines are never dropped;
  *   - optimize by injecting less, never by transforming the prompt;
- *   - no .brain/ → stay silent (the /brain:init offer arrives with Phase 3);
+ *   - no .brain/ → a ONE-LINE /brain:init offer on startup only (Phase 3 —
+ *     the no-brain fallback of the activation architecture), permanently
+ *     silenced by a `.no-brain` marker at the project root;
  *   - a status hook must never break a session: any error → silent exit 0.
  */
 'use strict';
@@ -31,7 +33,21 @@ function countMd(dir) {
 async function main() {
   const input = await lib.readStdinJson();
   const brain = lib.findBrainDir(input.cwd);
-  if (!brain) return;
+  if (!brain) {
+    const root = path.resolve(input.cwd || process.cwd());
+    if (input.source === 'startup' && !fs.existsSync(path.join(root, '.no-brain'))) {
+      lib.succeed({
+        hookSpecificOutput: {
+          hookEventName: 'SessionStart',
+          additionalContext:
+            '🐵 No Monkey Brain in this project. If knowledge work comes up this session (docs to keep, ' +
+            'decisions worth remembering), offer /brain:init once — a per-project wiki+memory that ' +
+            'compounds across sessions. To silence this permanently: create an empty `.no-brain` file at the project root.',
+        },
+      });
+    }
+    return;
+  }
 
   const rel = (path.relative(input.cwd || process.cwd(), brain) || '.brain').split(path.sep).join('/');
   // [priority, text] — priority 0 is never dropped; 2 drops first.

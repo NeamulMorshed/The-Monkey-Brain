@@ -1,5 +1,48 @@
 # Changelog — brain plugin
 
+## 0.4.0 — 2026-07-17 (Phase 3 core skills + Phase 2 hook set complete)
+
+**Skills — the SDLC verbs land** (`/brain:*`, all auto-activating):
+
+- **`/brain:init`** — self-contained scaffold: bundled `brain-template/` +
+  `scripts/new-brain.js` (Node port of `bootstrap/new-brain.ps1`; create /
+  `--update` / `--force` / `--sync-template`), because marketplace installs
+  ship only `plugin/`. Wires the root `@.brain/CLAUDE.md` import, honors and
+  clears `.no-brain`. `schema/brain-template/` remains the canonical master —
+  selftest fails when the bundle drifts.
+- **`/brain:ingest`** — the 8-step compile checklist (canonicalize → summary →
+  5–10+ cross-links → index → log → commit), batch/Clippings modes, gate-aware.
+- **`/brain:query`** — index-first retrieval with citations; novel answers
+  filed back to `syntheses/` (plain lookups stay lightweight).
+- **`/brain:lint`** — `scripts/lint.js` mechanical scan injected via `` !`…` ``
+  preprocessing (broken links, orphans, frontmatter gaps, index drift,
+  Clippings backlog, strays; `--strict` for CI), then the model's reasoning
+  pass (contradictions, staleness, gaps).
+- **`/brain:wrap`** — definition-of-done: verify honestly, sync log + index +
+  resume narrative, commit with vault conventions.
+
+**Hooks — Phase 2 set complete (8/8):**
+
+- **#2 `trigger-router.js`** (UserPromptSubmit): deterministic natural-phrase
+  routing to the skills ("ingest this", "wrap up", "lint the brain", "what
+  does the brain know", "set up a brain"). Never blocks; suggests
+  `/brain:init` when a brain-needing phrase fires in a brainless project.
+- **#5 `snapshot.js`** (PreCompact): deterministic working-state snapshot
+  (resume next steps + task-log tail, wiki log heads, backlog) to
+  `.brain/sessions/` before compaction.
+- **#6 `wrap.js`** (Stop + SessionEnd): once-per-session stop gate when wiki
+  pages changed after the last `log.md` entry; SessionEnd self-heals
+  `index.md` `source_count`/`page_count`/`updated` from the filesystem.
+- **#7 `agent-track.js`** (PreToolUse Agent|Task): every dispatch logged to
+  `.brain/sessions/agents.md`; heavy dispatches without an explicit model
+  blocked once per session with the routing table (haiku triage · sonnet
+  routine · main-model judgment).
+- **#1 `brain-status.js`** grew the no-brain fallback: one-line `/brain:init`
+  offer on startup in brainless projects; `.no-brain` marker silences forever.
+
+Selftest grows 36 → **79 checks** (router, wrap, snapshot, agent-track,
+lint scan, init scaffold, template-sync guard, no-brain offer).
+
 ## 0.3.0 — 2026-07-17 (Phase 2, hook #8: resume system)
 
 - **Hook #8a `resume.js`** (SessionStart, matcher `startup|clear`): finds

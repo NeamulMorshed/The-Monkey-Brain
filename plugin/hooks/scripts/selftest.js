@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * selftest.js — end-to-end tests for the Phase 2 hooks.
+ * selftest.js — end-to-end tests for the hooks (Phase 2, all 8) and the
+ * Phase 3 skill scripts (init scaffold, lint scan, template-sync guard).
  *
  * Builds a throwaway .brain fixture in the OS temp dir, pipes synthetic hook
  * events into each script exactly as Claude Code would (JSON on stdin), and
@@ -15,6 +16,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const HERE = __dirname;
+const SKILLS = path.join(HERE, '..', '..', 'skills');
 const ROOT = path.join(os.tmpdir(), `mb-selftest-${process.pid}`);
 const PROJ = path.join(ROOT, 'project');
 const BRAIN = path.join(PROJ, '.brain');
@@ -199,8 +201,164 @@ try {
   const bigCtx = (out.hookSpecificOutput || {}).additionalContext || '';
   check('oversized resume stays within budget', bigCtx.length > 0 && Math.ceil(bigCtx.length / 4) <= 1280, `${Math.ceil(bigCtx.length / 4)} tokens`);
   check('truncation points back to the file', bigCtx.includes('truncated'));
+
+  // ---------- hook #2: trigger-router ----------
+  console.log('trigger-router.js (#2 UserPromptSubmit)');
+  const routed = (prompt, cwd) => {
+    const rr = run('trigger-router.js', { cwd: cwd || PROJ, hook_event_name: 'UserPromptSubmit', prompt });
+    let o = {}; try { o = JSON.parse(rr.stdout || '{}'); } catch {}
+    return { r: rr, ctx: (o.hookSpecificOutput || {}).additionalContext || '' };
+  };
+  let t = routed('please ingest this article into the brain');
+  check('"ingest this" routes to brain:ingest', t.ctx.includes('brain:ingest'), t.ctx);
+  t = routed("ok let's wrap it up for today");
+  check('"wrap it up" routes to brain:wrap', t.ctx.includes('brain:wrap'), t.ctx);
+  t = routed('can you lint the brain');
+  check('"lint the brain" routes to brain:lint', t.ctx.includes('brain:lint'), t.ctx);
+  t = routed('what does the brain know about hooks?');
+  check('"what does the brain know" routes to brain:query', t.ctx.includes('brain:query'), t.ctx);
+  t = routed('refactor the parser and add tests');
+  check('unrelated prompt is silent', t.r.status === 0 && t.r.stdout === '', t.r.stdout);
+  t = routed('/brain:lint');
+  check('explicit slash command is silent', t.r.status === 0 && t.r.stdout === '');
+  const PLAIN_R = path.join(ROOT, 'plain-r');
+  fs.mkdirSync(PLAIN_R, { recursive: true });
+  t = routed('ingest this doc', PLAIN_R);
+  check('brain-needing phrase without a brain suggests init', t.ctx.includes('brain:init'), t.ctx);
+  fs.writeFileSync(path.join(PLAIN_R, '.no-brain'), '');
+  t = routed('ingest this doc', PLAIN_R);
+  check('.no-brain marker silences the suggestion', t.r.status === 0 && t.r.stdout === '');
+  t = routed('set up a monkey brain here please', PLAIN_R);
+  check('explicit "set up a brain" still routes to init', t.ctx.includes('brain:init'), t.ctx);
+
+  // ---------- /brain:lint mechanical scan ----------
+  console.log('lint.js (skill /brain:lint, mechanical layer)');
+  const LINT = path.join(SKILLS, 'lint', 'scripts', 'lint.js');
+  let lr = spawnSync(process.execPath, [LINT, '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
+  check('reports the orphan page', lr.stdout.includes('orphan-page'), lr.stdout.slice(0, 300));
+  check('reports the broken TODO link', lr.stdout.includes('missing-target'));
+  check('index in sync initially', lr.stdout.includes('Index stats: in sync'));
+  check('default exit 0 despite issues (injection-safe)', lr.status === 0, `status=${lr.status}`);
+  lr = spawnSync(process.execPath, [LINT, '--brain', BRAIN, '--strict'], { encoding: 'utf8', timeout: 20000 });
+  check('--strict exits 1 on issues', lr.status === 1, `status=${lr.status}`);
+  write('.brain/raw-sources/second-source.md', 'another immutable source\n');
+  lr = spawnSync(process.execPath, [LINT, '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
+  check('detects index stat drift', /INDEX drift/.test(lr.stdout) && lr.stdout.includes('actual raw sources: 2'), lr.stdout.slice(-400));
+
+  // ---------- hook #6: wrap ----------
+  console.log('wrap.js (#6 Stop + SessionEnd)');
+  const LOGP = path.join(BRAIN, 'wiki', 'log.md');
+  const past = new Date(Date.now() - 10 * 60 * 1000);
+  fs.utimesSync(LOGP, past, past);
+  let w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}w1` }));
+  out = {}; try { out = JSON.parse(w.stdout || '{}'); } catch {}
+  check('unlogged wiki work blocks stop once', out.decision === 'block' && /log\.md/.test(out.reason || ''), (w.stdout || '').slice(0, 200));
+  w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}w1` }));
+  check('second stop same session is silent (marker)', w.status === 0 && w.stdout === '');
+  w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}w2`, stop_hook_active: true }));
+  check('stop_hook_active is never re-blocked', w.status === 0 && w.stdout === '');
+  const nowD = new Date();
+  fs.utimesSync(LOGP, nowD, nowD);
+  w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}w3` }));
+  check('fresh log ⇒ silent stop', w.status === 0 && w.stdout === '');
+  const IDXP = path.join(BRAIN, 'wiki', 'index.md');
+  let idxText = fs.readFileSync(IDXP, 'utf8')
+    .replace(/^source_count:.*$/m, 'source_count: 99')
+    .replace(/^page_count:.*$/m, 'page_count: 99');
+  fs.writeFileSync(IDXP, idxText, 'utf8');
+  w = run('wrap.js', evt({ hook_event_name: 'SessionEnd' }));
+  idxText = fs.readFileSync(IDXP, 'utf8');
+  check('SessionEnd self-heals index counts', /source_count: 2/.test(idxText) && /page_count: 5/.test(idxText), idxText.slice(0, 220));
+  check('index body preserved on self-heal', idxText.includes('[[a-page]]'));
+
+  // ---------- hook #5: snapshot ----------
+  console.log('snapshot.js (#5 PreCompact)');
+  let s = run('snapshot.js', evt({ hook_event_name: 'PreCompact', trigger: 'auto', session_id: 'snap1' }));
+  const SESS = path.join(BRAIN, 'sessions');
+  const snaps = fs.existsSync(SESS) ? fs.readdirSync(SESS).filter((f) => f.endsWith('-precompact.md')) : [];
+  check('writes a snapshot into .brain/sessions/', s.status === 0 && snaps.length === 1, `status=${s.status} snaps=${snaps.length}`);
+  const snapText = snaps.length ? fs.readFileSync(path.join(SESS, snaps[0]), 'utf8') : '';
+  check('snapshot carries open next steps', snapText.includes('tiny'), snapText.slice(0, 200));
+  check('snapshot carries recent wiki log heads', snapText.includes('ingest | one'));
+  s = run('snapshot.js', { cwd: PLAIN_D, hook_event_name: 'PreCompact', trigger: 'manual' });
+  check('no brain ⇒ no snapshot, silent', s.status === 0 && s.stdout === '', `status=${s.status}`);
+
+  // ---------- hook #7: agent-track ----------
+  console.log('agent-track.js (#7 PreToolUse Agent)');
+  const asess = `st${process.pid}a1`;
+  let a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: asess, tool_input: { subagent_type: 'general-purpose', description: 'research fan-out' } }));
+  check('heavy dispatch without model blocks once', a.status === 2 && /model/.test(a.stderr), `status=${a.status}`);
+  a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: asess, tool_input: { subagent_type: 'general-purpose', model: 'sonnet', description: 'research fan-out' } }));
+  check('explicit model passes', a.status === 0, `status=${a.status} stderr=${a.stderr}`);
+  a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: asess, tool_input: { subagent_type: 'claude', description: 'still no model' } }));
+  check('block fires only once per session', a.status === 0, `status=${a.status}`);
+  a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: `st${process.pid}a2`, tool_input: { subagent_type: 'Explore', prompt: 'find the config' } }));
+  check('pinned-model agent types pass unblocked', a.status === 0, `status=${a.status} stderr=${a.stderr}`);
+  const agentsText = fs.readFileSync(path.join(BRAIN, 'sessions', 'agents.md'), 'utf8');
+  check('dispatches logged (incl. blocked)', /⛔ blocked/.test(agentsText) && /model: sonnet/.test(agentsText) && /Explore/.test(agentsText), agentsText.slice(-200));
+  a = run('agent-track.js', { cwd: PLAIN_D, hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: 'ax', tool_input: { subagent_type: 'general-purpose' } });
+  check('no brain ⇒ agent tracking silent', a.status === 0 && a.stderr === '', `status=${a.status}`);
+
+  // ---------- /brain:init scaffold ----------
+  console.log('new-brain.js (skill /brain:init scaffold)');
+  const INITP = path.join(ROOT, 'init-proj');
+  fs.mkdirSync(INITP, { recursive: true });
+  const NEWBRAIN = path.join(SKILLS, 'init', 'scripts', 'new-brain.js');
+  const NB = path.join(INITP, '.brain');
+  let n = spawnSync(process.execPath, [NEWBRAIN, '--project', INITP, '--name', 'Widget Co'], { encoding: 'utf8', timeout: 20000 });
+  check('scaffolds a fresh .brain', n.status === 0 && fs.existsSync(path.join(NB, 'CLAUDE.md')), `status=${n.status} ${n.stderr}`);
+  const claudeMd = fs.existsSync(path.join(NB, 'CLAUDE.md')) ? fs.readFileSync(path.join(NB, 'CLAUDE.md'), 'utf8') : '';
+  check('placeholders expanded', claudeMd.includes('Widget Co') && !claudeMd.includes('{{PROJECT}}'));
+  check('seed wiki + staging + resume in place', ['wiki/index.md', 'wiki/log.md', 'wiki/dashboard.md', 'Clippings/.gitignore', 'resume.md', 'templates/source.md'].every((f) => fs.existsSync(path.join(NB, f))));
+  lr = spawnSync(process.execPath, [LINT, '--brain', NB, '--strict'], { encoding: 'utf8', timeout: 20000 });
+  check('fresh scaffold lints clean (strict)', lr.status === 0 && /LINT CLEAN/.test(lr.stdout), lr.stdout.slice(-200));
+  n = spawnSync(process.execPath, [NEWBRAIN, '--project', INITP], { encoding: 'utf8', timeout: 20000 });
+  check('refuses to overwrite without --force', n.status === 1 && /--update/.test(n.stderr), `status=${n.status}`);
+  fs.writeFileSync(path.join(NB, 'wiki', 'concepts', 'my-knowledge.md'), '---\ntype: concept\nupdated: 2026-07-17\n---\n\nSee [[index]].\n', 'utf8');
+  n = spawnSync(process.execPath, [NEWBRAIN, '--project', INITP, '--name', 'Widget Co', '--update'], { encoding: 'utf8', timeout: 20000 });
+  check('--update keeps knowledge, refreshes schema', n.status === 0 && fs.existsSync(path.join(NB, 'wiki', 'concepts', 'my-knowledge.md')) && fs.readFileSync(path.join(NB, 'CLAUDE.md'), 'utf8').includes('Widget Co'), `status=${n.status} ${n.stderr}`);
+  const master = path.resolve(HERE, '..', '..', '..', 'schema', 'brain-template');
+  const bundled = path.join(SKILLS, 'init', 'brain-template');
+  if (fs.existsSync(master)) {
+    const listRel = (d) => {
+      const acc = [];
+      (function walk(p) {
+        for (const e of fs.readdirSync(p, { withFileTypes: true })) {
+          const fp = path.join(p, e.name);
+          if (e.isDirectory()) walk(fp);
+          else acc.push(path.relative(d, fp).split(path.sep).join('/'));
+        }
+      })(d);
+      return acc.sort();
+    };
+    const mFiles = listRel(master);
+    const bFiles = fs.existsSync(bundled) ? listRel(bundled) : [];
+    const sameSet = JSON.stringify(mFiles) === JSON.stringify(bFiles);
+    const sameBytes = sameSet && mFiles.every((f) => fs.readFileSync(path.join(master, f)).equals(fs.readFileSync(path.join(bundled, f))));
+    check('bundled template in sync with schema/brain-template (fix: new-brain.js --sync-template)', sameSet && sameBytes, sameSet ? 'content differs' : 'file sets differ');
+  }
+
+  // ---------- no-brain /brain:init offer (activation fallback) ----------
+  console.log('brain-status.js — no-brain offer');
+  const PLAIN_E = path.join(ROOT, 'plain-e');
+  fs.mkdirSync(PLAIN_E, { recursive: true });
+  r = run('brain-status.js', { cwd: PLAIN_E, hook_event_name: 'SessionStart', source: 'startup' });
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  check('startup without a brain offers /brain:init', ((out.hookSpecificOutput || {}).additionalContext || '').includes('/brain:init'), (r.stdout || '').slice(0, 150));
+  r = run('brain-status.js', { cwd: PLAIN_E, hook_event_name: 'SessionStart', source: 'resume' });
+  check('offer only on startup source', r.status === 0 && r.stdout === '');
+  fs.writeFileSync(path.join(PLAIN_E, '.no-brain'), '');
+  r = run('brain-status.js', { cwd: PLAIN_E, hook_event_name: 'SessionStart', source: 'startup' });
+  check('.no-brain silences the offer', r.status === 0 && r.stdout === '');
 } finally {
   fs.rmSync(ROOT, { recursive: true, force: true });
+  try {
+    for (const f of fs.readdirSync(os.tmpdir())) {
+      if (f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`)) {
+        fs.rmSync(path.join(os.tmpdir(), f), { force: true });
+      }
+    }
+  } catch {}
 }
 
 console.log(failures === 0 ? '\nselftest: ALL GREEN' : `\nselftest: ${failures} FAILURE(S)`);
