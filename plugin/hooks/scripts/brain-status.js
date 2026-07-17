@@ -101,6 +101,25 @@ async function main() {
     sections.push([1, `**Instincts (always apply):** ${instincts.join(', ')} — details in \`${rel}/instincts/active/\`.`]);
   }
 
+  // Decisions (the "why") — the memory tier fed back into every session so
+  // past ADRs are consulted before anything is re-decided (Phase 5 item 2).
+  const decisionFiles = lib
+    .listFilesRecursive(path.join(brain, 'decisions'), '.md')
+    .filter((f) => !/(^|[\\/])templates([\\/])/.test(f));
+  if (decisionFiles.length) {
+    const recent = decisionFiles
+      .map((f) => {
+        let m = 0;
+        try { m = fs.statSync(f).mtimeMs; } catch {}
+        const fm = lib.parseFrontmatter(lib.readTextSafe(f));
+        return { title: fm.title || path.basename(f, '.md'), m };
+      })
+      .sort((a, b) => b.m - a.m)
+      .slice(0, 3)
+      .map((d) => `\`${d.title}\``);
+    sections.push([2, `**Decisions (the why):** ${decisionFiles.length} ADR(s) in \`${rel}/decisions/\` — latest: ${recent.join(', ')}. Consult these before re-deciding anything they cover.`]);
+  }
+
   const logHeads = (lib.readTextSafe(path.join(brain, 'wiki', 'log.md')).match(/^## \[.*$/gm) || []).slice(-3);
   if (logHeads.length) {
     sections.push([2, `**Recent log:**\n${logHeads.map((h) => `- ${h.replace(/^## /, '')}`).join('\n')}`]);

@@ -22,6 +22,10 @@ the narrative belongs to you.
      `lint |` prefix) with 2–4 lines of what changed. Append-only.
    - `wiki/index.md` — ensure new pages are listed and the frontmatter
      `source_count` / `page_count` / `updated` match reality.
+   - `decisions/` — if this session made a real design/architecture decision
+     (a build or review usually does), distill the **why** into
+     `decisions/<slug>.md` (template `templates/decision.md`) so the reasoning
+     survives. The wrap hook nudges once when a build/review session filed none.
 3. **Update the resume pointer** (`.brain/resume.md`, or root `resume.md` in the engine
    repo): rewrite **"Where we left off"** (2–4 lines) and **"Next steps"** (add new boxes,
    tick finished ones). Leave **"Task log (auto)"** alone — hooks own it. Bump `updated:`.

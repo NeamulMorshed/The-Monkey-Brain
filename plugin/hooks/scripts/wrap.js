@@ -5,10 +5,12 @@
  * "Everything leaves a trace" (ROADMAP design principle 4), split by what a
  * script may own:
  *
- *   Stop (the REMINDER): if wiki pages changed after the last log write, block
+ *   Stop (the REMINDERS): if wiki pages changed after the last log write, block
  *   the stop ONCE per session with instructions to append the log entry (or
- *   run /brain:wrap). The narrative itself belongs to the model — a script
- *   only notices it is missing.
+ *   run /brain:wrap). Then, if the last logged step was build/review but no ADR
+ *   was distilled to decisions/, block ONCE to prompt capturing the "why"
+ *   (Phase 5 auto-distillation). The narrative itself belongs to the model — a
+ *   script only notices it is missing.
  *
  *   SessionEnd (the MECHANIC): self-heal wiki/index.md frontmatter stats
  *   (source_count / page_count / updated) from the filesystem — deterministic
@@ -27,11 +29,24 @@ const lib = require(path.join(__dirname, 'lib.js'));
 
 /** Wiki work is "unlogged" when a page changed this much after the last log write. */
 const GRACE_MS = 90_000;
+/** An ADR filed within this window of the build/review log entry counts as "distilled". */
+const DECIDE_GRACE_MS = 15 * 60_000;
 
 function newestWikiMtime(wikiDir, logPath) {
   let newest = 0;
   for (const f of lib.listFilesRecursive(wikiDir, '.md')) {
     if (path.resolve(f) === logPath) continue;
+    try {
+      const m = fs.statSync(f).mtimeMs;
+      if (m > newest) newest = m;
+    } catch {}
+  }
+  return newest;
+}
+
+function newestMtimeUnder(dir) {
+  let newest = 0;
+  for (const f of lib.listFilesRecursive(dir, '.md')) {
     try {
       const m = fs.statSync(f).mtimeMs;
       if (m > newest) newest = m;
@@ -59,6 +74,44 @@ function stopCheck(input, brain) {
       `Append \`## [${lib.today()}] <ingest|query|lint|session> | <what happened>\` to wiki/log.md ` +
       `(append-only), make sure index counts are current, then finish. ` +
       `(Or run /brain:wrap for the full definition-of-done. This reminder fires once per session.)`,
+  });
+}
+
+/**
+ * Auto-distillation nudge (ROADMAP Phase 5 item 2). After a session whose LAST
+ * logged step was `build |` or `review |`, if no ADR was filed to decisions/
+ * within ~15 min of that log entry, block the stop ONCE to prompt distilling
+ * the "why" into decisions/. The script only notices the gap — the model writes
+ * the ADR (same split as the log reminder). Uses relative mtimes only (no
+ * session clock), matching stopCheck. Pre-v2 brains (no decisions/) opt out.
+ */
+function decisionCheck(input, brain) {
+  if (input.stop_hook_active) return;
+  const decisionsDir = path.join(brain, 'decisions');
+  if (!fs.existsSync(decisionsDir)) return;
+  const marker = path.join(os.tmpdir(), `mb-decide-${String(input.session_id || 'nosession').replace(/[^\w-]/g, '')}`);
+  if (fs.existsSync(marker)) return;
+
+  const logPath = path.resolve(path.join(brain, 'wiki', 'log.md'));
+  const logText = lib.readTextSafe(logPath);
+  if (!logText) return;
+  const heads = [...logText.matchAll(/^##\s*\[[^\]]*\]\s*([A-Za-z]+)\s*\|/gm)].map((x) => x[1].toLowerCase());
+  const last = heads.length ? heads[heads.length - 1] : '';
+  if (last !== 'build' && last !== 'review') return;
+
+  let logM = 0;
+  try { logM = fs.statSync(logPath).mtimeMs; } catch { return; }
+  const decM = newestMtimeUnder(decisionsDir); // 0 when empty
+  if (logM - decM <= DECIDE_GRACE_MS) return;   // an ADR is ~as fresh as the build/review
+
+  fs.writeFileSync(marker, '');
+  lib.succeed({
+    decision: 'block',
+    reason:
+      `🐵 wrap[decisions]: the last logged step was \`${last}\`, but no ADR was filed to decisions/ since. ` +
+      `Distill this session's key decisions — the "why", not just the "what" — into ` +
+      `decisions/<slug>.md (template: templates/decision.md) so the reasoning survives every future session. ` +
+      `(Or run /brain:wrap. This reminder fires once per session.)`,
   });
 }
 
@@ -90,8 +143,10 @@ async function main() {
   const brain = lib.findBrainDir(input.cwd);
   if (!brain) return;
   const evt = input.hook_event_name || '';
-  if (evt === 'Stop') stopCheck(input, brain);
-  else if (evt === 'SessionEnd') refreshIndex(brain);
+  if (evt === 'Stop') {
+    stopCheck(input, brain);   // may block+exit; otherwise fall through
+    decisionCheck(input, brain);
+  } else if (evt === 'SessionEnd') refreshIndex(brain);
 }
 
 main().then(() => process.exit(0)).catch(() => process.exit(0));

@@ -312,6 +312,27 @@ try {
   check('SessionEnd self-heals index counts', /source_count: 2/.test(idxText) && /page_count: 5/.test(idxText), idxText.slice(0, 220));
   check('index body preserved on self-heal', idxText.includes('[[a-page]]'));
 
+  // decision distillation nudge + surfacing (P5.2)
+  fs.mkdirSync(path.join(BRAIN, 'decisions'), { recursive: true });
+  fs.appendFileSync(LOGP, '\n## [2026-07-17] build | widget feature\nImplemented AC-1..3.\n');
+  const nowW = new Date();
+  fs.utimesSync(LOGP, nowW, nowW);
+  w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}d1` }));
+  out = {}; try { out = JSON.parse(w.stdout || '{}'); } catch {}
+  check('build/review session without an ADR nudges to distill decisions', out.decision === 'block' && /decisions\//.test(out.reason || '') && /ADR/i.test(out.reason || ''), (w.stdout || '').slice(0, 200));
+  w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}d1` }));
+  check('decision nudge fires once per session (marker)', w.status === 0 && w.stdout === '');
+  const ADRP = path.join(BRAIN, 'decisions', 'use-widgets.md');
+  fs.writeFileSync(ADRP, '---\ntitle: "ADR — use widgets"\ntype: decision\nstatus: accepted\nupdated: 2026-07-17\n---\n\n## Decision\nUse widgets.\n', 'utf8');
+  const nowA = new Date();
+  fs.utimesSync(ADRP, nowA, nowA);
+  w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}d2` }));
+  check('a fresh ADR silences the decision nudge', w.status === 0 && w.stdout === '', (w.stdout || '').slice(0, 200));
+  r = run('brain-status.js', evt({ hook_event_name: 'SessionStart', source: 'startup' }));
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  const dctx = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('brain-status surfaces recent decisions/ ADRs', dctx.includes('Decisions (the why)') && dctx.includes('use widgets'), dctx.slice(0, 400));
+
   // ---------- hook #5: snapshot ----------
   console.log('snapshot.js (#5 PreCompact)');
   let s = run('snapshot.js', evt({ hook_event_name: 'PreCompact', trigger: 'auto', session_id: 'snap1' }));
@@ -430,7 +451,7 @@ try {
   fs.rmSync(ROOT, { recursive: true, force: true });
   try {
     for (const f of fs.readdirSync(os.tmpdir())) {
-      if (f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`)) {
+      if (f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`)) {
         fs.rmSync(path.join(os.tmpdir(), f), { force: true });
       }
     }
