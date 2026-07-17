@@ -22,6 +22,12 @@ in any project or product — development, products, and games.
   advice*. 7 lifecycle hooks, hard quality gates (plan-before-code, TDD, secrets,
   immutability), spec-driven workflow, project tiers, semantic memory (SQLite-vec MCP),
   instinct system, 15-check doctor, 3k-token budgeted session injection.
+- [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) — the **domain
+  expertise pack** pattern: searchable design knowledge (161 industry reasoning rules, 84 UI
+  styles, 192 palettes, 74 font pairings, 98 UX guidelines, anti-pattern lists) + BM25 search
+  script + reasoning layer, auto-activating on UI/UX requests. Architecturally a mini Monkey
+  Brain (data + search + filed recommendations), pre-compiled for one domain — validates our
+  engine and defines the pack format we generalize in Phase 6.5.
 - Our own wiki: `claude-md-vs-skills-vs-hooks`, `hooks`, `skill-authoring`, `plugins`,
   `mcp-tool-search`, `search-tooling` (qmd upgrade path), `schema/CLAUDE.md` §8.
 
@@ -156,9 +162,46 @@ auto-activate by their own skill descriptions; our trigger-router nudges them):
 | [code-modernization](https://claude.com/plugins/code-modernization) | legacy refactors | migration notes → `wiki/research/` |
 | [productivity](https://claude.com/plugins/productivity) | standup/planning triggers | feeds the "standup" brief |
 | [product-management](https://claude.com/plugins/product-management) | PRD/roadmap requests | PRDs land in `raw-sources/` → ingested |
+| [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | UI/UX design-system requests | decides the *design system* (frontend-design executes the *build*); palette/style/type choices → `decisions/`; its anti-patterns seed `instincts/` |
 
 Rule: **plugins do the craft; the brain records the knowledge.** Every plugin output that
 represents a decision, finding, or artifact gets filed into the instance by our skills/hooks.
+
+## Phase 6.5 — Domain Expertise Packs (the ui-ux-pro-max pattern, generalized)
+
+External plugins bring *workflows*; expertise packs bring **packaged domain knowledge**:
+searchable data + industry-standard process + validation checklist, hosted by the engine.
+Unlike standalone skills (static, frozen at publish), our packs **compound** — every
+recommendation files back into the instance.
+
+**Pack format** (`plugin/skills/packs/<domain>/`):
+```
+<domain>-pack/
+├── SKILL.md            # the process (phases, methods, when to auto-activate)
+├── data/               # searchable domain knowledge (qmd-indexed markdown tables)
+├── templates/          # deliverable skeletons (persona, journey map, GDD…)
+└── checklist.md        # validation gate — /brain:wrap reads this
+```
+
+**First pack — `/brain:product-design`** (industry-standard end-to-end process):
+1. **Discovery** — stakeholder/user interviews, JTBD framing, competitor teardowns
+   → filed to `wiki/research/`.
+2. **Definition** — personas, user journey maps, problem statements, HMW questions
+   → `specs/` with acceptance criteria.
+3. **Ideation/brainstorming** — structured methods as sub-skills: Crazy 8s, SCAMPER,
+   Double Diamond divergence/convergence, dot-voting → outputs filed as syntheses.
+4. **Design** — hand off to ui-ux-pro-max (design system) + frontend-design (build), with
+   the brain's accumulated context injected: brand decisions, past audit findings, banned
+   patterns from `instincts/`.
+5. **Validation** — Nielsen heuristic evaluation, WCAG accessibility pass, usability test
+   scripts → findings gate `/brain:wrap` exactly like security P0s.
+
+**Later packs, same format:** game design (GDD, MDA framework, playtest protocols — feeds
+Phase 7), product analytics, brand/marketing.
+
+**The differentiator:** their expertise is output; ours is memory. A palette choice from
+ui-ux-pro-max is an ADR in `decisions/` that every future session knows about; a banned
+anti-pattern becomes an active instinct rule the hooks enforce.
 
 ## Phase 7 — Domain workflows: products & games
 
