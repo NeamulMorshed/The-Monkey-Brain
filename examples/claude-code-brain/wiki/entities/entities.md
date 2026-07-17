@@ -24,6 +24,8 @@ thing worth tracking. See the full catalog in [[index]].
   compression, with receipts.
 - [[mewvault]] — federated Claude Code workspace: 7-hook enforcement, gates, tiers,
   semantic memory, 15-check doctor.
+- [[ui-ux-pro-max]] — design-intelligence skill: searchable style/palette/type data + BM25 +
+  reasoning; the [[domain-expertise-packs|expertise-pack]] exemplar.
 
 Sibling categories: [[concepts]] · [[syntheses]].
 

@@ -5,8 +5,8 @@ status: active
 tags: [index, navigation, moc]
 created: 2026-06-17
 updated: 2026-07-17
-source_count: 15
-page_count: 65
+source_count: 16
+page_count: 67
 ---
 
 # 🐵 The Monkey Brain — Index
@@ -16,7 +16,7 @@ The content catalog for this [[llm-wiki-pattern|LLM wiki]]. **Read this first** 
 [[ingest-compile|ingest]]. For the chronological view, see [[log]]. For conventions, see
 [`schema/CLAUDE.md`](../schema/CLAUDE.md).
 
-> **Stats:** 15 sources · 65 wiki pages · last updated 2026-07-17.
+> **Stats:** 16 sources · 67 wiki pages · last updated 2026-07-17.
 
 ```mermaid
 mindmap
@@ -62,6 +62,7 @@ Distilled summaries of each immutable [[raw-sources-layer|raw source]].
 | [[sources/memex-as-we-may-think\|As We May Think (Bush, 1945)]] | Citation stub: the memex, associative trails — primary-source provenance for the [[llm-wiki-pattern]] kinship claim. |
 | [[sources/caveman-readme\|Caveman README]] | Token discipline: ~65% output compression, permanent memory-file compression, receipts culture. |
 | [[sources/mewvault-readme\|MewVault README]] | Enforcement over advice: 7 hooks, hard gates, tiers, 3k budgeted injection, instincts, doctor. |
+| [[sources/ui-ux-pro-max-readme\|ui-ux-pro-max README]] | Design-intelligence pack: 161 reasoning rules + BM25 search + design-system generator. |
 
 ---
 
@@ -130,6 +131,7 @@ Distilled summaries of each immutable [[raw-sources-layer|raw source]].
 | [[qmd]] | On-device hybrid search engine; the search upgrade path. |
 | [[caveman]] | Token-discipline skill/plugin: compress output + memory files, with receipts. |
 | [[mewvault]] | Federated workspace: hook-enforced gates, tiers, semantic memory, doctor. |
+| [[ui-ux-pro-max]] | Design-intelligence expertise pack: data + BM25 + reasoning engine. |
 
 ---
 
@@ -145,7 +147,7 @@ Filed-back analyses and comparisons (see [[query-deploy]]).
 ---
 
 ## 🗺️ Categories at a glance
-- **15** sources · **38** concept pages (incl. [[concepts]] MOC) · **6** entity pages (incl. [[entities]] MOC)
-  · **3** synthesis pages (incl. [[syntheses]] MOC) · plus this [[index]], the [[log]], and the [[dashboard]] = **65** total.
+- **16** sources · **38** concept pages (incl. [[concepts]] MOC) · **7** entity pages (incl. [[entities]] MOC)
+  · **3** synthesis pages (incl. [[syntheses]] MOC) · plus this [[index]], the [[log]], and the [[dashboard]] = **67** total.
 - Category maps-of-content: [[concepts]] · [[entities]] · [[syntheses]].
 - Biggest hubs: [[claude-code]], [[knowledge-sdlc]], [[context-window]], [[skills]], [[plugins]].

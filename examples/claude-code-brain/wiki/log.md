@@ -180,3 +180,12 @@ scale), [[memory]] (semantic memory + instinct tiers). Captured the prompt-cache
 rule: *optimize by injecting less, never by transforming the prompt.* Design difference flagged
 (session-end synced read-layer wiki vs. our compile-time wiki) — to be reconciled in
 [[monkey-brain-vs-mewvault]]. Vault now 15 sources / 65 pages. Touched: 8 pages.
+
+## [2026-07-17] ingest | ui-ux-pro-max README
+Web-fetched https://github.com/nextlevelbuilder/ui-ux-pro-max-skill → [ui-ux-pro-max README.md](../raw-sources/ui-ux-pro-max%20README.md).
+The **expertise-pack exemplar** of the v2 research cluster. Summary → [[sources/ui-ux-pro-max-readme]].
+**New entity** [[ui-ux-pro-max]]. Cross-linked [[skills]] (skills can carry data + scripts),
+[[frontend-design]] (decider vs. executor division of labor), [[search-tooling]] (BM25-in-a-skill,
+the [[qmd]] family scaled down), [[plugins]] (marketplace + npm CLI distribution). Boundary
+flagged: its knowledge is frozen at publish — the compounding fix is specced in
+[[domain-expertise-packs]]. Vault now 16 sources / 67 pages. Touched: 9 pages.
