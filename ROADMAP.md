@@ -5,7 +5,7 @@ status: draft
 tags: [roadmap, plugin, hooks, skills, mcp, context-engineering]
 created: 2026-07-17
 updated: 2026-07-17
-version: 0.1
+version: 0.2
 ---
 
 # 🐵 Monkey Brain v2 — Enhancement Roadmap
@@ -53,6 +53,78 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
    `log.md` / `sessions/` automatically via hooks — not by hoping the model remembers.
 5. **The plugin is the engine's distribution.** Install once (user scope) → every project
    gets the brain automatically; `.brain/` instances stay isolated per project.
+6. **Differentiate, don't imitate.** MewVault is the competitor benchmark, not the blueprint.
+   Where they have one managed workspace, we have **federated instances + upstream
+   promotion** (learnings flow back to the engine). Where they name a model, we ship a
+   **routing policy**. Where they sync a wiki, we **compile** one.
+
+---
+
+## Activation architecture — how the right capability fires at the right time
+
+"Works whenever needed in any project" is not one mechanism; it is **five layers**, each
+catching what the previous one missed:
+
+1. **Install once, present everywhere.** The plugin lives at user scope: its hooks, skills,
+   agents, and MCP servers exist in every session of every project. The `.brain/` instance
+   travels with each project's git.
+2. **Awareness before the first task.** SessionStart injects the budgeted status block
+   (state, tier, active specs, instincts) — routing decisions are made *with context*.
+3. **Three complementary per-prompt routers:**
+   - **Deterministic** — the trigger-router hook maps natural phrases ("ingest this",
+     "spec user-billing", "wrap up", "standup", "doctor") to workflows. Guaranteed.
+   - **Model-driven** — every skill/pack/plugin carries `description`/`when_to_use`;
+     Claude auto-selects on task match ("build a landing page" → ui-ux-pro-max) without
+     anyone naming it.
+   - **Path/context-driven** — skill `paths` globs and hook matchers activate expertise
+     from the *files being touched*: `auth/**` pulls security-guidance, `.tsx` pulls
+     frontend rules, `wiki/**` pulls the link-checker.
+4. **Enforcement fires regardless of routing.** Even if all three routers miss, PreToolUse
+   gates (secrets, immutability, plan, TDD-by-tier) intercept at the tool-call level.
+   Quality never depends on the right skill having loaded.
+5. **Depth on demand.** Pack data and MCP tools stay deferred (Tool Search, qmd) until a
+   task needs them — all capabilities available at near-zero token cost until activated.
+
+**Activation matrix** (representative traces):
+
+| Task signal | Routed by | What activates | What files back |
+| --- | --- | --- | --- |
+| "ingest this article" | trigger (L3a) | `/brain:ingest` | source page, cross-links, index, log |
+| "build a landing page for my SaaS" | descriptions (L3b) | product-design pack → ui-ux-pro-max → frontend-design | decisions/ (design system ADR), instincts (anti-patterns) |
+| "fix this login bug" | descriptions + paths (L3b+c) | superpowers debugging; security-guidance on `auth/**`; TDD gate | regression test, root-cause wiki page, correction → instincts/pending |
+| "spec user-billing" | trigger (L3a) | `/brain:plan` | specs/ with ACs; plan gate armed |
+| "start a game concept" | descriptions (L3b) | game pack (GDD) | projects/ entry with tier, GDD in wiki |
+| edit under `wiki/**` | matcher (L3c) | link/orphan check (hook #4) | fixed in the same turn |
+| any write, any task | gates (L4) | secrets/immutability/plan/TDD | violation → blocked + logged |
+| deep vault question | deferred MCP (L5) | qmd semantic search | novel answer → syntheses/ |
+
+**Precedence when multiple match** (process orchestrates, specialists execute):
+`deterministic trigger > domain pack process > domain skill > craft plugin > general model`.
+Overlapping activations are logged; `/brain:doctor` flags noisy overlaps for tuning.
+
+**No-brain fallback:** SessionStart in a project without `.brain/` offers `/brain:init` in
+one line (once per session; a `.no-brain` marker silences it permanently). Adoption is
+automatic too, not remembered.
+
+---
+
+## The quality triangle — context × tokens × output quality
+
+The three goals reinforce rather than compete, if the mechanisms are assigned correctly:
+
+- **Keeping context** — budgeted SessionStart injection (static-first for prompt-cache
+  hits); PreCompact snapshots to `sessions/`; decisions auto-distilled to `decisions/`;
+  the wiki itself is the long-term context that survives every session.
+- **Reducing tokens** — deferred tools/packs (load on activation, not at startup);
+  `/brain:compress` on memory/CLAUDE.md files (permanent input savings); `/brain:terse`
+  output mode; **model routing** (below) so cheap tokens do cheap work; doctor reports
+  injection size, cache-hit ratio, and tokens saved (receipts, not vibes).
+- **Best output quality** — gates make quality non-negotiable (plan/TDD/audit/secrets);
+  packs inject domain expertise at the moment of use; filed-back knowledge means every
+  output builds on all previous decisions; review passes run on the strongest model.
+- **The compression guard:** compression never touches code, commands, error messages,
+  specs, or acceptance criteria (byte-for-byte preserved) — terseness applies to prose,
+  never to the artifacts quality depends on.
 
 ---
 
@@ -147,6 +219,39 @@ New instance layout (additions ★):
 5. **Budget receipts:** doctor reports injection size, cache-hit ratio, tokens saved
    (Caveman-style stats line).
 
+## Phase 5.5 — Model routing & parallel orchestration
+
+MewVault merely *requires* that agent dispatches name a model. We go further: a **routing
+policy** that picks the right model by default, plus parallel multi-model patterns.
+
+**Mechanisms** (all native Claude Code): skill frontmatter `model:` + `effort:`; subagent
+frontmatter `model:`; Agent-tool `model` param per dispatch; hook `prompt` handlers run on
+fast models; scripts run on no model at all.
+
+**The routing policy** (encoded in skill/agent frontmatter, enforced by hook #7):
+
+| Work class | Runs on | Examples |
+| --- | --- | --- |
+| Deterministic checks | **scripts — no model, 0 tokens** | lint, guards, stats, link checks, doctor mechanics |
+| Classification & triage | **Haiku** | trigger routing (prompt hook), clipping triage, commit-message drafts |
+| Routine execution | **Sonnet** | ingest summaries, research fan-out reads, standard implementation, batch librarian work |
+| Judgment & synthesis | **main model (Opus/Fable)** | architecture plans, design-system reasoning, contradiction reconciliation, final review, wrap verification |
+
+**Parallel multi-model patterns** (subagents run concurrently; only summaries return):
+- **Research fan-out:** N Sonnet Explore agents scan sources/codebase in parallel → one
+  main-model synthesis files the result. Wide coverage, narrow context cost.
+- **Build + review pair:** Sonnet implementer works the spec while a main-model reviewer
+  audits against acceptance criteria — disagreement surfaces before wrap, not after.
+- **Batch ingest:** the `brain-librarian` (Sonnet) compiles multiple sources in parallel
+  isolated windows; the main session only sees log entries.
+- **Competing hypotheses:** two agents on different models attack the same bug/design
+  question independently; the main model adjudicates. (Escalate to agent teams only when
+  parallel subagents need to talk to each other.)
+
+**Escalation & receipts:** skills declare `effort:` so heavy reasoning is spent only where
+declared; hook #7 logs every dispatch's model + purpose; `/brain:doctor` reports model-mix
+and cost per session — routing drift becomes visible, not felt.
+
 ## Phase 6 — Bundled capability plugins (auto-firing per task type)
 
 Ship a **recommended-plugins manifest** the `/brain:init` skill offers to install (plugins
@@ -239,6 +344,25 @@ Failures inject a health report into the next session (hook #1 carries it).
 
 ---
 
+## Gap analysis — Monkey Brain v1, and this roadmap's own blind spots
+
+| # | Gap | Severity | Fix (phase) |
+| --- | --- | --- | --- |
+| 1 | Loading caveat: brain invisible unless `.brain` on cwd→root path | High | SessionStart injection (P2 #1) |
+| 2 | Every convention is advice — nothing enforced (immutability, no-orphans, log discipline) | High | Gates + wiki checks (P2) |
+| 3 | No adoption path in brainless projects — the engine must be remembered | High | No-brain fallback offer (Activation arch.) |
+| 4 | All bookkeeping (index/log/commit) relies on the model remembering §4.1 | High | Hooks #4/#6 automate it (P2) |
+| 5 | No session continuity — compaction and session ends lose working state | High | PreCompact snapshots + `sessions/` (P5) |
+| 6 | Everything runs on the main model — no cost/quality assignment, no parallelism | Med | Routing policy + fan-out (P5.5) |
+| 7 | Index-only search ceiling (~100 sources) documented but unwired | Med | qmd MCP bundled (P5) |
+| 8 | No precedence when multiple skills/packs match one task | Med | Precedence chain (Activation arch.) |
+| 9 | No correction feedback loop — repeated fixes never become rules | Med | `instincts/` pipeline (P4/P5) |
+| 10 | No project tiers or definition-of-done — same rigor for a typo and an architecture | Med | Tiers + wrap gate (P4) |
+| 11 | No token accounting — savings and injection costs are invisible | Med | Doctor receipts (P5/P8) |
+| 12 | PowerShell-only scripts — brains don't port to mac/Linux teammates | Med | Node.js hook runtime (P1) |
+| 13 | Lint is manual and on-demand; staleness accumulates silently | Low | Doctor checks + health report injection (P8) |
+| 14 | Isolation is total — patterns learned in one project never benefit others | Low | **Upstream promotion**: project-agnostic instincts & pack improvements flow to the engine repo, redistributed via `-Update`. Federated learning, still zero knowledge bleed — something MewVault's single workspace cannot do. |
+
 ## How we beat MewVault (the scorecard)
 
 | Dimension | MewVault | Monkey Brain v2 |
@@ -249,3 +373,6 @@ Failures inject a health report into the next session (hook #1 carries it).
 | Enforcement | 7 hooks, hard gates | Same gate set **+ self-healing wiki checks (PostToolUse fixes in-turn)** |
 | Capability breadth | Impeccable design + Godot | **8 bundled marketplace plugins routed by task type** |
 | Auditability | Generated logs | Logs **+ append-only guarantee (hook-enforced) + git commit conventions** |
+| Model economics | Requires naming a model per dispatch | **Routing policy (right model by default) + parallel multi-model fan-out + effort control + cost receipts** |
+| Activation | Phrase triggers | **Five-layer activation: triggers + description matching + path matching + always-on gates + deferred depth, with explicit precedence** |
+| Cross-project learning | One workspace, shared by design | **Federated instances + upstream promotion — learnings propagate via the engine, knowledge never bleeds** |
