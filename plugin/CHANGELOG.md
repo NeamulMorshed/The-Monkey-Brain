@@ -1,5 +1,42 @@
 # Changelog — brain plugin
 
+## 0.7.0 — 2026-07-17 (Phase 5: memory & context engineering)
+
+The three memory tiers (wiki · decisions/memory · instincts) become
+self-feeding, semantic search is bundled but opt-in, and every injection now
+leaves a receipt.
+
+- **Instinct auto-detection** (`instinct-track.js`, PostToolUse): the Gap-#9
+  loop mechanized — tallies edits per file across **distinct sessions** in
+  `sessions/edit-counts.json`; at 3+ (`MONKEY_BRAIN_INSTINCT_THRESHOLD`) it
+  emits a **once-per-file advisory** to file a rule in `instincts/pending/`
+  (never a block; bookkeeping files exempt). Scripts notice; the model writes
+  the rule.
+- **Auto-distillation** (`wrap.js` Stop + `brain-status.js`): after a session
+  whose last logged step was `build|review`, the wrap hook blocks **once** if
+  no ADR was filed to `decisions/` near that entry — prompting the model to
+  distill the "why". `brain-status` gains a **"Decisions (the why)"** section
+  so recent ADRs are injected every session; `/brain:wrap`'s definition-of-done
+  now includes distilling decisions.
+- **Semantic search — opt-in qmd** (`qmd-mcp.js` + `.mcp.json`): a
+  `brain-search` MCP wrapper, dormant by default (schema §8: qmd is deferred
+  until the wiki outgrows the index ~100 sources). Hands off to real
+  `qmd mcp` only when a brain is present **+ opted in** (empty `.qmd` marker or
+  `MONKEY_BRAIN_QMD=1`) **+ qmd on PATH**; otherwise a stdlib no-op MCP server
+  (valid protocol, zero tools) so no session shows a failed server. `wrap.js`
+  SessionEnd runs a detached `qmd update` re-index when opted in;
+  `brain-status` surfaces the enabled state or nudges to enable near the
+  ceiling. Instance CLAUDE.md §8 documents the steps.
+- **Compaction survival** (`snapshot.js`): PreCompact snapshots now also carry
+  **active specs and projects** (tier/phase/approval) — the in-flight work most
+  costly to lose, not just the next steps.
+- **Budget-receipt groundwork** (`brain-status.js`): each injection's size
+  (tokens, budget, sections kept/dropped) is appended to
+  `sessions/injection-stats.json` (rolling last 20) for the future
+  `/brain:doctor` — zero added tokens.
+- Selftest 95 → **115 checks** (instinct-track ×7, decisions ×4, qmd-mcp ×5,
+  snapshot ×2, receipts ×3); plugin validates `--strict`.
+
 ## 0.6.0 — 2026-07-17 (Phase 3 complete: develop lifecycle + token discipline)
 
 - **Develop-lifecycle skills** (the v2 schema's verbs):

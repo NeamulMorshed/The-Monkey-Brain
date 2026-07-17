@@ -45,13 +45,36 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check, #8 resume; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | ✅ 2026-07-17 | **Complete, 8/8.** #1/#3/#4/#8 v0.3.0; #2/#5/#6/#7 v0.4.0 — trigger routing (phrases → skills), pre-compact snapshots → `sessions/`, once-per-session unlogged-work stop gate + SessionEnd index-stat self-heal, agent dispatch log + explicit-model gate. #1 grew the no-brain `/brain:init` offer (`.no-brain` silences). Selftest **79/79 GREEN** |
 | **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | ✅ 2026-07-17 | **Complete, 11 skills.** Core 5 (v0.4.0): `/brain:{init,ingest,query,lint,wrap}` — `init` self-contained (bundled template + Node `new-brain.js`; `--sync-template` guard), `lint` injects `scripts/lint.js` via `` !`…` ``. Develop lifecycle (v0.6.0): `/brain:{research,plan,build,review}` — research filed with sources; specs with AC-n + tier, **approval curator-owned**; build test-first with the gates; review files back (synthesis + ADRs + `instincts/pending/` — Gap #9 loop live). Token discipline (v0.6.0): `/brain:terse` (compression guard), `/brain:compress` (permanent, with receipts). Router phrases for all. Selftest **95/95 GREEN** |
 | **P4** Schema v2 template: specs/ projects/ sessions/ decisions/ instincts/ + tiers; `-Update` migration | ✅ 2026-07-17 | v0.5.0 — record layers `specs/ projects/ sessions/ decisions/ instincts/{pending,active} wiki/research/` + templates (spec w/ AC-n·tier·`plan_approved`·`tdd`, decision/ADR, project-status, instinct, research); log prefixes `session\|research\|plan\|build\|review`; **tier gates live**: plan (architecture) + new **TDD gate** (feature+, new code files need a test companion; `tdd: false` opts out); both update paths (`-Update`/`--update`) migrate v1→v2 structure, never touching knowledge; CLAUDE.md ×2 → **v2.0** (section numbers stable); brain-status shows active projects. Selftest **88/88 GREEN** |
-| **P5** Memory tiers + qmd MCP · **P5.5** model routing & parallel fan-out | ⬜ **next** | memory tiers partially in place via P4 (`decisions/`, `instincts/` folders + templates); remaining: auto-distillation, qmd `.mcp.json`, routing frontmatter + agents |
+| **P5** Memory & context engineering: instinct auto-detection, decision auto-distillation, opt-in qmd semantic search, compaction survival, budget receipts | ✅ 2026-07-17 | v0.7.0 — `instinct-track.js` (3+-session edits → `instincts/pending/` advisory); `wrap.js` Stop distillation nudge + `brain-status` "Decisions (the why)" surfacing + `/brain:wrap` step; `qmd-mcp.js` `brain-search` MCP in `.mcp.json` — **dormant/opt-in** (`.qmd` marker or `MONKEY_BRAIN_QMD=1` + qmd on PATH), stdlib no-op server otherwise, SessionEnd `qmd update` re-index, §8 documented; `snapshot.js` now carries active specs/projects; `brain-status` writes `sessions/injection-stats.json` receipts. Selftest **115/115**, validates `--strict` |
+| **P5.5** model routing & parallel fan-out | ⬜ **next** | `model:`/`effort:` frontmatter across skills per the routing policy; `agents/brain-librarian.md` + `agents/brain-researcher.md` (Sonnet); parallel fan-out patterns documented in the skills |
 | **P6** Bundled-plugin manifest · **P6.5** product-design pack | ⬜ | |
 | **P7** Product & game pipelines | ⬜ | |
 | **P8** `/brain:doctor` (15 checks) | ⬜ | |
 | **P9** Dogfood on scratch project → docs v2.0 → lint example brain → PR to `main` | ⬜ | |
 
 ### Session log (engine work, newest first — instances get `sessions/` in P4)
+
+**[2026-07-17] Session 3 — Phase 5 memory & context engineering (v0.7.0)**
+- **P5.1 instinct auto-detection:** new `instinct-track.js` (PostToolUse) mechanizes the
+  Gap-#9 loop — counts edits to each file across **distinct sessions** in
+  `sessions/edit-counts.json` (once per file per session, the low-noise proxy for a
+  recurring correction); at 3+ it fires a **once-per-file advisory** to file a rule in
+  `instincts/pending/`. Never blocks; bookkeeping files exempt.
+- **P5.2 auto-distillation:** `wrap.js` Stop now also blocks **once** when a session's last
+  logged step was `build|review` but no ADR was filed to `decisions/` near it (relative
+  mtimes, no session clock; pre-v2 brains opt out). `brain-status` gained a **"Decisions
+  (the why)"** section (recent ADRs injected every session); `/brain:wrap` distills decisions.
+- **P5.3 semantic search (opt-in qmd):** `qmd-mcp.js` = the `brain-search` MCP in
+  `.mcp.json`, **dormant by default** per schema §8. Hands off to real `qmd mcp` only when
+  brain + opt-in (`.qmd`/`MONKEY_BRAIN_QMD=1`) + qmd on PATH (shell-free scan avoids a
+  Windows false-positive); else a stdlib no-op MCP server (zero tools) so no session shows a
+  failed server. SessionEnd runs a detached `qmd update`; §8 documents enabling; bundle re-synced.
+- **P5.4 compaction survival:** `snapshot.js` now also captures **active specs + projects**
+  (tier/phase/approval) alongside the resume next-steps and log heads.
+- **P5.5 budget receipts (groundwork):** `brain-status` appends each injection's size to
+  `sessions/injection-stats.json` (rolling 20) for the P8 doctor — zero added tokens.
+- **Verified:** selftest 95 → **115 checks ALL GREEN**; `claude plugin validate --strict`
+  passes; five per-step commits (`feat: P5.1…P5.5`) + this tracker.
 
 **[2026-07-17] Session 2 — Phases 2+3+4 completed (v0.4.0 → v0.6.0)**
 - **P3 complete (v0.6.0):** develop-lifecycle skills `/brain:{research,plan,build,review}`
@@ -117,12 +140,12 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 
 **▶ Resume here (next session):** the live pointer is **`resume.md` at the repo root** —
 hook #8 injects it and asks to continue once the plugin is installed; until then, read it
-first. Phases 1–4 are done (plugin v0.6.0, 11 skills, 8 hooks, selftest 95/95). Next:
-**Phase 5** memory engineering — auto-distillation of decisions at session end, qmd
-semantic search bundled via `plugin/.mcp.json` (deferred tool loading), budget receipts —
-and **Phase 5.5** model routing: `model:`/`effort:` frontmatter on skills, the
-`brain-librarian` + `brain-researcher` agents (Sonnet), parallel fan-out patterns.
-Optional dogfood at any point:
+first. Phases 1–5 are done (plugin v0.7.0, 11 skills, **9 hook scripts + 1 MCP wrapper**,
+selftest 115/115). Next: **Phase 5.5** model routing — `model:`/`effort:` frontmatter on
+skills per the routing policy, the `brain-librarian` + `brain-researcher` agents (Sonnet),
+parallel fan-out patterns documented in the skills. Then P6 bundled-plugin manifest · P6.5
+product-design pack · P7 pipelines · P8 `/brain:doctor` (reads the new `injection-stats.json`
+receipts + `edit-counts.json`) · P9 dogfood + PR to `main`. Optional dogfood at any point:
 `/plugin marketplace add "F:\The Monkey Brain\The-Monkey-Brain"` → `/plugin install brain@monkey-brain`.
 
 ---
