@@ -4,8 +4,8 @@ type: schema
 status: living
 tags: [schema, config, conventions]
 created: 2026-06-17
-updated: 2026-06-17
-version: 1.0
+updated: 2026-07-17
+version: 2.0
 ---
 
 # 🐵 The Monkey Brain — Schema & Operating Manual
@@ -42,11 +42,22 @@ The-Monkey-Brain/
 │   ├── sources/          # One summary page per ingested raw source.
 │   ├── concepts/         # Topic / concept pages (the synthesis layer).
 │   ├── entities/         # Named things: tools, plugins, products, people.
-│   └── syntheses/        # Cross-cutting analyses, comparisons, query results filed back.
+│   ├── syntheses/        # Cross-cutting analyses, comparisons, query results filed back.
+│   └── research/         # v2 ★ filed research runs (web + codebase) feeding specs/decisions.
 ├── schema/               # CONFIG. This file + page templates. Co-evolved with curator.
 │   ├── CLAUDE.md         # ← you are here
 │   └── templates/        # Frontmatter/page skeletons for each page type.
 └── Clippings/            # Obsidian Web Clipper drop zone (staging before raw-sources).
+```
+
+**Schema v2 record layers** (per-project `.brain/` instances add, beside `wiki/`):
+
+```
+specs/          # acceptance-criteria specs — the plan & TDD gates read these
+projects/       # one status page per workstream: tier, phase, audit fields
+sessions/       # hook-written: compaction snapshots, agent dispatch log
+decisions/      # ADRs — durable "why" records distilled from work
+instincts/      # learned correction rules: pending/ (proposed) → active/ (injected)
 ```
 
 **Layer rules**
@@ -55,6 +66,11 @@ The-Monkey-Brain/
   canonical file into `raw-sources/` so the immutable layer is self-contained.
 - **wiki** — You own it. Create, update, cross-link, keep consistent.
 - **schema** — Update deliberately, with the curator, and bump `version` + `updated`.
+- **specs / projects / decisions** — co-owned records: the LLM drafts, the curator approves
+  (tier changes, `plan_approved`, ADR acceptance).
+- **sessions** — hook-written; append, never rewrite.
+- **instincts** — the LLM proposes in `pending/` (3+ repeated corrections earn a rule);
+  only the curator promotes to `active/`, which then injects at every session start.
 
 ---
 
@@ -66,8 +82,13 @@ The-Monkey-Brain/
 | Concept | `wiki/concepts/` | A topic synthesized across sources | kebab-case noun, e.g. `context-window.md` |
 | Entity | `wiki/entities/` | A named tool/product/plugin/person | kebab-case proper noun, e.g. `superpowers.md` |
 | Synthesis | `wiki/syntheses/` | Comparison / analysis / filed-back query | descriptive, e.g. `claude-md-vs-skills-vs-hooks.md` |
+| Research ★ | `wiki/research/` | A filed research run: question → findings → recommendation | descriptive, e.g. `auth-provider-options.md` |
 | Index | `wiki/index.md` | Catalog of everything | fixed |
 | Log | `wiki/log.md` | Chronological audit | fixed |
+
+**v2 records** (instances; templates ship in `templates/`): Spec (`specs/`, numbered ACs +
+tier + approval) · Project status (`projects/`, one per workstream) · Decision/ADR
+(`decisions/`) · Instinct (`instincts/pending|active/`). Same kebab-case slugs.
 
 **Slugs are kebab-case, lowercase, no spaces.** A wikilink `[[context-window]]` must
 resolve to exactly one page. Page filename == slug == link target.
@@ -98,6 +119,10 @@ aliases: []                                         # alternate names, for link 
 - `sources` is **provenance** — every non-source page must cite which raw sources back it.
 - Always update `updated:` when you touch a page. Never backdate `created:`.
 - Convert relative dates in sources ("today", "last week") to **absolute** dates.
+- **v2 record fields** (specs/projects): `tier: quick|feature|architecture` ·
+  `phase: research|plan|build|review|done` · `plan_approved: true|false` (curator-set;
+  opens the architecture source gate) · `audit_score` · `tdd: false` (opts a spec out of
+  the TDD gate).
 
 ---
 
@@ -146,6 +171,29 @@ Periodically health-check the wiki. Scan for:
 Log it `## [YYYY-MM-DD] lint | <scope>` with findings + fixes. Lint is also where you
 **suggest new questions and sources** to the curator.
 
+### 4.4 Develop (Research → Plan → Build → Review) — v2, for feature work
+
+1. **Research** — investigate (web + codebase), file findings to `wiki/research/` with
+   sources and a recommendation. Log `research | <topic>`.
+2. **Plan** — produce `specs/<feature>.md` with **numbered acceptance criteria** (AC-1,
+   AC-2…) and a **tier**; architecture tiers need the curator's `plan_approved: true`
+   before source code may be written. Log `plan | <feature>`.
+3. **Build** — work the ACs test-first; the TDD gate (feature+ tiers) blocks new source
+   files that have no test companion. Log `build | <feature>`.
+4. **Review** — verify every AC, run checks, file findings back (wiki page / ADR);
+   decisions distill into `decisions/`. Log `review | <feature>`.
+
+**Project tiers** (gate strictness, read by the enforcement hooks):
+
+| Tier | Meant for | Enforcement |
+| --- | --- | --- |
+| `quick` | <2h fixes, chores | advisory only |
+| `feature` | normal feature work | TDD gate blocks new source files without a test (spec `tdd: false` opts out); plan may be verbal |
+| `architecture` | structural change | hard plan gate (`plan_approved: true` required) + TDD gate |
+
+**All log prefixes:**
+`ingest | query | lint | schema | feat | session | research | plan | build | review`.
+
 ---
 
 ## 5. Linking & graph conventions
@@ -171,6 +219,8 @@ The vault is a git repo of markdown. Treat every knowledge integration as a comm
   - `lint: <scope> — <n> fixes`
   - `schema: <what changed>`
   - `feat: <structural change>`
+  - v2: `research: <topic>` · `plan: <feature>` · `build: <feature>` ·
+    `review: <feature>` · `session: <summary>`
 - Keep `.obsidian/` workspace noise out of meaningful diffs where practical.
 
 ---
@@ -210,6 +260,9 @@ NEW SOURCE   → read → copy to raw-sources → summary page → cross-link 5�
 QUESTION     → read index → drill in → answer w/ citations → file back if novel
              → update index/log → commit "query: …"
 HEALTH CHECK → scan contradictions/stale/orphans/missing/broken → fix → log → commit "lint: …"
+FEATURE      → research (wiki/research/) → spec w/ AC-n + tier (specs/) → curator approval
+             (architecture) → build test-first → review vs ACs → ADRs to decisions/
+             → log/commit per step: "research: … | plan: … | build: … | review: …"
 ```
 
 See also: [[index]] · [[log]] · [[llm-wiki]] (the founding pattern)

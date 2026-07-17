@@ -5,7 +5,7 @@ status: living
 tags: [schema, config, monkey-brain]
 created: {{DATE}}
 updated: {{DATE}}
-engine_version: 1.0
+engine_version: 2.0
 project: "{{PROJECT}}"
 ---
 
@@ -16,9 +16,9 @@ This `.brain/` is a **Monkey Brain instance**: a persistent, compounding knowled
 This file is its **operating manual** — it loads automatically when you run `claude` from the
 project root, telling me how to maintain this brain.
 
-> **Roles.** You are the **curator** (sources, exploration, questions). I am the **maintainer**
-> (summarizing, cross-referencing, filing, bookkeeping). Obsidian is the **IDE**; this brain is
-> the **codebase**; ingesting a source is a **compile**.
+> **Roles.** You are the **curator** (sources, exploration, questions, approvals). I am the
+> **maintainer** (summarizing, cross-referencing, filing, bookkeeping). Obsidian is the **IDE**;
+> this brain is the **codebase**; ingesting a source is a **compile**.
 >
 > I own `wiki/` entirely. I never modify `raw-sources/`. We co-evolve this file over time.
 >
@@ -32,99 +32,135 @@ project root, telling me how to maintain this brain.
 ```
 .brain/
 ├── CLAUDE.md             # ← this operating manual (loads with `claude` at project root)
-├── Clippings/            # Obsidian Web Clipper drop zone — staging before raw-sources/.
-├── raw-sources/          # IMMUTABLE inputs. Read-only. The source of truth.
-│   └── assets/           # Local images/attachments.
-├── wiki/                 # MAINTAINER-OWNED. I create & maintain everything here.
-│   ├── index.md          # Content catalog — navigation hub. Updated every ingest.
-│   ├── log.md            # Chronological, append-only audit trail.
-│   ├── dashboard.md      # Live Dataview tables (health, hubs, orphans).
-│   ├── sources/          # One summary page per ingested raw source.
-│   ├── concepts/         # Topic / concept pages (the synthesis layer).
-│   ├── entities/         # Named things: tools, products, people, systems.
-│   └── syntheses/        # Cross-cutting analyses, comparisons, filed-back answers.
-└── memory/               # Durable project facts/decisions not derivable from the wiki.
+├── Clippings/            # Web Clipper staging — transient, git-ignored. Never canonical.
+├── raw-sources/          # IMMUTABLE inputs + assets/. Read-only. The source of truth.
+├── wiki/                 # MAINTAINER-OWNED knowledge. I create & maintain everything here.
+│   ├── index.md          # Content catalog — read first on any query. log.md — append-only
+│   ├── dashboard.md      #   audit trail. dashboard.md — live Dataview tables.
+│   ├── sources/ concepts/ entities/ syntheses/
+│   └── research/         # filed research runs (web + codebase), feeding specs/decisions
+├── specs/                # acceptance-criteria specs — the plan & TDD gates read these
+├── projects/             # one status page per workstream (tier, phase, audit fields)
+├── sessions/             # HOOK-WRITTEN: compaction snapshots, agent dispatch log
+├── decisions/            # ADRs — durable "why" records distilled from work
+├── instincts/            # learned correction rules: pending/ (proposed) → active/ (injected)
+└── memory/               # durable project facts not derivable from the wiki
 ```
 
 **Layer rules**
-- **Clippings** — transient staging only. Never the canonical copy; not committed (its own
-  `.gitignore` keeps drops out of git). On ingest, copy the canonical file into `raw-sources/`.
-- **raw-sources** — never edit. On ingest, copy the canonical file here so the layer is self-contained.
-- **wiki** — I own it. Create, update, cross-link, keep consistent.
-- **memory** — short durable notes (decisions, constraints, "why") that guide future work.
+- **Clippings** — staging only; on ingest, copy the canonical file into `raw-sources/`.
+- **raw-sources** — never edit existing files; new sources are added by the ingest flow.
+- **wiki** — mine. Create, update, cross-link, keep consistent.
+- **specs / projects / decisions** — co-owned records: I draft, the curator approves
+  (`plan_approved`, tier changes, ADR acceptance).
+- **sessions** — hook-written (snapshots, agent log); append, don't rewrite.
+- **instincts** — I propose in `pending/` (3+ repeated corrections earn a rule); only the
+  curator promotes to `active/`, which then injects at every session start.
+- **memory** — short durable notes (decisions, constraints, "why") guiding future work.
 
 ---
 
-## 2. Page types
+## 2. Page & record types
 
-| Type | Folder | Purpose | Naming |
+| Type | Folder | Purpose | Template |
 | --- | --- | --- | --- |
-| Source summary | `wiki/sources/` | Takeaways from one raw source + what it touched | matches source slug |
-| Concept | `wiki/concepts/` | A topic synthesized across sources | kebab-case noun |
-| Entity | `wiki/entities/` | A named tool/product/person/system | kebab-case proper noun |
-| Synthesis | `wiki/syntheses/` | Comparison / analysis / filed-back query | descriptive slug |
-| Index | `wiki/index.md` | Catalog of everything | fixed |
-| Log | `wiki/log.md` | Chronological audit | fixed |
+| Source summary | `wiki/sources/` | Takeaways from one raw source | `templates/source.md` |
+| Concept | `wiki/concepts/` | A topic synthesized across sources | `templates/concept.md` |
+| Entity | `wiki/entities/` | A named tool/product/person/system | `templates/entity.md` |
+| Synthesis | `wiki/syntheses/` | Comparison / analysis / filed-back answer | `templates/synthesis.md` |
+| Research | `wiki/research/` | A filed research run with findings + recommendation | `templates/research.md` |
+| Spec | `specs/` | Feature spec with numbered ACs, tier, approval | `templates/spec.md` |
+| Project status | `projects/` | Workstream state: tier, phase, audit | `templates/project-status.md` |
+| Decision (ADR) | `decisions/` | Context → decision → consequences | `templates/decision.md` |
+| Instinct | `instincts/{pending,active}/` | A learned correction rule | `templates/instinct.md` |
 
 Slugs are **kebab-case, lowercase, no spaces**. A `[[wikilink]]` must resolve to exactly one page.
 
 ---
 
-## 3. Frontmatter standard (every wiki page)
+## 3. Frontmatter standard
+
+Every wiki page (schema as v1):
 
 ```yaml
 ---
 title: "Human Readable Title"
-type: source | concept | entity | synthesis
+type: source | concept | entity | synthesis | research
 status: stub | draft | active | stale | superseded
 tags: [kebab, case]
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
-sources: ["[[source-page]]"]      # provenance for concept/entity/synthesis
-related: ["[[other-page]]"]       # outbound conceptual links
-aliases: []                       # alternate names for link resolution
+sources: ["[[source-page]]"]      # provenance for non-source pages
+related: ["[[other-page]]"]
+aliases: []
 ---
 ```
 
-Update `updated:` whenever you touch a page. Convert relative dates ("today") to absolute.
-Every non-source page must **cite its sources**. Link **raw source files** with relative
-markdown links (`../../raw-sources/...`), NOT `[[wikilinks]]`.
+Records add (specs/projects): **`tier`** `quick|feature|architecture` · **`phase`**
+`research|plan|build|review|done` · **`plan_approved`** `true|false` · **`audit_score`**.
+Update `updated:` whenever you touch a page. Convert relative dates to absolute. Every
+non-source page **cites its sources**. Link raw source files with relative markdown links
+(`../../raw-sources/...`), NOT `[[wikilinks]]`.
 
 ---
 
 ## 4. The Knowledge SDLC
 
 ### Ingest (compile) — when a source is added
-1. Read it fully. 2. Copy into `raw-sources/` (canonicalize from `Clippings/` if that's where it
-landed, or from a direct paste/fetch). 3. Write a `wiki/sources/` summary.
-4. **Cross-link 5–10+ pages** (create/update concepts & entities, reciprocal links, flag
-contradictions, set `status: stale` where superseded). 5. Update `wiki/index.md`.
-6. Append `wiki/log.md` (`## [YYYY-MM-DD] ingest | <Title>`). 7. Offer a commit.
+1. Read it fully. 2. Copy into `raw-sources/` (canonicalize from `Clippings/` or a paste).
+3. Write a `wiki/sources/` summary. 4. **Cross-link 5–10+ pages** (create/update concepts &
+entities, reciprocal links, flag contradictions, mark `stale` where superseded).
+5. Update `wiki/index.md`. 6. Append `wiki/log.md`. 7. Offer a commit.
 
 ### Query (deploy) — when asked a question
-Read `index.md` first → drill in → answer **with citations** → **file novel answers back** into
-`wiki/syntheses/` so explorations compound. Log it (`## [YYYY-MM-DD] query | <question>`).
+Read `index.md` first → drill in → answer **with citations** → **file novel answers back**
+into `wiki/syntheses/` so explorations compound. Log it.
 
 ### Lint (test) — periodically
-Scan for contradictions, stale claims, orphans (no inbound links), missing pages, broken
-`[[links]]`, gaps. Fix, then log (`## [YYYY-MM-DD] lint | <scope>`). Suggest new questions/sources.
+Scan for contradictions, stale claims, orphans, missing pages, broken `[[links]]`, gaps.
+Fix, log, suggest new questions/sources.
+
+### Develop (research → plan → build → review) — for feature work
+**Research** files findings to `wiki/research/` → **Plan** produces `specs/<feature>.md`
+with numbered ACs and a tier (curator approves architecture tiers) → **Build** works the
+ACs test-first → **Review** verifies and files results; decisions distill into `decisions/`.
+
+**Log prefixes** (`wiki/log.md`, append-only):
+`ingest | query | lint | schema | feat | session | research | plan | build | review`.
 
 ---
 
-## 5. Conventions
+## 5. Project tiers (gate strictness)
+
+| Tier | Meant for | Enforcement (hooks) |
+| --- | --- | --- |
+| `quick` | <2h fixes, chores | advisory only — no hard gates |
+| `feature` | normal feature work | **TDD gate**: new source files need a test companion (spec `tdd: false` opts out); plan may be verbal |
+| `architecture` | structural change | **hard plan gate**: source writes blocked until the spec has `plan_approved: true` (+ TDD gate) |
+
+The tier lives in the spec (and the workstream default in `projects/`). Gates degrade
+gracefully: no active spec → no gate.
+
+---
+
+## 6. Conventions
+
 - Link **liberally and reciprocally**; every new page needs ≥1 inbound link (no orphans).
 - A `[[link]]` to a not-yet-existing page is a deliberate TODO marker — fine to leave.
-- Obsidian may create 0-byte stray files from unresolved links at the brain root — delete them on lint.
-- Use **Mermaid** for diagrams, **Marp** (`marp: true`) for decks, **Dataview** for live tables
-  (the `dashboard.md` already does this).
-- Watch for slug collisions between a source-summary and a concept of the same name.
+- Obsidian may create 0-byte stray files at the brain root — delete them on lint.
+- **Mermaid** for diagrams, **Marp** (`marp: true`) for decks, **Dataview** for live tables.
+- Watch for slug collisions between a source summary and a concept of the same name.
 
-## 6. Git
-This `.brain/` is committed **with the {{PROJECT}} project repo**. Commit per logical step:
-`ingest: <title>`, `query: <q>`, `lint: <scope>`, `schema: <change>`.
+## 7. Git
 
-## 7. Engine
-This brain was scaffolded by **The Monkey Brain** engine. To refresh conventions later, re-run
-the engine's `bootstrap/new-brain` update path — it updates this file/templates, never your `wiki/`.
+This `.brain/` is committed **with the {{PROJECT}} repo**. Commit per logical step using
+the log prefixes as message conventions (`ingest: <title>`, `plan: <feature>`, …).
+`Clippings/` staging and its drops stay out of git.
+
+## 8. Engine
+
+Scaffolded by **The Monkey Brain** engine (schema v2.0). To refresh conventions later, run
+the engine's update path (`new-brain.ps1 -Update` or `/brain:init --update`) — it updates
+this file, `templates/`, and missing folders, never your knowledge.
 
 See also: [[index]] · [[log]] · [[dashboard]]
