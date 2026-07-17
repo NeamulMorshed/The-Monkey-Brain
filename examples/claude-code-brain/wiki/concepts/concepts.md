@@ -4,7 +4,7 @@ type: concept
 status: active
 tags: [moc, category, navigation]
 created: 2026-06-17
-updated: 2026-06-17
+updated: 2026-07-17
 sources: ["[[llm-wiki]]"]
 related: ["[[index]]", "[[entities]]", "[[syntheses]]", "[[wiki-layer]]"]
 aliases: ["concept", "concept pages"]
@@ -20,7 +20,8 @@ pages synthesized across [[index|sources]]. A concept page is created or updated
 ## Clusters
 - **Method & architecture:** [[llm-wiki-pattern]], [[rag]], [[knowledge-sdlc]],
   [[ingest-compile]], [[query-deploy]], [[lint-test]], [[raw-sources-layer]], [[wiki-layer]],
-  [[schema-layer]], [[index-and-log]], [[obsidian-ecosystem]], [[dataview]], [[search-tooling]].
+  [[schema-layer]], [[index-and-log]], [[obsidian-ecosystem]], [[dataview]], [[search-tooling]],
+  [[domain-expertise-packs]].
 - **Claude Code — permissions:** [[permission-modes]], [[auto-mode]], [[plan-mode]],
   [[protected-paths]], [[permission-rules]], [[read-only-commands]], [[settings-precedence]].
 - **Claude Code — context:** [[context-window]], [[compaction]], [[claude-md]], [[memory]], [[rules]].

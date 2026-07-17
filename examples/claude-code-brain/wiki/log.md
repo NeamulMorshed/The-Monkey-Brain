@@ -189,3 +189,13 @@ The **expertise-pack exemplar** of the v2 research cluster. Summary → [[source
 the [[qmd]] family scaled down), [[plugins]] (marketplace + npm CLI distribution). Boundary
 flagged: its knowledge is frozen at publish — the compounding fix is specced in
 [[domain-expertise-packs]]. Vault now 16 sources / 67 pages. Touched: 9 pages.
+
+## [2026-07-17] query | v2 benchmarks reconciled (filed back)
+Question: what does each benchmark solve, what do we adopt, where do we beat them? Filed
+[[monkey-brain-vs-mewvault]] — the triangle ([[mewvault]] enforces quality · [[caveman]]
+enforces economy · the [[llm-wiki-pattern]] compounds knowledge), adoption list traced to
+sources, and the differentiation scorecard. **New concept** [[domain-expertise-packs]] (the
+[[ui-ux-pro-max]] anatomy generalized; static packs vs compounding packs). Added a
+*v2 Benchmarks* branch to the [[index]] mindmap. This completes the research step (P9.2) of
+the engine's `ROADMAP.md` v0.2 — next: Phase 1 plugin skeleton. Vault now 16 sources / 69
+pages. Touched: 6 pages.
