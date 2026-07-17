@@ -14,7 +14,8 @@
  *
  *   SessionEnd (the MECHANIC): self-heal wiki/index.md frontmatter stats
  *   (source_count / page_count / updated) from the filesystem — deterministic
- *   bookkeeping, zero model tokens. (Semantic re-index lands with qmd, P5.)
+ *   bookkeeping, zero model tokens. Plus, when the brain opted into qmd, a
+ *   detached `qmd update` re-index so new pages are searchable next session.
  *
  * Loop protection on Stop: stop_hook_active input flag + a once-per-session
  * marker file in the OS temp dir. Outside a brain, or on any internal error:
@@ -138,6 +139,28 @@ function refreshIndex(brain) {
   fs.writeFileSync(idxPath, head + text.slice(m[0].length), 'utf8');
 }
 
+/**
+ * Semantic-search re-index (Phase 5 item 3). Only when the brain opted into qmd
+ * (empty `.qmd` marker or MONKEY_BRAIN_QMD=1): spawn `qmd update` DETACHED so
+ * fresh pages are searchable next session. Best-effort — if qmd isn't installed
+ * the spawn errors and is swallowed; never affects the hook's exit.
+ */
+function reindex(brain) {
+  try {
+    if (process.env.MONKEY_BRAIN_QMD !== '1' && !fs.existsSync(path.join(brain, '.qmd'))) return;
+    const { spawn } = require('child_process');
+    const c = spawn('qmd', ['update'], {
+      cwd: brain,
+      stdio: 'ignore',
+      shell: process.platform === 'win32',
+      windowsHide: true,
+      detached: true,
+    });
+    c.on('error', () => {});
+    c.unref();
+  } catch {}
+}
+
 async function main() {
   const input = await lib.readStdinJson();
   const brain = lib.findBrainDir(input.cwd);
@@ -146,7 +169,10 @@ async function main() {
   if (evt === 'Stop') {
     stopCheck(input, brain);   // may block+exit; otherwise fall through
     decisionCheck(input, brain);
-  } else if (evt === 'SessionEnd') refreshIndex(brain);
+  } else if (evt === 'SessionEnd') {
+    refreshIndex(brain);
+    reindex(brain);
+  }
 }
 
 main().then(() => process.exit(0)).catch(() => process.exit(0));

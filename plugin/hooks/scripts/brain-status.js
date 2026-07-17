@@ -120,6 +120,14 @@ async function main() {
     sections.push([2, `**Decisions (the why):** ${decisionFiles.length} ADR(s) in \`${rel}/decisions/\` — latest: ${recent.join(', ')}. Consult these before re-deciding anything they cover.`]);
   }
 
+  // Semantic search (qmd) — enabled state, else the §8 "outgrew the index" nudge.
+  const qmdOn = fs.existsSync(path.join(brain, '.qmd')) || process.env.MONKEY_BRAIN_QMD === '1';
+  if (qmdOn) {
+    sections.push([1, `**🔎 Semantic search:** enabled — query the \`brain-search\` MCP (qmd) before substantive work; it surfaces pages the index doesn't.`]);
+  } else if (Number(idxFm.page_count || 0) >= 80) {
+    sections.push([2, `**🔎 Search:** ${idxFm.page_count} wiki pages — nearing the index's comfortable ceiling (~100). Consider enabling semantic search (\`${rel}/CLAUDE.md\` §8): install qmd, then \`touch ${rel}/.qmd\`.`]);
+  }
+
   const logHeads = (lib.readTextSafe(path.join(brain, 'wiki', 'log.md')).match(/^## \[.*$/gm) || []).slice(-3);
   if (logHeads.length) {
     sections.push([2, `**Recent log:**\n${logHeads.map((h) => `- ${h.replace(/^## /, '')}`).join('\n')}`]);

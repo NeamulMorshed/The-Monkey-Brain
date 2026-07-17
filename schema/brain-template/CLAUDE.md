@@ -163,4 +163,15 @@ Scaffolded by **The Monkey Brain** engine (schema v2.0). To refresh conventions 
 the engine's update path (`new-brain.ps1 -Update` or `/brain:init --update`) — it updates
 this file, `templates/`, and missing folders, never your knowledge.
 
+**Semantic search (optional, deferred).** `wiki/index.md` *is* the search engine until this
+wiki outgrows it (~100 sources). Past that, enable on-device semantic search:
+
+1. Install qmd — `npm i -g @tobilu/qmd` (needs Node ≥ 22).
+2. Index this wiki — `qmd collection add ./wiki` then `qmd update && qmd embed`.
+3. Turn it on — create an empty **`.qmd`** marker in this brain (or set `MONKEY_BRAIN_QMD=1`).
+
+The engine then activates the **`brain-search`** MCP (qmd's `query` / `get` tools, deferred
+by Tool Search) — query it before substantive work, and the session-end hook keeps the index
+fresh. Until enabled it stays fully dormant (zero token cost).
+
 See also: [[index]] · [[log]] · [[dashboard]]

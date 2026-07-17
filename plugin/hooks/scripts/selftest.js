@@ -386,6 +386,41 @@ try {
   it = run('instinct-track.js', { cwd: PLAIN_D, hook_event_name: 'PostToolUse', session_id: 's', tool_input: { file_path: path.join(PLAIN_D, 'foo.js') } });
   check('no brain ⇒ instinct-track silent', it.status === 0 && it.stdout === '', `status=${it.status}`);
 
+  // ---------- qmd-mcp: semantic-search MCP wrapper, dormant until enabled (P5.3) ----------
+  console.log('qmd-mcp.js (semantic search MCP — dormant stub until enabled)');
+  const QMDMCP = path.join(HERE, 'qmd-mcp.js');
+  const rpcLines =
+    [
+      JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {} } }),
+      JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
+      JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }),
+    ].join('\n') + '\n';
+  const parseRpc = (stdout) => (stdout || '').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+  const runMcp = () => spawnSync(process.execPath, [QMDMCP], { input: rpcLines, cwd: PROJ, encoding: 'utf8', timeout: 15000, env: { ...process.env, MONKEY_BRAIN_QMD: '' } });
+  // Reliable shell-free PATH scan (mirrors the wrapper), so the guard below is deterministic.
+  const qmdOnPath = () => {
+    const win = process.platform === 'win32';
+    const names = win ? (process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM').split(';').map((e) => 'qmd' + e.trim().toLowerCase()) : ['qmd'];
+    return (process.env.PATH || '').split(path.delimiter).filter(Boolean).some((d) => names.some((n) => { try { return fs.statSync(path.join(d, n)).isFile(); } catch { return false; } }));
+  };
+  let q = runMcp();
+  let qm = parseRpc(q.stdout);
+  const initResp = qm.find((m) => m.id === 1);
+  const listResp = qm.find((m) => m.id === 2);
+  check('qmd-mcp is a valid MCP server (initialize → serverInfo brain-search)', !!(initResp && initResp.result && initResp.result.serverInfo && initResp.result.serverInfo.name === 'brain-search'), (q.stdout || '').slice(0, 200));
+  check('qmd-mcp exposes zero tools when not enabled (dormant)', !!(listResp && listResp.result && Array.isArray(listResp.result.tools) && listResp.result.tools.length === 0), (q.stdout || '').slice(0, 200));
+  check('qmd-mcp never replies to notifications', qm.every((m) => m.id === 1 || m.id === 2));
+  check('qmd-mcp exits cleanly on stdin close', q.status === 0, `status=${q.status} stderr=${(q.stderr || '').slice(0, 150)}`);
+  if (!qmdOnPath()) {
+    fs.writeFileSync(path.join(BRAIN, '.qmd'), '');
+    q = runMcp();
+    qm = parseRpc(q.stdout);
+    check('opted-in but qmd absent falls back to the dormant stub (never crashes)', q.status === 0 && qm.some((m) => m.id === 1 && m.result), `status=${q.status}`);
+    fs.rmSync(path.join(BRAIN, '.qmd'), { force: true });
+  } else {
+    check('qmd installed — real handoff path (stub-fallback test skipped)', true);
+  }
+
   // ---------- /brain:init scaffold ----------
   console.log('new-brain.js (skill /brain:init scaffold)');
   const INITP = path.join(ROOT, 'init-proj');
