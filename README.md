@@ -23,6 +23,8 @@ own sources, wiki, and memories, fully isolated from every other project.
 ```
 The-Monkey-Brain/               ← THE ENGINE (this repo)
 ├── README.md                   ← you are here
+├── .claude-plugin/             ← marketplace manifest — this repo is its own plugin marketplace
+├── plugin/                     ← the `brain` plugin: hooks + Node runtime (+ skills soon) — v2, see ROADMAP.md
 ├── bootstrap/
 │   ├── new-brain.ps1 / .sh     ← scaffold (or refresh) a .brain in a project
 │   └── lint-brain.ps1          ← health-check any brain (broken links, orphans)
@@ -31,7 +33,7 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 │   ├── templates/              ← page skeletons (source/concept/entity/synthesis)
 │   └── brain-template/         ← exactly what gets copied into a new .brain
 └── examples/
-    └── claude-code-brain/      ← a complete worked brain (60 pages) to learn from
+    └── claude-code-brain/      ← a complete worked brain (69 pages) to learn from
 
 <your-project>/.brain/          ← AN INSTANCE (created by the script; committed with the project)
 ├── CLAUDE.md                   ← loads when you run `claude` at the project root
@@ -87,7 +89,7 @@ Open `.brain\` as an Obsidian vault to browse the graph, dashboard, and links.
 | Location | **`.brain/` inside the project**, committed with the project's repo. |
 | Driver | **Claude Code opened per project** — the instance's `CLAUDE.md` auto-loads. |
 | Isolation | Each `.brain/` is a separate graph/log/memory. No cross-project bleed. |
-| Example | The Claude Code knowledge brain (60 pages) is bundled under `examples/`. |
+| Example | The Claude Code knowledge brain (69 pages) is bundled under `examples/`. |
 
 ### Loading caveat
 Claude Code reads `CLAUDE.md` from the working directory **up to the repo root**, so launching
@@ -99,8 +101,8 @@ or add a one-line root `CLAUDE.md` containing `@.brain/CLAUDE.md` so it always i
 
 ## What a finished brain looks like
 
-See [`examples/claude-code-brain/`](examples/claude-code-brain/) — a real brain that compiled 12
-sources into 60 cross-linked, lint-clean pages (0 broken links, 0 orphans), complete with a
+See [`examples/claude-code-brain/`](examples/claude-code-brain/) — a real brain that compiled 16
+sources into 69 cross-linked, lint-clean pages (0 broken links, 0 orphans), complete with a
 Mermaid index map, a Dataview dashboard, and a Marp overview deck. Start at its
 [`wiki/index.md`](examples/claude-code-brain/wiki/index.md).
 

@@ -43,13 +43,38 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P9.2** Research ingests: Caveman, MewVault, ui-ux-pro-max → example brain; filed `monkey-brain-vs-mewvault` synthesis + `domain-expertise-packs` concept | ✅ 2026-07-17 | 4 commits (`ingest:` ×3, `query:` ×1); vault 16 sources / 69 pages |
 | **P1** Plugin skeleton: `plugin/` (plugin.json, hooks.json, skills/, agents/, .mcp.json), root `marketplace.json`, Node hook runtime | ✅ 2026-07-17 | plugin named **`brain`** (→ `/brain:*` commands), displayName "The Monkey Brain", marketplace **`monkey-brain`** → install `brain@monkey-brain`; both manifests pass `claude plugin validate --strict`; MIT licensed; Node.js 24.18.0 LTS installed 2026-07-17 |
 | **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check first; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | 🔶 in progress | **#1/#3/#4 shipped 2026-07-17** (v0.2.0) — 23-check selftest ALL GREEN (`node plugin/hooks/scripts/selftest.js`); gates degrade gracefully (plan gate dormant until P4 `specs/`; TDD gate deferred to P4 tiers). Remaining: #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track |
-| **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | ⬜ | |
+| **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | ⬜ **next** | start with the 5 core SDLC skills; `/brain:init` wraps `bootstrap/` via `${CLAUDE_PLUGIN_ROOT}`; then wire hooks #2 trigger-router + #6 wrap (P2 remainder) to them |
 | **P4** Schema v2 template: specs/ projects/ sessions/ decisions/ instincts/ + tiers; `-Update` migration | ⬜ | |
 | **P5** Memory tiers + qmd MCP · **P5.5** model routing & parallel fan-out | ⬜ | |
 | **P6** Bundled-plugin manifest · **P6.5** product-design pack | ⬜ | |
 | **P7** Product & game pipelines | ⬜ | |
 | **P8** `/brain:doctor` (15 checks) | ⬜ | |
 | **P9** Dogfood on scratch project → docs v2.0 → lint example brain → PR to `main` | ⬜ | |
+
+### Session log (engine work, newest first — instances get `sessions/` in P4)
+
+**[2026-07-17] Session 1 — research → plugin → enforcement (9 commits)**
+- **P9.2** Ingested the 3 benchmarks into `examples/claude-code-brain/` (now 16 sources /
+  69 pages, lint-clean): Caveman `2095b5c` · MewVault `39361de` · ui-ux-pro-max `559830d`;
+  filed `monkey-brain-vs-mewvault` + `domain-expertise-packs` `b224e18`; tracker `63839f0`.
+- **P1** Plugin skeleton `47b0259`: plugin **`brain`** (displayName "The Monkey Brain") at
+  `plugin/`; repo doubles as marketplace **`monkey-brain`** (`.claude-plugin/marketplace.json`)
+  → install `brain@monkey-brain`, commands `/brain:*`. MIT license `f2e2835`.
+- **Environment:** Node.js 24.18.0 LTS installed via winget (hook runtime; fresh PowerShell
+  sessions may need a PATH refresh).
+- **P2 tranche 1** `ce1a692` (plugin v0.2.0): hook #1 `brain-status` (budgeted ≤3k
+  SessionStart injection), #3 `guards` (secrets everywhere · raw-sources add-only · log
+  append-only · architecture plan gate), #4 `wiki-check` (self-healing: frontmatter/orphan
+  failures block into context; TODO `[[links]]` advisory). **Verified:**
+  `node plugin/hooks/scripts/selftest.js` → 23/23 GREEN; both manifests pass
+  `claude plugin validate --strict`.
+
+**▶ Resume here (next session):** build **Phase 3 core skills** —
+`plugin/skills/{init,ingest,query,lint,wrap}/SKILL.md` (`/brain:init` wraps `bootstrap/`
+via `${CLAUDE_PLUGIN_ROOT}`), then hooks **#2 trigger-router** (natural phrases → those
+skills) and **#6 wrap**. After that: #5 snapshot, #7 agent-track, then P4 schema v2.
+Optional dogfood at any point:
+`/plugin marketplace add "F:\The Monkey Brain\The-Monkey-Brain"` → `/plugin install brain@monkey-brain`.
 
 ---
 
