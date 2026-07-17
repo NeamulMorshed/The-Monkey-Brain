@@ -95,6 +95,16 @@ try {
   r = run('brain-status.js', evt({ cwd: os.tmpdir(), hook_event_name: 'SessionStart' }));
   check('silent no-op without a brain', r.status === 0 && r.stdout === '', `status=${r.status} stdout=${JSON.stringify(r.stdout)}`);
 
+  // Budget-receipt groundwork (P5.5): the startup injection above left a receipt.
+  const ISTATS = path.join(BRAIN, 'sessions', 'injection-stats.json');
+  check('brain-status writes an injection-stats receipt', fs.existsSync(ISTATS), 'no injection-stats.json');
+  if (fs.existsSync(ISTATS)) {
+    const st = JSON.parse(fs.readFileSync(ISTATS, 'utf8'));
+    const last = Array.isArray(st) ? st[st.length - 1] : {};
+    check('receipt records numeric tokens/budget + section accounting', typeof last.tokens === 'number' && last.tokens > 0 && typeof last.budget === 'number' && last.sections_kept <= last.sections_total, JSON.stringify(last));
+    check('receipt was NOT injected into context (zero added tokens)', !ctx.includes('injection-stats') && !ctx.includes('sections_kept'));
+  }
+
   // ---------- hook #3: guards ----------
   console.log('guards.js (#3 PreToolUse)');
   r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: path.join(BRAIN, 'raw-sources', 'existing.md'), old_string: 'immutable', new_string: 'changed' } }));

@@ -9,6 +9,9 @@
  *   - over budget, whole low-priority sections drop — the identity/manual
  *     and index lines are never dropped;
  *   - optimize by injecting less, never by transforming the prompt;
+ *   - after rendering, append an injection-size receipt to
+ *     sessions/injection-stats.json (Phase 5 item 5) for the future
+ *     /brain:doctor — zero added tokens, best-effort, never blocks;
  *   - no .brain/ → a ONE-LINE /brain:init offer on startup only (Phase 3 —
  *     the no-brain fallback of the activation architecture), permanently
  *     silenced by a `.no-brain` marker at the project root;
@@ -146,9 +149,30 @@ async function main() {
       keep.splice(keep.map(([p]) => p).lastIndexOf(pr), 1);
     }
   }
+  const rendered = render(keep);
+
+  // Budget-receipt groundwork (Phase 5 item 5): record this injection's size for
+  // the future /brain:doctor — rolling (last 20), capped, ZERO injected tokens.
+  try {
+    const sdir = path.join(brain, 'sessions');
+    fs.mkdirSync(sdir, { recursive: true });
+    const statsFile = path.join(sdir, 'injection-stats.json');
+    const prev = lib.readJsonSafe(statsFile, []);
+    const list = Array.isArray(prev) ? prev : [];
+    list.push({
+      at: new Date().toISOString(),
+      source: input.source || 'unknown',
+      budget: BUDGET,
+      tokens: lib.estimateTokens(rendered),
+      sections_total: sections.length,
+      sections_kept: keep.length,
+      sections_dropped: sections.length - keep.length,
+    });
+    fs.writeFileSync(statsFile, JSON.stringify(list.slice(-20), null, 2) + '\n', 'utf8');
+  } catch {}
 
   lib.succeed({
-    hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: render(keep) },
+    hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: rendered },
   });
 }
 
