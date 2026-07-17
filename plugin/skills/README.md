@@ -11,11 +11,12 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `query` | Index-first answering with citations; novel answers filed back to `syntheses/` | ✅ |
 | `lint` | Mechanical scan (`scripts/lint.js`, injected via `` !`…` ``) + reasoning over contradictions/staleness | ✅ |
 | `wrap` | Definition-of-done: verify, sync log + index + resume narrative, commit | ✅ |
-| `research` | Web + codebase research filed to `wiki/research/` | ⬜ next |
-| `plan` | Spec with numbered acceptance criteria; arms the plan gate | ⬜ next |
-| `build` | TDD loop against a spec's criteria | ⬜ next |
-| `review` | Code review filed back as a wiki page | ⬜ next |
-| `terse` / `compress` | Caveman-style output mode / permanent memory-file compression | ⬜ |
+| `research` | Web + codebase research filed to `wiki/research/` with sources + recommendation | ✅ |
+| `plan` | Spec with numbered acceptance criteria + tier; approval stays curator-owned | ✅ |
+| `build` | Test-first loop against a spec's ACs (works with the TDD/plan gates) | ✅ |
+| `review` | AC verification + code review filed back (synthesis page, ADRs, instinct candidates) | ✅ |
+| `terse` | Caveman-style session output compression (code/commands never compressed) | ✅ |
+| `compress` | Permanent instruction-file compression with before/after receipts | ✅ |
 | `doctor` | Health monitor with token receipts (Phase 8) | ⬜ |
 | `packs/<domain>/` | Domain expertise packs — product-design first (Phase 6.5) | ⬜ |
 

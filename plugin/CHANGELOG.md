@@ -1,5 +1,33 @@
 # Changelog — brain plugin
 
+## 0.6.0 — 2026-07-17 (Phase 3 complete: develop lifecycle + token discipline)
+
+- **Develop-lifecycle skills** (the v2 schema's verbs):
+  - **`/brain:research`** — wiki-first, then codebase, then web; every finding
+    cited; filed to `wiki/research/` with a Recommendation; hands off to plan.
+  - **`/brain:plan`** — `specs/<feature>.md` with numbered ACs, test plan, and
+    tier + rationale; **approval stays curator-owned** (`plan_approved: true`
+    only after explicit approval in conversation — never self-set); creates the
+    `projects/` workstream page.
+  - **`/brain:build`** — red→green→refactor against the ACs in slices; treats
+    the TDD gate as the reminder it is; progress ticked in the spec; ADRs
+    distilled to `decisions/`; log + commit per milestone.
+  - **`/brain:review`** — AC-by-AC verification with evidence (runs the suite
+    itself), severity-ordered code review, findings **filed back**: review
+    synthesis page, `decisions/` ADRs, 3+-repeat corrections drafted to
+    `instincts/pending/` (the Gap-#9 feedback loop starts working); closes the
+    spec honestly (`status`/`phase`/`audit_score`).
+- **Token-discipline skills** (Caveman-inspired):
+  - **`/brain:terse`** — session output-compression mode with the compression
+    guard (code, commands, paths, errors, ACs never compressed); `off` to end.
+  - **`/brain:compress`** — permanent instruction-file compression (CLAUDE.md,
+    memory, rules; never wiki knowledge pages) with before→after byte/token
+    receipts and a no-loss verification step.
+- **trigger-router** learns the new phrases: "research X", "write/draft a
+  spec", "implement the spec", "review the changes", "be terse" (works
+  brainless), "compress CLAUDE.md".
+- Selftest 88 → **95 checks**.
+
 ## 0.5.0 — 2026-07-17 (Phase 4: schema v2 + tier gates)
 
 - **Schema v2 template** (master `schema/brain-template/`, bundle re-synced):

@@ -30,11 +30,13 @@ plugin/
 │                                #   #4 wiki-check, #5 snapshot,
 │                                #   #6 wrap, #7 agent-track,
 │                                #   #8 resume + resume-log,
-│                                #   selftest (88 checks)              ✅
-├── skills/                      # /brain:* skills                     🔶 Phase 3 (core 5 ✅)
+│                                #   selftest (95 checks)              ✅
+├── skills/                      # /brain:* skills                     ✅ Phase 3 complete
 │   ├── init/                    #   + bundled brain-template + scaffold script
 │   ├── ingest/  query/  wrap/
-│   └── lint/                    #   + mechanical lint.js (injected via !`…`)
+│   ├── lint/                    #   + mechanical lint.js (injected via !`…`)
+│   ├── research/  plan/  build/  review/    # develop lifecycle (v2 schema)
+│   └── terse/  compress/        #   token discipline (Caveman-inspired)
 ├── agents/                      # brain-librarian, brain-researcher   ⬜ Phase 3–5.5
 └── .mcp.json                    # qmd semantic search                 ⬜ Phase 5
 ```
@@ -52,13 +54,18 @@ plugin/
 | 7 | PreToolUse Agent | `agent-track` | dispatch log → `sessions/agents.md`; heavy spawns need an explicit model (once-per-session gate) |
 | 8 | SessionStart + Task events | `resume` / `resume-log` | resume.md injection + ask-to-continue; auto task log |
 
-### The core skills (Phase 3, first tranche)
+### The skills (Phase 3, complete)
 
-`/brain:init` (self-contained scaffold — bundled template + Node script, works
-from a marketplace install) · `/brain:ingest` (8-step compile) · `/brain:query`
-(index-first + file-back) · `/brain:lint` (mechanical scan injected, reasoning
-follows) · `/brain:wrap` (definition-of-done). Remaining Phase 3 (next, now that
-the v2 schema exists): research / plan / build / review + terse / compress.
+**Knowledge SDLC:** `/brain:init` (self-contained scaffold — bundled template +
+Node script, works from a marketplace install) · `/brain:ingest` (8-step
+compile) · `/brain:query` (index-first + file-back) · `/brain:lint` (mechanical
+scan injected, reasoning follows) · `/brain:wrap` (definition-of-done).
+**Develop lifecycle:** `/brain:research` (filed to `wiki/research/`) ·
+`/brain:plan` (numbered ACs + tier, curator-owned approval) · `/brain:build`
+(test-first against the ACs) · `/brain:review` (verification + findings filed
+back, feeding `decisions/` and `instincts/`). **Token discipline:**
+`/brain:terse` (session output compression) · `/brain:compress` (permanent
+instruction-file compression with receipts).
 
 ### Planned agents (Phase 3–5.5)
 
@@ -92,7 +99,7 @@ wraps it.
   `claude plugin validate . --strict` (marketplace).
 - Test before committing: `node hooks/scripts/selftest.js` — builds a temp
   `.brain` fixture and drives every hook and skill script with synthetic
-  events (88 checks).
+  events (95 checks).
 - **Template bundling:** `schema/brain-template/` is the canonical master;
   `skills/init/brain-template/` is the copy that ships with installs. Selftest
   fails on drift — refresh with

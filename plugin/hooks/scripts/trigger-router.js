@@ -48,10 +48,46 @@ const RULES = [
     what: 'brain health check',
   },
   {
+    re: /\bresearch\b/i,
+    skill: 'research',
+    needsBrain: true,
+    what: 'research run',
+  },
+  {
+    re: /\b(write|create|draft|make)\b[^.!?]{0,40}\bspec\b|\bspec out\b|^\s*spec\s+\S/i,
+    skill: 'plan',
+    needsBrain: true,
+    what: 'feature spec',
+  },
+  {
+    re: /\b(build|implement|work)\b[^.!?]{0,40}\bspec\b|\bstart (the )?build phase\b/i,
+    skill: 'build',
+    needsBrain: true,
+    what: 'spec build',
+  },
+  {
+    re: /\breview\b[^.!?]{0,40}\b(code|changes|diff|pr|branch|spec)\b|\bcode review\b/i,
+    skill: 'review',
+    needsBrain: true,
+    what: 'code/spec review',
+  },
+  {
     re: /\bask (the |my )?brain\b|\bwhat does (the |my )?brain (know|say|have)\b|\bsearch (the |my )?(brain|wiki|vault)\b/i,
     skill: 'query',
     needsBrain: true,
     what: 'brain query',
+  },
+  {
+    re: /\bterse( mode)?\b|\bshorter (answers|responses|output)\b|\bless verbose\b/i,
+    skill: 'terse',
+    needsBrain: false,
+    what: 'terse output mode',
+  },
+  {
+    re: /\bcompress\b[^.!?]{0,50}(\.md\b|claude|memory|manual|instructions|file)/i,
+    skill: 'compress',
+    needsBrain: false,
+    what: 'file compression',
   },
 ];
 

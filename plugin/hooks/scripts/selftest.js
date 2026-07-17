@@ -257,6 +257,20 @@ try {
   check('.no-brain marker silences the suggestion', t.r.status === 0 && t.r.stdout === '');
   t = routed('set up a monkey brain here please', PLAIN_R);
   check('explicit "set up a brain" still routes to init', t.ctx.includes('brain:init'), t.ctx);
+  t = routed('research competitor pricing models');
+  check('"research X" routes to brain:research', t.ctx.includes('brain:research'), t.ctx);
+  t = routed('write a spec for user billing');
+  check('"write a spec" routes to brain:plan', t.ctx.includes('brain:plan'), t.ctx);
+  t = routed('implement the spec now');
+  check('"implement the spec" routes to brain:build', t.ctx.includes('brain:build'), t.ctx);
+  t = routed('please review the changes on this branch');
+  check('"review the changes" routes to brain:review', t.ctx.includes('brain:review'), t.ctx);
+  t = routed('be terse from now on');
+  check('"be terse" routes to brain:terse', t.ctx.includes('brain:terse'), t.ctx);
+  t = routed('be terse from now on', PLAIN_R);
+  check('terse routes even without a brain', t.ctx.includes('brain:terse'), t.ctx);
+  t = routed('compress the CLAUDE.md file');
+  check('"compress CLAUDE.md" routes to brain:compress', t.ctx.includes('brain:compress'), t.ctx);
 
   // ---------- /brain:lint mechanical scan ----------
   console.log('lint.js (skill /brain:lint, mechanical layer)');
