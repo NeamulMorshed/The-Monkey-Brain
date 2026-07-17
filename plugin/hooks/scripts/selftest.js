@@ -340,6 +340,31 @@ try {
   a = run('agent-track.js', { cwd: PLAIN_D, hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: 'ax', tool_input: { subagent_type: 'general-purpose' } });
   check('no brain ⇒ agent tracking silent', a.status === 0 && a.stderr === '', `status=${a.status}`);
 
+  // ---------- instinct-track: repeated-edit → instinct advisory (P5.1) ----------
+  console.log('instinct-track.js (PostToolUse — repeated cross-session edits → instinct)');
+  write('src/hotspot.js', 'export const v = 1;\n');
+  const HOT = path.join(PROJ, 'src', 'hotspot.js');
+  const itrack = (sid, file) =>
+    run('instinct-track.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Edit', session_id: sid, tool_input: { file_path: file || HOT } }));
+  const itCtx = (rr) => { let o = {}; try { o = JSON.parse(rr.stdout || '{}'); } catch {} return (o.hookSpecificOutput || {}).additionalContext || ''; };
+  let it = itrack('mb-s1');
+  check('1st session edit is silent', it.status === 0 && it.stdout === '', `stdout=${it.stdout}`);
+  it = itrack('mb-s1');
+  check('same-session re-edit does not advance the count', it.status === 0 && it.stdout === '');
+  it = itrack('mb-s2');
+  check('2nd distinct session still silent (below threshold)', it.status === 0 && it.stdout === '');
+  it = itrack('mb-s3');
+  check('3rd distinct session fires the instinct advisory', /instinct/i.test(itCtx(it)) && itCtx(it).includes('hotspot.js'), (it.stdout || '').slice(0, 200));
+  it = itrack('mb-s4');
+  check('advisory fires once per file (4th session silent)', it.status === 0 && it.stdout === '');
+  const ECJSON = path.join(BRAIN, 'sessions', 'edit-counts.json');
+  for (const sid of ['e1', 'e2', 'e3', 'e4']) run('instinct-track.js', evt({ hook_event_name: 'PostToolUse', session_id: sid, tool_input: { file_path: path.join(BRAIN, 'wiki', 'log.md') } }));
+  const ecData = JSON.parse(fs.readFileSync(ECJSON, 'utf8'));
+  check('exempt bookkeeping files (log.md) are never tracked', !Object.keys(ecData).some((k) => k.endsWith('log.md')), Object.keys(ecData).join(','));
+  fs.writeFileSync(path.join(PLAIN_D, 'foo.js'), 'export {}\n', 'utf8');
+  it = run('instinct-track.js', { cwd: PLAIN_D, hook_event_name: 'PostToolUse', session_id: 's', tool_input: { file_path: path.join(PLAIN_D, 'foo.js') } });
+  check('no brain ⇒ instinct-track silent', it.status === 0 && it.stdout === '', `status=${it.status}`);
+
   // ---------- /brain:init scaffold ----------
   console.log('new-brain.js (skill /brain:init scaffold)');
   const INITP = path.join(ROOT, 'init-proj');
