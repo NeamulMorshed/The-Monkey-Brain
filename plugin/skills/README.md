@@ -44,4 +44,5 @@ run in scripts at zero model cost.
 return): `research` fans out to **`brain-researcher`** (Sonnet, read-only) and
 synthesizes on the main model; batch `ingest` delegates to **`brain-librarian`**
 (Sonnet) so the main session sees only log entries; `build` + `review` pair a
-Sonnet implementer with a main-model auditor. See `../agents/README.md`.
+Sonnet implementer with a main-model auditor. See the Agents section in
+`../README.md` and the definitions in `../agents/`.

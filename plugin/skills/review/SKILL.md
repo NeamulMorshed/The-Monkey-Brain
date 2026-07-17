@@ -6,6 +6,10 @@ effort: high
 
 # /brain:review — verify, judge, file it back
 
+> **Pair (P5.5):** the build+review pattern runs this review on the main model against a
+> Sonnet implementer's work (`/brain:build`), auditing AC-by-AC — so disagreement surfaces
+> before wrap, not after. This skill is `effort: high` and inherits the main model by design.
+
 A review that only lives in chat is lost. This one ends in the brain.
 
 ## Steps

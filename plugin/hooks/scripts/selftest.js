@@ -468,6 +468,20 @@ try {
   const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
   check('judgment skills inherit the main model (no downgrade)', judgmentPinned.length === 0, `pinned: ${judgmentPinned.join(',')}`);
 
+  // Sonnet fan-out subagents (P5.5)
+  const AGENTS = path.join(HERE, '..', '..', 'agents');
+  for (const [aname, readOnly] of [['brain-librarian', false], ['brain-researcher', true]]) {
+    const ap = path.join(AGENTS, aname + '.md');
+    const atext = fs.existsSync(ap) ? fs.readFileSync(ap, 'utf8') : '';
+    const ahead = atext.split(/\r?\n---/)[0] || '';
+    const aname2 = fmGet(atext, 'name');
+    const amodel = fmGet(atext, 'model');
+    const hasDesc = /^description:\s*\S/m.test(ahead);
+    const toolsLine = (/^tools:\s*(.+)$/m.exec(ahead) || [])[1] || '';
+    check(`agent ${aname}: name + description + model:sonnet`, aname2 === aname && amodel === 'sonnet' && hasDesc, `name=${aname2} model=${amodel} desc=${hasDesc}`);
+    if (readOnly) check(`agent ${aname} is read-only (no Write/Edit tools)`, toolsLine !== '' && !/\bWrite\b|\bEdit\b/.test(toolsLine), `tools=${toolsLine}`);
+  }
+
   // ---------- /brain:init scaffold ----------
   console.log('new-brain.js (skill /brain:init scaffold)');
   const INITP = path.join(ROOT, 'init-proj');

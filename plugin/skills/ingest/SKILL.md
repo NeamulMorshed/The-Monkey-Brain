@@ -7,6 +7,11 @@ effort: medium
 
 # /brain:ingest — compile a source into the wiki
 
+> **Batch (P5.5):** ingesting many sources at once? Delegate each to a `brain-librarian`
+> subagent (Sonnet) — one source per dispatch, spawned together — so the compiles run in
+> isolated windows and the main session sees only the log entries. `raw-sources/` stays
+> immutable and `log.md` append-only (the hooks enforce both).
+
 The compile step of the knowledge SDLC (instance manual §4): one raw source in, a
 source-summary page plus 5–10+ cross-linked wiki pages out. Hooks enforce the
 invariants — `raw-sources/` is add-only, `wiki/log.md` is append-only, and every wiki

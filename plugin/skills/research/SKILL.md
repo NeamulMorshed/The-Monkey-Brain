@@ -7,6 +7,11 @@ effort: medium
 
 # /brain:research — investigate, then file it
 
+> **Fan-out (P5.5):** for a broad topic, dispatch several `brain-researcher` subagents
+> (Sonnet, read-only) in one message — one per slice (wiki / codebase / web / competitor) —
+> so they run concurrently, then synthesize their cited findings here on the main model and
+> file the single `wiki/research/` page.
+
 Research that isn't filed evaporates. This skill runs the research step of the develop
 lifecycle (instance manual §4) and always ends with a `wiki/research/` page.
 

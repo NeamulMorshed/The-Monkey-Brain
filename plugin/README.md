@@ -67,16 +67,26 @@ back, feeding `decisions/` and `instincts/`). **Token discipline:**
 `/brain:terse` (session output compression) · `/brain:compress` (permanent
 instruction-file compression with receipts).
 
-### Planned agents (Phase 3–5.5)
+### Agents (Phase 5.5)
+
+Sonnet fan-out workers the skills delegate to — routine and parallel work runs in
+isolated context windows while the main model keeps the conversation and does the
+judgment. Each pins its own `model:`, so hook #7 lets it through (still logging the
+dispatch to `sessions/agents.md`).
 
 | Agent | Model | Role |
 | --- | --- | --- |
-| `brain-librarian` | Sonnet | Batch-compile sources in isolated context; the main session sees only log entries |
-| `brain-researcher` | Sonnet | Research fan-out over sources/codebase; summaries return for main-model synthesis |
+| `brain-librarian` | Sonnet | Batch-compile sources in isolated context (8-step ingest); the main session sees only log entries |
+| `brain-researcher` | Sonnet | Read-only research fan-out over wiki/codebase/web; cited summaries return for main-model synthesis |
 
-`agents/` is created when the first definition lands — every `.md` inside it is
-parsed as an agent (validated by `--strict`), so the folder holds no README.
-Every dispatch declares its model explicitly; hook #7 (`agent-track`) logs it.
+**Fan-out patterns:** research fan-out (N `brain-researcher` in parallel →
+main-model synthesis) · batch ingest (one `brain-librarian` per source) ·
+build+review pair (Sonnet implementer vs main-model auditor) · competing
+hypotheses (two models, main adjudicates). Spawn concurrently by dispatching in
+one message; the routing table lives in `skills/README.md`.
+
+Every `.md` in `agents/` is parsed as an agent (validated by `--strict`), so the
+folder holds **no README** — this section is its documentation.
 
 The repo root's `.claude-plugin/marketplace.json` makes this repository its own
 marketplace. `bootstrap/` stays the scaffolding engine — `/brain:init` (Phase 3)
