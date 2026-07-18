@@ -4,7 +4,7 @@ type: log
 status: active
 tags: [log, audit, chronological]
 created: 2026-06-17
-updated: 2026-06-17
+updated: 2026-07-17
 ---
 
 # 🐵 The Monkey Brain — Log
@@ -161,3 +161,41 @@ asserted-but-unsourced claim** in [[llm-wiki-pattern]] and [[sources/llm-wiki]] 
 is "kin to Vannevar Bush's Memex" — now backed by a primary citation. Reciprocal links added
 from [[llm-wiki-pattern]], [[sources/llm-wiki]], [[vault-overview-deck]]. Vault now 13 sources /
 61 pages. Touched: 5 pages.
+
+## [2026-07-17] ingest | Caveman README
+Web-fetched https://github.com/JuliusBrussee/caveman → [Caveman README.md](../raw-sources/Caveman%20README.md).
+Opens the **v2 enhancement research cluster** (token economy · enforcement · expertise packs —
+the three benchmarks behind the engine's `ROADMAP.md` v0.2). Summary → [[sources/caveman-readme]].
+**New entity** [[caveman]]. Cross-linked [[skills]] (per-turn skill cost), [[plugins]]
+(repo-as-marketplace), [[claude-md]] (compress-memory-files play, ~46% permanent input savings),
+[[context-window]] (output/input/reasoning are separate budgets). Noted the honest-numbers
+nuance: the 65% headline is output-only. Vault now 14 sources / 63 pages. Touched: 9 pages.
+
+## [2026-07-17] ingest | MewVault README
+Web-fetched https://github.com/mewking2099/MewVault → [MewVault README.md](../raw-sources/MewVault%20README.md).
+The **enforcement benchmark** of the v2 research cluster. Summary → [[sources/mewvault-readme]].
+**New entity** [[mewvault]]. **Expanded** [[hooks]] (a production 7-hook architecture),
+[[claude-md-vs-skills-vs-hooks]] ("guardrails belong in hooks" now validated at workspace
+scale), [[memory]] (semantic memory + instinct tiers). Captured the prompt-cache postmortem
+rule: *optimize by injecting less, never by transforming the prompt.* Design difference flagged
+(session-end synced read-layer wiki vs. our compile-time wiki) — to be reconciled in
+[[monkey-brain-vs-mewvault]]. Vault now 15 sources / 65 pages. Touched: 8 pages.
+
+## [2026-07-17] ingest | ui-ux-pro-max README
+Web-fetched https://github.com/nextlevelbuilder/ui-ux-pro-max-skill → [ui-ux-pro-max README.md](../raw-sources/ui-ux-pro-max%20README.md).
+The **expertise-pack exemplar** of the v2 research cluster. Summary → [[sources/ui-ux-pro-max-readme]].
+**New entity** [[ui-ux-pro-max]]. Cross-linked [[skills]] (skills can carry data + scripts),
+[[frontend-design]] (decider vs. executor division of labor), [[search-tooling]] (BM25-in-a-skill,
+the [[qmd]] family scaled down), [[plugins]] (marketplace + npm CLI distribution). Boundary
+flagged: its knowledge is frozen at publish — the compounding fix is specced in
+[[domain-expertise-packs]]. Vault now 16 sources / 67 pages. Touched: 9 pages.
+
+## [2026-07-17] query | v2 benchmarks reconciled (filed back)
+Question: what does each benchmark solve, what do we adopt, where do we beat them? Filed
+[[monkey-brain-vs-mewvault]] — the triangle ([[mewvault]] enforces quality · [[caveman]]
+enforces economy · the [[llm-wiki-pattern]] compounds knowledge), adoption list traced to
+sources, and the differentiation scorecard. **New concept** [[domain-expertise-packs]] (the
+[[ui-ux-pro-max]] anatomy generalized; static packs vs compounding packs). Added a
+*v2 Benchmarks* branch to the [[index]] mindmap. This completes the research step (P9.2) of
+the engine's `ROADMAP.md` v0.2 — next: Phase 1 plugin skeleton. Vault now 16 sources / 69
+pages. Touched: 6 pages.

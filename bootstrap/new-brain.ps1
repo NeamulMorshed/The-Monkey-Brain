@@ -61,9 +61,31 @@ function Expand-Placeholders([string]$path, [string]$name, [string]$date) {
 if ($Update) {
   if (-not (Test-Path $brain)) { throw "No .brain at $brain to update. Run without -Update to create it." }
   Write-Host "Refreshing schema in $brain (knowledge left untouched)..." -ForegroundColor Cyan
+  # Structure migration (e.g. v1 -> v2): ensure every template directory exists and add
+  # missing STRUCTURAL files (.gitkeep, Clippings\.gitignore). Seed wiki .md pages are
+  # never added - an existing brain owns its wiki.
+  Get-ChildItem $template -Recurse -Directory | ForEach-Object {
+    $rel = $_.FullName.Substring($template.Length + 1)
+    $dst = Join-Path $brain $rel
+    if (-not (Test-Path $dst)) { New-Item -ItemType Directory -Force $dst | Out-Null; Write-Host "  + $rel\" -ForegroundColor Green }
+  }
+  Get-ChildItem $template -Recurse -File | Where-Object { $_.Extension -ne '.md' } | ForEach-Object {
+    $rel = $_.FullName.Substring($template.Length + 1)
+    $dst = Join-Path $brain $rel
+    if (-not (Test-Path $dst)) { Copy-Item $_.FullName $dst; Write-Host "  + $rel" -ForegroundColor Green }
+  }
+  if (-not (Test-Path (Join-Path $brain 'templates'))) { New-Item -ItemType Directory -Force (Join-Path $brain 'templates') | Out-Null }
   Copy-Item (Join-Path $template 'CLAUDE.md')   (Join-Path $brain 'CLAUDE.md')   -Force
   Copy-Item (Join-Path $template 'templates\*') (Join-Path $brain 'templates')   -Recurse -Force
   Expand-Placeholders (Join-Path $brain 'CLAUDE.md') $Name $today
+  # resume.md holds live work state: add it only when missing, never overwrite.
+  $resumeSrc = Join-Path $template 'resume.md'
+  $resumeDst = Join-Path $brain 'resume.md'
+  if ((Test-Path $resumeSrc) -and (-not (Test-Path $resumeDst))) {
+    Copy-Item $resumeSrc $resumeDst
+    Expand-Placeholders $resumeDst $Name $today
+    Write-Host "Added resume.md (new in schema v2)." -ForegroundColor Green
+  }
   Write-Host "Done. CLAUDE.md + templates/ refreshed for '$Name'." -ForegroundColor Green
   return
 }

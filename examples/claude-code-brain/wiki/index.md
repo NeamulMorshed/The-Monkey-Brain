@@ -4,9 +4,9 @@ type: index
 status: active
 tags: [index, navigation, moc]
 created: 2026-06-17
-updated: 2026-06-17
-source_count: 13
-page_count: 61
+updated: 2026-07-17
+source_count: 16
+page_count: 69
 ---
 
 # 🐵 The Monkey Brain — Index
@@ -16,7 +16,7 @@ The content catalog for this [[llm-wiki-pattern|LLM wiki]]. **Read this first** 
 [[ingest-compile|ingest]]. For the chronological view, see [[log]]. For conventions, see
 [`schema/CLAUDE.md`](../schema/CLAUDE.md).
 
-> **Stats:** 13 sources · 61 wiki pages · last updated 2026-06-17.
+> **Stats:** 16 sources · 69 wiki pages · last updated 2026-07-17.
 
 ```mermaid
 mindmap
@@ -30,6 +30,10 @@ mindmap
       Context
       Extensions
       Plugins
+    v2 Benchmarks
+      Caveman
+      MewVault
+      ui-ux-pro-max
 ```
 
 ---
@@ -60,6 +64,9 @@ Distilled summaries of each immutable [[raw-sources-layer|raw source]].
 | [[sources/mcp-guide\|MCP Guide]] | Transports, scopes, OAuth, resources/prompts, Tool Search. |
 | [[sources/subagents-guide\|Subagents Guide]] | Definition files, frontmatter, scopes, built-in agents, startup. |
 | [[sources/memex-as-we-may-think\|As We May Think (Bush, 1945)]] | Citation stub: the memex, associative trails — primary-source provenance for the [[llm-wiki-pattern]] kinship claim. |
+| [[sources/caveman-readme\|Caveman README]] | Token discipline: ~65% output compression, permanent memory-file compression, receipts culture. |
+| [[sources/mewvault-readme\|MewVault README]] | Enforcement over advice: 7 hooks, hard gates, tiers, 3k budgeted injection, instincts, doctor. |
+| [[sources/ui-ux-pro-max-readme\|ui-ux-pro-max README]] | Design-intelligence pack: 161 reasoning rules + BM25 search + design-system generator. |
 
 ---
 
@@ -81,6 +88,7 @@ Distilled summaries of each immutable [[raw-sources-layer|raw source]].
 | [[obsidian-ecosystem]] | Web Clipper, graph view, Marp, Mermaid, git. |
 | [[dataview]] | Query frontmatter into dynamic tables. |
 | [[search-tooling]] | qmd & the search upgrade path (deferred). |
+| [[domain-expertise-packs]] | Packaged domain knowledge: data + search + process + checklist. |
 
 ### Claude Code — permissions
 | Page | One-liner |
@@ -126,6 +134,9 @@ Distilled summaries of each immutable [[raw-sources-layer|raw source]].
 | [[frontend-design]] | Plugin for distinctive production-grade UI. |
 | [[superpowers]] | Plugin for TDD/debugging/brainstorming methodology. |
 | [[qmd]] | On-device hybrid search engine; the search upgrade path. |
+| [[caveman]] | Token-discipline skill/plugin: compress output + memory files, with receipts. |
+| [[mewvault]] | Federated workspace: hook-enforced gates, tiers, semantic memory, doctor. |
+| [[ui-ux-pro-max]] | Design-intelligence expertise pack: data + BM25 + reasoning engine. |
 
 ---
 
@@ -135,13 +146,14 @@ Filed-back analyses and comparisons (see [[query-deploy]]).
 | Page | One-liner |
 | --- | --- |
 | [[claude-md-vs-skills-vs-hooks]] | Decision guide across all extension features + every pairwise comparison. |
+| [[monkey-brain-vs-mewvault]] | v2 benchmark triangle: MewVault enforcement · Caveman economy · packs — adopt/differentiate scorecard. |
 | [[vault-overview-deck]] | Marp slide-deck overview of the whole vault. |
 | [[dashboard]] | Dataview dashboard — live tables over page frontmatter. |
 
 ---
 
 ## 🗺️ Categories at a glance
-- **13** sources · **38** concept pages (incl. [[concepts]] MOC) · **4** entity pages (incl. [[entities]] MOC)
-  · **3** synthesis pages (incl. [[syntheses]] MOC) · plus this [[index]], the [[log]], and the [[dashboard]] = **61** total.
+- **16** sources · **39** concept pages (incl. [[concepts]] MOC) · **7** entity pages (incl. [[entities]] MOC)
+  · **4** synthesis pages (incl. [[syntheses]] MOC) · plus this [[index]], the [[log]], and the [[dashboard]] = **69** total.
 - Category maps-of-content: [[concepts]] · [[entities]] · [[syntheses]].
 - Biggest hubs: [[claude-code]], [[knowledge-sdlc]], [[context-window]], [[skills]], [[plugins]].

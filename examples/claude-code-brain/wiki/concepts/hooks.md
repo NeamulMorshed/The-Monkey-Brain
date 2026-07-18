@@ -4,9 +4,9 @@ type: concept
 status: active
 tags: [claude-code, extension, hooks, automation]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[extend-claude-code]]", "[[context-window]]", "[[hooks-reference]]"]
-related: ["[[skills]]", "[[mcp]]", "[[permission-rules]]", "[[hook-events]]", "[[claude-md-vs-skills-vs-hooks]]"]
+updated: 2026-07-17
+sources: ["[[extend-claude-code]]", "[[context-window]]", "[[hooks-reference]]", "[[mewvault-readme]]"]
+related: ["[[skills]]", "[[mcp]]", "[[permission-rules]]", "[[hook-events]]", "[[claude-md-vs-skills-vs-hooks]]", "[[mewvault]]"]
 aliases: ["hook"]
 ---
 
@@ -27,6 +27,15 @@ A script, HTTP request, LLM prompt, or subagent triggered by **lifecycle [[hook-
 Use a **hook** when the action must happen the same way every time and needs no reasoning;
 use a **[[skills|skill]]** when Claude should decide how to apply steps. See
 [[claude-md-vs-skills-vs-hooks]] and [[hook-vs-skill]].
+
+## Enforcement at scale (seen in the wild)
+
+[[mewvault]] runs an entire managed workspace on this principle — **seven** lifecycle hooks
+(session-start injection + trigger routing, session-end auto-wrap, `PreToolUse` gates, agent
+tracking, post-tool-use correction signals, pre-[[compaction|compact]] snapshots) with
+OS-level gates for plan-approval, TDD, secrets, and immutability
+([[mewvault-readme|source]]). Its motto is this page's rule operationalized: **enforcement
+over advice**.
 
 ## How a hook actually works (from the [[hooks-reference|reference]])
 
@@ -57,4 +66,4 @@ plugin/component scopes; inspect with `/hooks`; kill all with `{"disableAllHooks
 (managed hooks can't be overridden).
 
 ## Sources
-- [[extend-claude-code]], [[context-window]], [[hooks-reference]]
+- [[extend-claude-code]], [[context-window]], [[hooks-reference]], [[mewvault-readme]]

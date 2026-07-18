@@ -23,6 +23,8 @@ own sources, wiki, and memories, fully isolated from every other project.
 ```
 The-Monkey-Brain/               ← THE ENGINE (this repo)
 ├── README.md                   ← you are here
+├── .claude-plugin/             ← marketplace manifest — this repo is its own plugin marketplace
+├── plugin/                     ← the `brain` plugin (v2): 14 /brain:* skills, 10 hooks, packs, doctor — see plugin/README.md
 ├── bootstrap/
 │   ├── new-brain.ps1 / .sh     ← scaffold (or refresh) a .brain in a project
 │   └── lint-brain.ps1          ← health-check any brain (broken links, orphans)
@@ -31,7 +33,7 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 │   ├── templates/              ← page skeletons (source/concept/entity/synthesis)
 │   └── brain-template/         ← exactly what gets copied into a new .brain
 └── examples/
-    └── claude-code-brain/      ← a complete worked brain (60 pages) to learn from
+    └── claude-code-brain/      ← a complete worked brain (69 pages) to learn from
 
 <your-project>/.brain/          ← AN INSTANCE (created by the script; committed with the project)
 ├── CLAUDE.md                   ← loads when you run `claude` at the project root
@@ -79,6 +81,38 @@ Open `.brain\` as an Obsidian vault to browse the graph, dashboard, and links.
 
 ---
 
+## The plugin (v2) — the self-enforcing distribution
+
+The bootstrap scripts above are the original path. **v2 repackages the whole engine as a
+Claude Code plugin** so it installs once and works in every project automatically — no
+remembering to run scripts. Install it from this repo (which doubles as its own marketplace):
+
+```
+/plugin marketplace add NeamulMorshed/The-Monkey-Brain
+/plugin install brain@monkey-brain
+```
+
+Then in any project, natural phrases route to the right workflow ("ingest this", "wrap up",
+"lint the brain", "spec X", "start a game", "brain doctor") — or call the `/brain:*` skills
+directly. What you get (see [`plugin/README.md`](plugin/README.md) and the full build log in
+[`ROADMAP.md`](ROADMAP.md)):
+
+- **14 `/brain:*` skills** — knowledge SDLC (`init` · `ingest` · `query` · `lint` · `wrap`),
+  develop lifecycle (`research` · `plan` · `build` · `review`), token discipline (`terse` ·
+  `compress`), the **product-design pack**, the **game** pipeline, and **doctor** (a 15-check
+  health monitor).
+- **10 enforcement hooks** — budgeted session-start context injection (no more "did the
+  manual load?"), secrets/immutability/append-only/plan/TDD gates, self-healing wiki checks,
+  compaction snapshots, a resume system, instinct auto-detection, and dispatch tracking.
+- **Model routing** (right model per task by default) + two Sonnet fan-out subagents.
+- **Capability plugins** it offers to install (github, frontend-design, superpowers,
+  security-guidance, ui-ux-pro-max, …) under one rule: *plugins do the craft; the brain
+  records the knowledge.*
+
+Everything stays **project-isolated** in each `.brain/`; the plugin is just the engine.
+
+---
+
 ## Design decisions
 
 | Decision | Choice |
@@ -87,7 +121,7 @@ Open `.brain\` as an Obsidian vault to browse the graph, dashboard, and links.
 | Location | **`.brain/` inside the project**, committed with the project's repo. |
 | Driver | **Claude Code opened per project** — the instance's `CLAUDE.md` auto-loads. |
 | Isolation | Each `.brain/` is a separate graph/log/memory. No cross-project bleed. |
-| Example | The Claude Code knowledge brain (60 pages) is bundled under `examples/`. |
+| Example | The Claude Code knowledge brain (69 pages) is bundled under `examples/`. |
 
 ### Loading caveat
 Claude Code reads `CLAUDE.md` from the working directory **up to the repo root**, so launching
@@ -99,15 +133,16 @@ or add a one-line root `CLAUDE.md` containing `@.brain/CLAUDE.md` so it always i
 
 ## What a finished brain looks like
 
-See [`examples/claude-code-brain/`](examples/claude-code-brain/) — a real brain that compiled 12
-sources into 60 cross-linked, lint-clean pages (0 broken links, 0 orphans), complete with a
+See [`examples/claude-code-brain/`](examples/claude-code-brain/) — a real brain that compiled 16
+sources into 69 cross-linked, lint-clean pages (0 broken links, 0 orphans), complete with a
 Mermaid index map, a Dataview dashboard, and a Marp overview deck. Start at its
 [`wiki/index.md`](examples/claude-code-brain/wiki/index.md).
 
 ---
 
 ## Requirements
-- **Claude Code** (drives ingest/query/lint).
+- **Claude Code** (drives ingest/query/lint, and hosts the v2 plugin).
+- **Node.js ≥ 18** for the plugin's hook runtime (one runtime on Windows/macOS/Linux, no npm deps).
 - **Obsidian** (optional, to browse) with **Dataview** (dashboards) and optionally **Marp** (decks).
-- **PowerShell** (Windows) or **bash** (macOS/Linux) for the bootstrap/lint scripts.
+- **PowerShell** (Windows) or **bash** (macOS/Linux) for the original bootstrap/lint scripts.
 - **Git** to version each project's `.brain/` alongside its code.

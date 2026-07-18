@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "brain-search": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/qmd-mcp.js"]
+    }
+  }
+}

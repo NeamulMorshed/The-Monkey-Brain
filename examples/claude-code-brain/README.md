@@ -1,8 +1,9 @@
 # Example brain — "How Claude Code works"
 
 This is a **complete, worked Monkey Brain instance** built as a reference sample. It ingested
-12 sources (Karpathy's llm-wiki founding pattern, 10 Claude Code documentation pages, and the
-qmd README) into 60 fully cross-linked, lint-clean wiki pages.
+16 sources (Karpathy's llm-wiki founding pattern, 10 Claude Code documentation pages, the qmd
+README, the Bush 1945 Memex citation stub, and the v2 benchmark trio — Caveman, MewVault,
+ui-ux-pro-max) into 69 fully cross-linked, lint-clean wiki pages.
 
 Use it to see what a mature brain looks like before you start your own:
 

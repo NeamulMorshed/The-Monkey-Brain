@@ -1,0 +1,33 @@
+{
+  "name": "monkey-brain",
+  "owner": {
+    "name": "NeamulMorshed",
+    "email": "neamul.morshed.nahid@gmail.com"
+  },
+  "description": "The Monkey Brain — a compounding LLM-wiki knowledge engine for any project or product",
+  "plugins": [
+    {
+      "name": "brain",
+      "source": "./plugin",
+      "displayName": "The Monkey Brain",
+      "description": "Per-project .brain/ knowledge engine: budgeted session context injection, an enforced knowledge SDLC (ingest / query / lint / wrap), token discipline with receipts, and compounding domain expertise packs.",
+      "version": "0.12.1",
+      "author": {
+        "name": "NeamulMorshed"
+      },
+      "homepage": "https://github.com/NeamulMorshed/The-Monkey-Brain",
+      "repository": "https://github.com/NeamulMorshed/The-Monkey-Brain",
+      "license": "MIT",
+      "keywords": [
+        "knowledge",
+        "wiki",
+        "memory",
+        "context-engineering",
+        "second-brain",
+        "obsidian",
+        "sdlc"
+      ],
+      "category": "productivity"
+    }
+  ]
+}

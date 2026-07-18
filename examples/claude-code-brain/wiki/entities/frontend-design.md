@@ -4,9 +4,9 @@ type: entity
 status: active
 tags: [claude-code, plugin, frontend, design]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[frontend-design-plugin]]"]
-related: ["[[plugins]]", "[[skills]]", "[[superpowers]]"]
+updated: 2026-07-17
+sources: ["[[frontend-design-plugin]]", "[[ui-ux-pro-max-readme]]"]
+related: ["[[plugins]]", "[[skills]]", "[[superpowers]]", "[[ui-ux-pro-max]]"]
 aliases: ["frontend design plugin"]
 ---
 
@@ -26,7 +26,10 @@ distinctive, production-grade frontends and deliberately avoids generic AI aesth
 
 ## How it fits the ecosystem
 A concrete instance of the **[[plugins|plugin = packaged [[skills|skill]]]]** pattern. The
-**aesthetic** counterpart to the **methodology**-focused [[superpowers]] plugin.
+**aesthetic** counterpart to the **methodology**-focused [[superpowers]] plugin. Division of
+labor with [[ui-ux-pro-max]]: the expertise pack **decides** the design system (pattern,
+palette, typography, anti-patterns to avoid); a build-focused design plugin like this one
+**executes** it with distinctive craft ([[ui-ux-pro-max-readme|source]]).
 
 ## Sources
-- [[frontend-design-plugin]]
+- [[frontend-design-plugin]], [[ui-ux-pro-max-readme]]
