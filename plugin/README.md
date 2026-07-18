@@ -39,7 +39,8 @@ plugin/
 │   ├── ingest/  query/  wrap/
 │   ├── lint/                    #   + mechanical lint.js (injected via !`…`)
 │   ├── research/  plan/  build/  review/    # develop lifecycle (v2 schema)
-│   └── terse/  compress/        #   token discipline (Caveman-inspired)
+│   ├── terse/  compress/        #   token discipline (Caveman-inspired)
+│   └── product-design/          #   domain-expertise pack (data+templates+gate) ✅ Phase 6.5
 ├── agents/                      # brain-librarian, brain-researcher   ✅ Phase 5.5
 └── .mcp.json                    # brain-search (opt-in qmd)           ✅ Phase 5
 ```
@@ -84,6 +85,17 @@ to the `.brain/` folder its output is filed into; `skills/init/scripts/plugins.j
 renders the offer. The contract — **plugins do the craft; the brain records the
 knowledge** — is stated in the instance manual's §9 with the precedence chain.
 Install is model-driven (via `/plugin`, confirmed with the curator), never silent.
+
+### Domain-expertise packs (Phase 6.5)
+
+Where capability plugins are external, **packs** are hosted here and **compound** —
+every recommendation files back into the instance. A pack is a skill plus a bundled
+knowledge structure (`SKILL.md` process + `data/` + `templates/` + `checklist.md`
+gate). First pack: **`skills/product-design/`** — a five-phase process (discovery →
+definition → ideation → design → validation) carrying Nielsen-heuristic and WCAG
+knowledge; a workstream opts in with `pack: product-design` in its `projects/` page,
+and `/brain:wrap` runs the pack's `checklist.md`, blocking "done" on open P0s. Later
+packs reuse the same shape.
 
 ### Agents (Phase 5.5)
 

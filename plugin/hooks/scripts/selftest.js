@@ -281,6 +281,10 @@ try {
   check('terse routes even without a brain', t.ctx.includes('brain:terse'), t.ctx);
   t = routed('compress the CLAUDE.md file');
   check('"compress CLAUDE.md" routes to brain:compress', t.ctx.includes('brain:compress'), t.ctx);
+  t = routed('design a product for our new users');
+  check('"design a product" routes to brain:product-design', t.ctx.includes('brain:product-design'), t.ctx);
+  t = routed('create personas from our interviews');
+  check('"create personas" routes to brain:product-design', t.ctx.includes('brain:product-design'), t.ctx);
 
   // ---------- /brain:lint mechanical scan ----------
   console.log('lint.js (skill /brain:lint, mechanical layer)');
@@ -449,6 +453,7 @@ try {
     query: { effort: 'high' },
     lint: { effort: 'high' },
     compress: { effort: 'high' },
+    'product-design': { effort: 'high' },
   };
   const fmGet = (text, key) => { const head = text.split(/\r?\n---/)[0] || ''; const m = new RegExp(`^${key}:\\s*(\\S+)\\s*$`, 'm').exec(head); return m ? m[1] : undefined; };
   let routingOk = 0;
@@ -464,8 +469,8 @@ try {
     if (modelOk && effortOk) routingOk++;
     else routingBad.push(`${name}(model=${model},effort=${effort})`);
   }
-  check('all 11 skills declare the expected model/effort routing', routingOk === Object.keys(routing).length, routingBad.join(' '));
-  const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
+  check('all 12 skills declare the expected model/effort routing', routingOk === Object.keys(routing).length, routingBad.join(' '));
+  const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress', 'product-design'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
   check('judgment skills inherit the main model (no downgrade)', judgmentPinned.length === 0, `pinned: ${judgmentPinned.join(',')}`);
 
   // Sonnet fan-out subagents (P5.5)
@@ -550,6 +555,22 @@ try {
   check('plugins.js --json emits the parseable manifest', pj.status === 0 && Array.isArray(pjJson.plugins) && pjJson.plugins.length === 9, `status=${pj.status}`);
   const tmplManual = fs.readFileSync(path.join(bundled, 'CLAUDE.md'), 'utf8');
   check('instance manual §9 states the plugin recording contract', /##\s*9\.\s*Capability plugins/.test(tmplManual) && /records the knowledge/i.test(tmplManual), 'no §9 contract');
+
+  // ---------- product-design pack (Phase 6.5) ----------
+  console.log('product-design pack (skills/product-design — first domain-expertise pack)');
+  const PDDIR = path.join(SKILLS, 'product-design');
+  const pdSkill = fs.existsSync(path.join(PDDIR, 'SKILL.md')) ? fs.readFileSync(path.join(PDDIR, 'SKILL.md'), 'utf8') : '';
+  check('pack skill exists with description + effort:high', /^description:\s*\S/m.test(pdSkill.split(/\r?\n---/)[0] || '') && fmGet(pdSkill, 'effort') === 'high', 'SKILL.md frontmatter');
+  check('pack SKILL.md stays under 150 lines', pdSkill && pdSkill.split('\n').length <= 150, `${pdSkill.split('\n').length} lines`);
+  check('pack ships data/ knowledge (methods, heuristics, accessibility)', ['methods', 'heuristics', 'accessibility'].every((f) => fs.existsSync(path.join(PDDIR, 'data', f + '.md'))));
+  check('pack ships templates/ deliverables (persona, journey-map, hmw, usability-test-script)', ['persona', 'journey-map', 'hmw', 'usability-test-script'].every((f) => fs.existsSync(path.join(PDDIR, 'templates', f + '.md'))));
+  const pdCheck = fs.existsSync(path.join(PDDIR, 'checklist.md')) ? fs.readFileSync(path.join(PDDIR, 'checklist.md'), 'utf8') : '';
+  check('pack checklist.md is a wrap-read gate with P0 items', pdCheck.includes('/brain:wrap') && pdCheck.includes('(P0)') && /blocks wrap/i.test(pdCheck), 'checklist gate');
+  check('pack data cites real standards (Nielsen heuristics + WCAG POUR)', /Nielsen/.test(fs.readFileSync(path.join(PDDIR, 'data', 'heuristics.md'), 'utf8')) && /Perceivable|WCAG/.test(fs.readFileSync(path.join(PDDIR, 'data', 'accessibility.md'), 'utf8')));
+  const wrapSkill = fs.readFileSync(path.join(SKILLS, 'wrap', 'SKILL.md'), 'utf8');
+  check('/brain:wrap runs the active pack checklist gate', /pack:/.test(wrapSkill) && /checklist\.md/.test(wrapSkill) && /P0/.test(wrapSkill), 'wrap pack gate');
+  const psTmpl = fs.readFileSync(path.join(bundled, 'templates', 'project-status.md'), 'utf8');
+  check('project-status template carries the pack: field', /^pack:/m.test(psTmpl), 'no pack field');
 
   // ---------- no-brain /brain:init offer (activation fallback) ----------
   console.log('brain-status.js — no-brain offer');

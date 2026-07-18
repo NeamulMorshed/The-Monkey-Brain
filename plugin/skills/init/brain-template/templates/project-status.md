@@ -4,6 +4,8 @@ type: project
 status: active            # active | paused | done
 tier: feature             # quick | feature | architecture (default for its specs)
 phase: build              # research | plan | build | review | done
+pack:                     # optional domain-expertise pack governing this workstream
+                          #   (e.g. product-design) — /brain:wrap runs its checklist gate
 audit_score:              # last review/audit result, when one exists
 created: YYYY-MM-DD
 updated: YYYY-MM-DD

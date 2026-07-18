@@ -1,5 +1,36 @@
 # Changelog — brain plugin
 
+## 0.10.0 — 2026-07-18 (Phase 6.5: product-design expertise pack)
+
+The first **domain-expertise pack** — packaged process + searchable knowledge
+that runs on top of the brain and files every artifact back. Generalizes the
+ui-ux-pro-max pattern into a reusable format.
+
+- **`/brain:product-design`** (`skills/product-design/`) — a five-phase
+  industry-standard process (discovery → definition → ideation → design →
+  validation), each phase filing to the right `.brain/` folder (research →
+  `wiki/research/`, personas/journeys → `wiki/syntheses/`, decisions →
+  `decisions/`, anti-patterns → `instincts/pending/`). Hands the visual build to
+  `ui-ux-pro-max` (design system) + `frontend-design` (build) with the brain's
+  accumulated context injected. `effort: high`, main model (judgment).
+- **Pack format** (`SKILL.md` + `data/` + `templates/` + `checklist.md`) — the
+  reusable shape for later packs (game design, analytics):
+  - `data/`: `methods.md` (JTBD, Crazy 8s, SCAMPER, Double Diamond, dot-voting…),
+    `heuristics.md` (Nielsen's 10, with severities), `accessibility.md` (WCAG 2.2
+    AA under POUR).
+  - `templates/`: `persona`, `journey-map`, `hmw` (problem statement + How-Might-We),
+    `usability-test-script`.
+  - `checklist.md`: the **validation gate** — when a workstream's project-status
+    names `pack: product-design`, `/brain:wrap` runs it and **open P0 findings block
+    "done"** (Nielsen catastrophes, Level-A a11y failures on core tasks, structural
+    design decisions with no ADR) — exactly like security P0s.
+- **Wiring:** new `pack:` field on the project-status template (schema master +
+  bundle, re-synced); `/brain:wrap` step 1 runs the active pack's checklist gate;
+  the trigger-router routes "design a product / create personas / user journey /
+  how-might-we / usability test / accessibility audit" → `/brain:product-design`.
+- Selftest 127 → **137 checks** (pack structure ×7, router ×2, routing map now 12
+  skills); both manifests validate `--strict`.
+
 ## 0.9.0 — 2026-07-18 (Phase 6: bundled-plugin manifest)
 
 Capability plugins do the craft; the brain records the knowledge. `/brain:init`

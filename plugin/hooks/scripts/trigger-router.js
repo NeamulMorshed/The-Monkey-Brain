@@ -72,6 +72,12 @@ const RULES = [
     what: 'code/spec review',
   },
   {
+    re: /\bproduct[- ]design\b|\bdesign (a |the |my |this )?(product|ux|user experience|user flow|interface|screen|app)\b|\b(create|make|write|build) (a |some )?personas?\b|\buser journey\b|\bjourney map\b|\bhow[- ]might[- ]we\b|\busability (test|study|testing)\b|\bheuristic eval|\baccessibility (audit|pass|review)\b/i,
+    skill: 'product-design',
+    needsBrain: true,
+    what: 'product-design process',
+  },
+  {
     re: /\bask (the |my )?brain\b|\bwhat does (the |my )?brain (know|say|have)\b|\bsearch (the |my )?(brain|wiki|vault)\b/i,
     skill: 'query',
     needsBrain: true,

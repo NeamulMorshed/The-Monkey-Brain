@@ -17,8 +17,8 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `review` | AC verification + code review filed back (synthesis page, ADRs, instinct candidates) | ✅ |
 | `terse` | Caveman-style session output compression (code/commands never compressed) | ✅ |
 | `compress` | Permanent instruction-file compression with before/after receipts | ✅ |
+| `product-design` | First domain-expertise **pack** — 5-phase process + `data/` (methods, Nielsen heuristics, WCAG) + `templates/` + `checklist.md` (the `/brain:wrap` gate) | ✅ |
 | `doctor` | Health monitor with token receipts (Phase 8) | ⬜ |
-| `packs/<domain>/` | Domain expertise packs — product-design first (Phase 6.5) | ⬜ |
 
 Conventions: SKILL.md < 150 lines (body stays in context); bundled scripts run
 via `${CLAUDE_SKILL_DIR}` and are covered by `hooks/scripts/selftest.js`;
@@ -35,7 +35,7 @@ run in scripts at zero model cost.
 
 | Work class | Skills | Frontmatter | Why |
 | --- | --- | --- | --- |
-| **Judgment & synthesis** | `plan` · `review` · `wrap` · `query` · `lint` · `compress` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression — never downgraded |
+| **Judgment & synthesis** | `plan` · `review` · `wrap` · `query` · `lint` · `compress` · `product-design` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression, design reasoning — never downgraded |
 | **Routine execution** | `ingest` · `research` · `build` | `model: sonnet` · `effort: medium` | summaries, research reads, standard implementation — pinned to Sonnet regardless of the session model |
 | **Mechanical** | `init` | `model: sonnet` · `effort: low` | scaffolding runs a Node script; little reasoning |
 | **Trivial** | `terse` | `model: haiku` · `effort: low` | flips an output mode |
@@ -61,3 +61,23 @@ named `.brain/` folder by the brain's skills and hooks (the manifest maps each
 plugin to its target folder; the instance manual's §9 states the rule and the
 precedence chain). Plugins auto-activate by their own descriptions; the
 trigger-router only nudges the brain's own workflows.
+
+## Domain-expertise packs (Phase 6.5)
+
+Where capability plugins are external, **packs** are hosted by the engine and
+**compound** — every recommendation files back into the instance. A pack is a
+skill with a bundled knowledge structure:
+
+```
+<pack>/
+├── SKILL.md      # the process (phases, when to auto-activate) + routing frontmatter
+├── data/         # searchable domain knowledge (markdown tables; qmd-indexable)
+├── templates/    # deliverable skeletons (persona, journey map, GDD…)
+└── checklist.md  # the validation gate /brain:wrap runs when a workstream sets `pack:`
+```
+
+First pack: **`product-design/`** — discovery → definition → ideation → design →
+validation, with Nielsen + WCAG knowledge and a P0-gating checklist. A workstream
+opts in via `pack: <name>` in its `projects/` status page; `/brain:wrap` then runs
+that pack's `checklist.md` and blocks "done" on open P0s (like security P0s). Later
+packs (game design, analytics) reuse the same shape.

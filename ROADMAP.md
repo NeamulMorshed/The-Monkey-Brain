@@ -48,14 +48,38 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P5** Memory & context engineering: instinct auto-detection, decision auto-distillation, opt-in qmd semantic search, compaction survival, budget receipts | ✅ 2026-07-17 | v0.7.0 — `instinct-track.js` (3+-session edits → `instincts/pending/` advisory); `wrap.js` Stop distillation nudge + `brain-status` "Decisions (the why)" surfacing + `/brain:wrap` step; `qmd-mcp.js` `brain-search` MCP in `.mcp.json` — **dormant/opt-in** (`.qmd` marker or `MONKEY_BRAIN_QMD=1` + qmd on PATH), stdlib no-op server otherwise, SessionEnd `qmd update` re-index, §8 documented; `snapshot.js` now carries active specs/projects; `brain-status` writes `sessions/injection-stats.json` receipts. Selftest **115/115**, validates `--strict` |
 | **P5.5** model routing & parallel fan-out | ✅ 2026-07-17 | v0.8.0 — `model:`/`effort:` on all 11 skills (judgment→main model+high effort; routine `ingest`/`research`/`build`→sonnet; `init` sonnet/low; `terse` haiku/low); `agents/brain-librarian.md` + `agents/brain-researcher.md` (both `model: sonnet`, hook #7 passes+logs them); fan-out patterns (research fan-out · batch ingest · build+review pair · competing hypotheses) documented in the skills + READMEs. Selftest **120/120**, validates `--strict` |
 | **P6** Bundled-plugin manifest: `skills/init/recommended-plugins.json` (9 capability plugins) + `plugins.js` renderer + `/brain:init` offer step + instance-manual §9 recording contract | ✅ 2026-07-18 | v0.9.0 — "plugins do the craft; the brain records the knowledge": each plugin mapped to the `.brain/` folder its output files into; model-driven `/plugin` install (never silent), skipped on `--update`; §9 states the precedence chain; selftest **127/127**, validates `--strict` |
-| **P6.5** product-design pack | ⬜ | |
+| **P6.5** product-design pack: first domain-expertise pack (`skills/product-design/` — 5-phase process + `data/` + `templates/` + `checklist.md` gate) | ✅ 2026-07-18 | v0.10.0 — pack format `SKILL.md`+`data/`+`templates/`+`checklist.md`; data cites Nielsen's 10 + WCAG 2.2 AA; `pack:` field on project-status → `/brain:wrap` runs the checklist, open **P0s block done** (like security); router routes design-process phrases; selftest **137/137**, validates `--strict` |
 | **P7** Product & game pipelines | ⬜ | |
 | **P8** `/brain:doctor` (15 checks) | ⬜ | |
 | **P9** Dogfood on scratch project → docs v2.0 → lint example brain → PR to `main` | ⬜ | |
 
 ### Session log (engine work, newest first — instances get `sessions/` in P4)
 
-**[2026-07-18] Session 4 — Phase 6 bundled-plugin manifest (v0.9.0)**
+**[2026-07-18] Session 4 — Phases 6 + 6.5 (v0.9.0 → v0.10.0)**
+
+*Phase 6.5 — product-design pack (v0.10.0), the first domain-expertise pack:*
+- **`skills/product-design/`** runs a five-phase industry process (discovery → definition →
+  ideation → design → validation), each phase filing to the right `.brain/` folder and handing
+  the visual build to `ui-ux-pro-max` + `frontend-design` with the brain's context injected.
+  `effort: high`, main model (design reasoning is judgment).
+- **Pack format** = `SKILL.md` + `data/` + `templates/` + `checklist.md` — the reusable shape
+  for later packs. `data/` carries real standards (Nielsen's 10 heuristics with severities;
+  WCAG 2.2 AA under POUR; a methods catalog — JTBD, Crazy 8s, SCAMPER, Double Diamond,
+  dot-voting). `templates/` = persona · journey-map · hmw (problem statement + How-Might-We) ·
+  usability-test-script.
+- **The validation gate:** new `pack:` field on the project-status template (master + bundle,
+  re-synced); `/brain:wrap` step 1 opens the active pack's `checklist.md` and **blocks "done"
+  on open P0s** (Nielsen catastrophes, Level-A a11y failures on core tasks, structural design
+  decisions with no ADR) — the MewVault-style audit gate, generalized. Router routes
+  "design a product / create personas / user journey / how-might-we / usability test /
+  accessibility audit" → the pack.
+- Docs: `skills/README.md` + `plugin/README.md` gain a Domain-expertise-packs section;
+  CHANGELOG 0.10.0. Caught + fixed a YAML footgun (a `: ` in the description broke strict
+  validation) — `claude plugin validate --strict` stays the frontmatter authority.
+- **Verified:** selftest 127 → **137 checks ALL GREEN** (pack structure ×7, router ×2, routing
+  map now 12 skills); both manifests validate `--strict`.
+
+*Phase 6 — bundled-plugin manifest (v0.9.0):*
 - **The manifest** (`skills/init/recommended-plugins.json`): the nine capability
   plugins from the roadmap's Phase 6 table, each carrying `category`, `fires_on`, a
   `brain_integration` note, and a structured `records[]` mapping every output to the
@@ -170,14 +194,14 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 
 **▶ Resume here (next session):** the live pointer is **`resume.md` at the repo root** —
 hook #8 injects it and asks to continue once the plugin is installed; until then, read it
-first. Phases 1–6 are done (plugin v0.9.0, 11 skills with routing frontmatter, **2 Sonnet
-subagents**, 10 hook scripts + 1 MCP wrapper, a 9-plugin recommended manifest, selftest
-127/127). Next: **Phase 6.5** product-design pack (first domain-expertise pack under
-`skills/packs/product-design/`: SKILL.md 5-phase process + `data/` + `templates/` +
-`checklist.md` that `/brain:wrap` reads), then P7 product & game pipelines · P8
-`/brain:doctor` (15 checks; reads `injection-stats.json` receipts + `edit-counts.json` +
-`agents.md` model mix + `recommended-plugins.json`) · P9 dogfood on a scratch project + PR to
-`main`. Optional dogfood at any point:
+first. Phases 1–6.5 are done (plugin v0.10.0, **12 skills** with routing frontmatter incl. the
+`product-design` pack, **2 Sonnet subagents**, 10 hook scripts + 1 MCP wrapper, a 9-plugin
+recommended manifest, selftest 137/137). Next: **Phase 7** product & game pipelines (codify the
+product pipeline idea→PRD→spec→build→track→wrap and the game pipeline concept→GDD→prototype→
+playtest→balance ADRs; add a `gdd.md` template; wire pipeline triggers), then P8 `/brain:doctor`
+(15 checks; reads `injection-stats.json` receipts + `edit-counts.json` + `agents.md` model mix +
+`recommended-plugins.json`) · P9 dogfood on a scratch project + PR to `main`. Optional dogfood at
+any point:
 `/plugin marketplace add "F:\The Monkey Brain\The-Monkey-Brain"` → `/plugin install brain@monkey-brain`.
 
 ---

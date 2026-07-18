@@ -17,6 +17,11 @@ the narrative belongs to you.
      acceptance criteria one by one and report each as met / not met.
    - If project code changed and the project has obvious checks (package scripts, test
      suite, linters), run them. Report failures with output — never paper over them.
+   - **Domain-pack gate:** if the active workstream's `projects/<name>.md` names a `pack:`
+     (e.g. `pack: product-design`), open that pack's `checklist.md`
+     (`${CLAUDE_SKILL_DIR}/../<pack>/checklist.md`) and run it. Report every **open P0** with
+     its location; an unmet P0 **blocks "done"** unless the curator explicitly accepts it
+     (record the acceptance in the project-status). Non-P0 items are advisories.
 2. **Sync the wiki bookkeeping** (skip whatever already happened during the work):
    - `wiki/log.md` — if knowledge work happened this session and has no entry yet, append
      `## [YYYY-MM-DD] session | <summary>` (or the specific `ingest |` / `query |` /
