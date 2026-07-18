@@ -49,13 +49,28 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P5.5** model routing & parallel fan-out | ✅ 2026-07-17 | v0.8.0 — `model:`/`effort:` on all 11 skills (judgment→main model+high effort; routine `ingest`/`research`/`build`→sonnet; `init` sonnet/low; `terse` haiku/low); `agents/brain-librarian.md` + `agents/brain-researcher.md` (both `model: sonnet`, hook #7 passes+logs them); fan-out patterns (research fan-out · batch ingest · build+review pair · competing hypotheses) documented in the skills + READMEs. Selftest **120/120**, validates `--strict` |
 | **P6** Bundled-plugin manifest: `skills/init/recommended-plugins.json` (9 capability plugins) + `plugins.js` renderer + `/brain:init` offer step + instance-manual §9 recording contract | ✅ 2026-07-18 | v0.9.0 — "plugins do the craft; the brain records the knowledge": each plugin mapped to the `.brain/` folder its output files into; model-driven `/plugin` install (never silent), skipped on `--update`; §9 states the precedence chain; selftest **127/127**, validates `--strict` |
 | **P6.5** product-design pack: first domain-expertise pack (`skills/product-design/` — 5-phase process + `data/` + `templates/` + `checklist.md` gate) | ✅ 2026-07-18 | v0.10.0 — pack format `SKILL.md`+`data/`+`templates/`+`checklist.md`; data cites Nielsen's 10 + WCAG 2.2 AA; `pack:` field on project-status → `/brain:wrap` runs the checklist, open **P0s block done** (like security); router routes design-process phrases; selftest **137/137**, validates `--strict` |
-| **P7** Product & game pipelines | ⬜ | |
+| **P7** Product & game pipelines: `/brain:game` (concept→GDD→prototype→build→playtest→balance) + `gdd.md` template + product-pipeline codified + instance-manual §10 | ✅ 2026-07-18 | v0.11.0 — both pipelines reuse research→plan→build→wrap; game adds the GDD (`type: gdd`, MDA/core-loop), playtests **ingested as sources**, balance as **ADRs**, engine entity pages; product pipeline is the lifecycle + product plugins (no new skill); router routes game phrases; selftest **144/144**, validates `--strict` |
 | **P8** `/brain:doctor` (15 checks) | ⬜ | |
 | **P9** Dogfood on scratch project → docs v2.0 → lint example brain → PR to `main` | ⬜ | |
 
 ### Session log (engine work, newest first — instances get `sessions/` in P4)
 
-**[2026-07-18] Session 4 — Phases 6 + 6.5 (v0.9.0 → v0.10.0)**
+**[2026-07-18] Session 4 — Phases 6 + 6.5 + 7 (v0.9.0 → v0.11.0)**
+
+*Phase 7 — product & game pipelines (v0.11.0):*
+- **`/brain:game`** runs the game pipeline: concept → **GDD** → prototype spec → build →
+  **playtest** → **balance**. The GDD (new `templates/gdd.md`, `type: gdd` — MDA, core loop,
+  progression, art direction, engine entity links) captures the concept; its open questions
+  become the prototype spec's ACs (`/brain:plan`, tiered); each playtest is **ingested as a raw
+  source** so observations are searchable; each balance decision is a `decisions/` ADR.
+  `effort: high`, main model (design judgment).
+- **The product pipeline** (idea → PRD → spec → build → track → wrap) needs no new skill — the
+  standard lifecycle composed with the `product-management` / `product-tracking` plugins. Both
+  pipelines are documented in the instance manual's new **§10 "Domain pipelines"** (master +
+  bundle re-synced); the shared spine is research→plan (filed research, numbered ACs, approval
+  gates). Router routes game phrases (start/design a game, GDD, core loop, playtest, balance).
+- **Verified:** selftest 137 → **144 checks ALL GREEN** (game skill ×3, GDD ×1, §10 ×1, router
+  ×2); both manifests validate `--strict`.
 
 *Phase 6.5 — product-design pack (v0.10.0), the first domain-expertise pack:*
 - **`skills/product-design/`** runs a five-phase industry process (discovery → definition →
@@ -194,14 +209,15 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 
 **▶ Resume here (next session):** the live pointer is **`resume.md` at the repo root** —
 hook #8 injects it and asks to continue once the plugin is installed; until then, read it
-first. Phases 1–6.5 are done (plugin v0.10.0, **12 skills** with routing frontmatter incl. the
-`product-design` pack, **2 Sonnet subagents**, 10 hook scripts + 1 MCP wrapper, a 9-plugin
-recommended manifest, selftest 137/137). Next: **Phase 7** product & game pipelines (codify the
-product pipeline idea→PRD→spec→build→track→wrap and the game pipeline concept→GDD→prototype→
-playtest→balance ADRs; add a `gdd.md` template; wire pipeline triggers), then P8 `/brain:doctor`
-(15 checks; reads `injection-stats.json` receipts + `edit-counts.json` + `agents.md` model mix +
-`recommended-plugins.json`) · P9 dogfood on a scratch project + PR to `main`. Optional dogfood at
-any point:
+first. Phases 1–7 are done (plugin v0.11.0, **13 skills** with routing frontmatter incl. the
+`product-design` pack + `game` pipeline, **2 Sonnet subagents**, 10 hook scripts + 1 MCP wrapper,
+a 9-plugin recommended manifest, selftest 144/144). Next: **Phase 8** `/brain:doctor` — a
+health-monitor skill + `doctor.js` running 15 checks (broken links · orphans · stale/contradiction
+flags · index freshness · Clippings backlog · log gaps · uncommitted `.brain/` · hook registration
+· injection size vs budget from `injection-stats.json` · semantic-index freshness · WIP limits ·
+instinct-queue overflow · specs without tests · open P0 findings · schema version vs engine +
+model-mix from `agents.md`); failures inject a health report via hook #1. Then P9 dogfood on a
+scratch project + PR to `main`. Optional dogfood at any point:
 `/plugin marketplace add "F:\The Monkey Brain\The-Monkey-Brain"` → `/plugin install brain@monkey-brain`.
 
 ---

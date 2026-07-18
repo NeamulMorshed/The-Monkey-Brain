@@ -195,4 +195,25 @@ Plugins auto-activate by their own descriptions; the trigger-router routes **my*
 When a plugin and one of mine both apply, precedence is: **deterministic trigger > domain
 pack > domain skill > craft plugin > general model**.
 
+---
+
+## 10. Domain pipelines (products & games)
+
+Both pipelines reuse the develop lifecycle (§4.4) — research is always filed, plans always
+carry numbered ACs, approval always gates architecture-tier code — with a domain-shaped front end.
+
+**Product:** idea → PRD → spec → build → track → wrap.
+`/brain:research` files the idea to `wiki/research/` → the `product-management` plugin drafts a
+PRD into `raw-sources/` → `/brain:ingest` compiles it → `/brain:plan` writes `specs/` with ACs →
+`/brain:build` implements → `product-tracking` plans live in `projects/` → `/brain:wrap` closes it.
+No special skill — it's the standard lifecycle composed.
+
+**Game:** concept → GDD → prototype spec → build → playtest → balance. Run `/brain:game`.
+The **GDD** (`templates/gdd.md`) captures concept, MDA, core loop, progression, art direction;
+its open questions become the **prototype spec**'s ACs (`/brain:plan`, tiered); `/brain:build`
+implements against an engine entity page ([[godot]] / [[unity]] / web in `wiki/entities/`);
+each **playtest** is ingested as a raw source; each **balance** decision is a `decisions/` ADR.
+
+Everything files back — the wiki-check hook blocks orphans, and `/brain:wrap` closes each phase.
+
 See also: [[index]] · [[log]] · [[dashboard]]

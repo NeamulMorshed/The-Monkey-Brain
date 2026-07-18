@@ -285,6 +285,10 @@ try {
   check('"design a product" routes to brain:product-design', t.ctx.includes('brain:product-design'), t.ctx);
   t = routed('create personas from our interviews');
   check('"create personas" routes to brain:product-design', t.ctx.includes('brain:product-design'), t.ctx);
+  t = routed('start a game concept about space monkeys');
+  check('"start a game" routes to brain:game', t.ctx.includes('brain:game'), t.ctx);
+  t = routed('write a GDD and design the core loop');
+  check('"GDD / core loop" routes to brain:game', t.ctx.includes('brain:game'), t.ctx);
 
   // ---------- /brain:lint mechanical scan ----------
   console.log('lint.js (skill /brain:lint, mechanical layer)');
@@ -454,6 +458,7 @@ try {
     lint: { effort: 'high' },
     compress: { effort: 'high' },
     'product-design': { effort: 'high' },
+    game: { effort: 'high' },
   };
   const fmGet = (text, key) => { const head = text.split(/\r?\n---/)[0] || ''; const m = new RegExp(`^${key}:\\s*(\\S+)\\s*$`, 'm').exec(head); return m ? m[1] : undefined; };
   let routingOk = 0;
@@ -469,8 +474,8 @@ try {
     if (modelOk && effortOk) routingOk++;
     else routingBad.push(`${name}(model=${model},effort=${effort})`);
   }
-  check('all 12 skills declare the expected model/effort routing', routingOk === Object.keys(routing).length, routingBad.join(' '));
-  const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress', 'product-design'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
+  check('all 13 skills declare the expected model/effort routing', routingOk === Object.keys(routing).length, routingBad.join(' '));
+  const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress', 'product-design', 'game'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
   check('judgment skills inherit the main model (no downgrade)', judgmentPinned.length === 0, `pinned: ${judgmentPinned.join(',')}`);
 
   // Sonnet fan-out subagents (P5.5)
@@ -571,6 +576,16 @@ try {
   check('/brain:wrap runs the active pack checklist gate', /pack:/.test(wrapSkill) && /checklist\.md/.test(wrapSkill) && /P0/.test(wrapSkill), 'wrap pack gate');
   const psTmpl = fs.readFileSync(path.join(bundled, 'templates', 'project-status.md'), 'utf8');
   check('project-status template carries the pack: field', /^pack:/m.test(psTmpl), 'no pack field');
+
+  // ---------- product & game pipelines (Phase 7) ----------
+  console.log('game pipeline + pipelines doc (Phase 7)');
+  const gameSkill = fs.existsSync(path.join(SKILLS, 'game', 'SKILL.md')) ? fs.readFileSync(path.join(SKILLS, 'game', 'SKILL.md'), 'utf8') : '';
+  check('game skill exists with description + effort:high', /^description:\s*\S/m.test(gameSkill.split(/\r?\n---/)[0] || '') && fmGet(gameSkill, 'effort') === 'high', 'game SKILL.md frontmatter');
+  check('game SKILL.md stays under 150 lines', gameSkill && gameSkill.split('\n').length <= 150, `${gameSkill.split('\n').length} lines`);
+  check('game skill walks GDD → prototype spec → playtest → balance ADR', /templates\/gdd\.md/.test(gameSkill) && /prototype/i.test(gameSkill) && /playtest/i.test(gameSkill) && /decisions\//.test(gameSkill), 'pipeline steps');
+  const gddTmpl = fs.existsSync(path.join(bundled, 'templates', 'gdd.md')) ? fs.readFileSync(path.join(bundled, 'templates', 'gdd.md'), 'utf8') : '';
+  check('GDD template ships (type: gdd, MDA + core loop)', /^type:\s*gdd/m.test(gddTmpl) && /MDA/.test(gddTmpl) && /core loop/i.test(gddTmpl), 'gdd template');
+  check('instance manual §10 documents product + game pipelines', /##\s*10\.\s*Domain pipelines/.test(tmplManual) && /Product:/.test(tmplManual) && /Game:/.test(tmplManual), 'no §10 pipelines');
 
   // ---------- no-brain /brain:init offer (activation fallback) ----------
   console.log('brain-status.js — no-brain offer');

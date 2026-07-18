@@ -78,6 +78,12 @@ const RULES = [
     what: 'product-design process',
   },
   {
+    re: /\b(start|make|build|design|prototype)\b[^.!?]{0,30}\bgame\b|\bgame (concept|design document|design doc|mechanics?|loop|balance|pipeline)\b|\bgdd\b|\bcore loop\b|\bplaytest\b/i,
+    skill: 'game',
+    needsBrain: true,
+    what: 'game pipeline',
+  },
+  {
     re: /\bask (the |my )?brain\b|\bwhat does (the |my )?brain (know|say|have)\b|\bsearch (the |my )?(brain|wiki|vault)\b/i,
     skill: 'query',
     needsBrain: true,

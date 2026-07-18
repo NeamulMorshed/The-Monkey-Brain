@@ -5,14 +5,14 @@ updated: 2026-07-18
 ---
 
 ## Where we left off
-v2 build, session 4 (2026-07-18): **Phases 6 + 6.5 are complete** (plugin v0.10.0). **P6.5**
-shipped the first domain-expertise pack — `skills/product-design/` runs a five-phase process
-(discovery → definition → ideation → design → validation) with bundled `data/` (Nielsen's 10
-heuristics, WCAG 2.2 AA, a methods catalog), `templates/` (persona, journey-map, hmw,
-usability-test-script), and a `checklist.md` **validation gate**: a workstream opts in with
-`pack: product-design` in its `projects/` page and `/brain:wrap` blocks "done" on open P0s
-(like security). Selftest 127 → **137 GREEN**. **P6** (below) was the
-bundled-plugin manifest. `skills/init/recommended-plugins.json` lists the nine capability
+v2 build, session 4 (2026-07-18): **Phases 6 + 6.5 + 7 are complete** (plugin v0.11.0). **P7**
+codified the product & game pipelines: `/brain:game` runs concept → GDD → prototype spec →
+build → playtest (ingested as sources) → balance (ADRs), with a new `templates/gdd.md`
+(`type: gdd`, MDA + core loop); the product pipeline (idea→PRD→spec→build→track→wrap) is the
+standard lifecycle + product plugins; instance-manual **§10 "Domain pipelines"** documents both.
+Selftest 137 → **144 GREEN**. **P6.5** shipped the first domain-expertise pack
+(`skills/product-design/` — 5-phase process + `data/` [Nielsen, WCAG, methods] + `templates/` +
+`checklist.md` P0 gate via `pack:` field). **P6** was the bundled-plugin manifest. `skills/init/recommended-plugins.json` lists the nine capability
 plugins (github, frontend-design, superpowers, security-guidance, product-tracking-skills,
 code-modernization, productivity, product-management, ui-ux-pro-max), each mapped to the
 `.brain/` folder its output is filed into; `scripts/plugins.js` renders the offer
@@ -36,9 +36,8 @@ two Sonnet subagents (`brain-researcher` read-only slice + `brain-librarian` bat
 and fan-out patterns documented in the skills. Selftest **120/120 GREEN**; `claude plugin
 validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Session log.
 
-## Next steps
-- [ ] **P7 product & game pipelines**: codify the product pipeline (idea→PRD→spec→build→track→wrap) and game pipeline (concept→GDD→prototype spec→build→playtest logs→balance ADRs); add a `gdd.md` template to the schema; document pipelines in the instance manual; wire pipeline triggers where useful.
-- [ ] Then P8 `/brain:doctor` (15 checks; reads `injection-stats.json` + `edit-counts.json` + `agents.md` + `recommended-plugins.json`) · P9 dogfood + PR to `main`
+- [ ] **P8 `/brain:doctor`**: health-monitor skill + `doctor.js` running 15 checks (broken links · orphans · stale flags · index freshness · Clippings backlog · log gaps · uncommitted `.brain/` · hook registration · injection size vs budget from `injection-stats.json` · semantic-index freshness · WIP limits · instinct-queue overflow · specs without tests · open P0s · schema version vs engine + model-mix). Failures inject a health report via hook #1 (brain-status).
+- [ ] Then P9 dogfood on a scratch project + docs v2.0 + PR to `main`
 - [ ] Optional dogfood now: `/plugin marketplace add "F:\The Monkey Brain\The-Monkey-Brain"` → `/plugin install brain@monkey-brain`
 
 ## Task log (auto)
@@ -54,3 +53,4 @@ validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Ses
 - [2026-07-17] ✔ P5.5 complete — model routing frontmatter (11 skills) + brain-researcher/brain-librarian Sonnet agents + fan-out patterns (v0.8.0, selftest 120/120)
 - [2026-07-18] ✔ P6 complete — bundled-plugin manifest (9 recommended plugins + plugins.js renderer + /brain:init offer + instance-manual §9 recording contract) (v0.9.0, selftest 127/127)
 - [2026-07-18] ✔ P6.5 complete — product-design pack (5-phase process + data/ [Nielsen+WCAG+methods] + templates/ + checklist.md P0 gate; pack: field → /brain:wrap gate; router phrases) (v0.10.0, selftest 137/137)
+- [2026-07-18] ✔ P7 complete — product & game pipelines (/brain:game concept→GDD→prototype→playtest→balance; gdd.md template; §10 manual; router game phrases) (v0.11.0, selftest 144/144)

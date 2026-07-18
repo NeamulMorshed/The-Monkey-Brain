@@ -40,7 +40,8 @@ plugin/
 │   ├── lint/                    #   + mechanical lint.js (injected via !`…`)
 │   ├── research/  plan/  build/  review/    # develop lifecycle (v2 schema)
 │   ├── terse/  compress/        #   token discipline (Caveman-inspired)
-│   └── product-design/          #   domain-expertise pack (data+templates+gate) ✅ Phase 6.5
+│   ├── product-design/          #   domain-expertise pack (data+templates+gate) ✅ Phase 6.5
+│   └── game/                    #   game pipeline (GDD → prototype → playtest)   ✅ Phase 7
 ├── agents/                      # brain-librarian, brain-researcher   ✅ Phase 5.5
 └── .mcp.json                    # brain-search (opt-in qmd)           ✅ Phase 5
 ```
@@ -96,6 +97,15 @@ definition → ideation → design → validation) carrying Nielsen-heuristic an
 knowledge; a workstream opts in with `pack: product-design` in its `projects/` page,
 and `/brain:wrap` runs the pack's `checklist.md`, blocking "done" on open P0s. Later
 packs reuse the same shape.
+
+### Domain pipelines (Phase 7)
+
+Two pipelines reuse the develop lifecycle with a domain front end (instance manual
+§10). **Product** (idea → PRD → spec → build → track → wrap) is the standard
+lifecycle composed with the product plugins — no new skill. **Game** is
+**`/brain:game`**: concept → GDD (`templates/gdd.md`) → prototype spec → build →
+playtest (ingested as sources) → balance (ADRs), with engine entity pages in
+`wiki/entities/`.
 
 ### Agents (Phase 5.5)
 

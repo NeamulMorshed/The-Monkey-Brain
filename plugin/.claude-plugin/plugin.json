@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "brain",
   "displayName": "The Monkey Brain",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "A compounding knowledge engine for any project: scaffolds a per-project .brain/ (an LLM-maintained wiki + memory that travels with the repo), injects budgeted brain context at session start, enforces the knowledge SDLC with hooks and gates, and routes work through /brain:* skills.",
   "author": {
     "name": "NeamulMorshed",

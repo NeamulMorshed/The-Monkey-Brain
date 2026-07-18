@@ -1,5 +1,30 @@
 # Changelog — brain plugin
 
+## 0.11.0 — 2026-07-18 (Phase 7: product & game pipelines)
+
+Two domain pipelines codified on top of the develop lifecycle — research always
+filed, plans always with numbered ACs, approval always gating architecture code.
+
+- **`/brain:game`** (`skills/game/`) — the game pipeline: concept → **GDD** →
+  prototype spec → build → **playtest** → **balance**. The GDD captures concept /
+  MDA / core loop / progression / art direction; its open questions become the
+  prototype spec's acceptance criteria (`/brain:plan`, tiered); each playtest is
+  **ingested as a raw source** so observations are searchable; each balance
+  decision is a `decisions/` ADR. `effort: high`, main model (design judgment).
+- **GDD template** `templates/gdd.md` (schema master + bundle, re-synced) —
+  `type: gdd`, MDA framework, core-loop framing, mechanics table, progression &
+  economy, win/loss, art direction, scope/platform with engine entity links
+  (godot / unity / web). Every brain now carries it (distributed by
+  `/brain:init --update`).
+- **The product pipeline** (idea → PRD → spec → build → track → wrap) needs no new
+  skill — it's the standard lifecycle composed with the `product-management` /
+  `product-tracking` capability plugins. Documented alongside the game pipeline in
+  the instance manual's new **§10 "Domain pipelines"**.
+- **Router** routes "start/design/prototype a game", "GDD", "core loop",
+  "playtest", "game balance" → `/brain:game`.
+- Selftest 137 → **144 checks** (game skill ×3, GDD template ×1, §10 ×1, router
+  ×2, routing map now 13 skills); both manifests validate `--strict`.
+
 ## 0.10.0 — 2026-07-18 (Phase 6.5: product-design expertise pack)
 
 The first **domain-expertise pack** — packaged process + searchable knowledge
