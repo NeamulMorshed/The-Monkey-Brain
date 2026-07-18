@@ -42,10 +42,16 @@ const RULES = [
     what: 'session wrap-up',
   },
   {
-    re: /\blint (the |my )?(brain|wiki|vault)\b|\b(brain|wiki|vault) (health|doctor|lint)\b|\bhealth[- ]?check (the |my )?(brain|wiki|vault)\b/i,
+    re: /\bbrain[- ]?doctor\b|\b(brain|wiki|vault) (doctor|health)\b|\bhealth[- ]?check (the |my )?(brain|wiki|vault)\b|\bis (the |my )?(brain|wiki|vault) healthy\b|\bcheck (the |my )?(brain|wiki|vault)'?s? health\b/i,
+    skill: 'doctor',
+    needsBrain: true,
+    what: 'brain health report',
+  },
+  {
+    re: /\blint (the |my )?(brain|wiki|vault)\b|\b(brain|wiki|vault) lint\b/i,
     skill: 'lint',
     needsBrain: true,
-    what: 'brain health check',
+    what: 'brain lint',
   },
   {
     re: /\bresearch\b/i,

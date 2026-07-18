@@ -19,7 +19,7 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `compress` | Permanent instruction-file compression with before/after receipts | ✅ |
 | `product-design` | First domain-expertise **pack** — 5-phase process + `data/` (methods, Nielsen heuristics, WCAG) + `templates/` + `checklist.md` (the `/brain:wrap` gate) | ✅ |
 | `game` | Game pipeline — concept → GDD (`templates/gdd.md`) → prototype spec → build → playtest (ingested) → balance ADRs | ✅ |
-| `doctor` | Health monitor with token receipts (Phase 8) | ⬜ |
+| `doctor` | 15-check health monitor (`scripts/doctor.js`, injected) → writes `sessions/health.json`; hook #1 surfaces failures next session | ✅ |
 
 Conventions: SKILL.md < 150 lines (body stays in context); bundled scripts run
 via `${CLAUDE_SKILL_DIR}` and are covered by `hooks/scripts/selftest.js`;
@@ -36,7 +36,7 @@ run in scripts at zero model cost.
 
 | Work class | Skills | Frontmatter | Why |
 | --- | --- | --- | --- |
-| **Judgment & synthesis** | `plan` · `review` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression, design reasoning — never downgraded |
+| **Judgment & synthesis** | `plan` · `review` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression, design reasoning, health triage — never downgraded |
 | **Routine execution** | `ingest` · `research` · `build` | `model: sonnet` · `effort: medium` | summaries, research reads, standard implementation — pinned to Sonnet regardless of the session model |
 | **Mechanical** | `init` | `model: sonnet` · `effort: low` | scaffolding runs a Node script; little reasoning |
 | **Trivial** | `terse` | `model: haiku` · `effort: low` | flips an output mode |

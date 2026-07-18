@@ -75,6 +75,21 @@ async function main() {
     sections.push([1, `**📎 Clippings:** ${clippings} unprocessed file(s) in \`${rel}/Clippings/\` — say "ingest" to compile them into the wiki.`]);
   }
 
+  // Health report (Phase 8): surface the last /brain:doctor run's open failures so
+  // this session starts knowing what's wrong. Zero-cost — reads a cached report.
+  const health = lib.readJsonSafe(path.join(brain, 'sessions', 'health.json'), null);
+  if (health && (Number(health.crit) > 0 || Number(health.warn) > 0)) {
+    const rank = (l) => (l === 'crit' ? 0 : 1);
+    const tops = (Array.isArray(health.findings) ? health.findings : [])
+      .filter((f) => f.level === 'crit' || f.level === 'warn')
+      .sort((a, b) => rank(a.level) - rank(b.level))
+      .slice(0, 2)
+      .map((f) => `${f.check} (${f.detail})`);
+    const age = health.at ? Math.floor((Date.now() - Date.parse(health.at)) / 86400000) : null;
+    const staleNote = age !== null && age > 7 ? ` — report ${age}d old, re-run` : '';
+    sections.push([1, `**🩺 Health:** last \`/brain:doctor\` — ${health.crit} critical · ${health.warn} warning(s)${staleNote}. ${Number(health.crit) > 0 ? 'Criticals gate wrap. ' : ''}Top: ${tops.join('; ')}. Run \`/brain:doctor\` for the full report.`]);
+  }
+
   const specsDir = path.join(brain, 'specs');
   if (fs.existsSync(specsDir)) {
     const lines = [];

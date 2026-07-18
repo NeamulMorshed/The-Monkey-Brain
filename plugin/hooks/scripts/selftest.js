@@ -251,7 +251,11 @@ try {
   t = routed("ok let's wrap it up for today");
   check('"wrap it up" routes to brain:wrap', t.ctx.includes('brain:wrap'), t.ctx);
   t = routed('can you lint the brain');
-  check('"lint the brain" routes to brain:lint', t.ctx.includes('brain:lint'), t.ctx);
+  check('"lint the brain" routes to brain:lint', t.ctx.includes('brain:lint') && !t.ctx.includes('brain:doctor'), t.ctx);
+  t = routed('run the brain doctor');
+  check('"brain doctor" routes to brain:doctor', t.ctx.includes('brain:doctor'), t.ctx);
+  t = routed('is the brain healthy?');
+  check('"is the brain healthy" routes to brain:doctor', t.ctx.includes('brain:doctor'), t.ctx);
   t = routed('what does the brain know about hooks?');
   check('"what does the brain know" routes to brain:query', t.ctx.includes('brain:query'), t.ctx);
   t = routed('refactor the parser and add tests');
@@ -459,6 +463,7 @@ try {
     compress: { effort: 'high' },
     'product-design': { effort: 'high' },
     game: { effort: 'high' },
+    doctor: { effort: 'high' },
   };
   const fmGet = (text, key) => { const head = text.split(/\r?\n---/)[0] || ''; const m = new RegExp(`^${key}:\\s*(\\S+)\\s*$`, 'm').exec(head); return m ? m[1] : undefined; };
   let routingOk = 0;
@@ -474,8 +479,8 @@ try {
     if (modelOk && effortOk) routingOk++;
     else routingBad.push(`${name}(model=${model},effort=${effort})`);
   }
-  check('all 13 skills declare the expected model/effort routing', routingOk === Object.keys(routing).length, routingBad.join(' '));
-  const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress', 'product-design', 'game'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
+  check('all 14 skills declare the expected model/effort routing', routingOk === Object.keys(routing).length, routingBad.join(' '));
+  const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress', 'product-design', 'game', 'doctor'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
   check('judgment skills inherit the main model (no downgrade)', judgmentPinned.length === 0, `pinned: ${judgmentPinned.join(',')}`);
 
   // Sonnet fan-out subagents (P5.5)
@@ -586,6 +591,32 @@ try {
   const gddTmpl = fs.existsSync(path.join(bundled, 'templates', 'gdd.md')) ? fs.readFileSync(path.join(bundled, 'templates', 'gdd.md'), 'utf8') : '';
   check('GDD template ships (type: gdd, MDA + core loop)', /^type:\s*gdd/m.test(gddTmpl) && /MDA/.test(gddTmpl) && /core loop/i.test(gddTmpl), 'gdd template');
   check('instance manual §10 documents product + game pipelines', /##\s*10\.\s*Domain pipelines/.test(tmplManual) && /Product:/.test(tmplManual) && /Game:/.test(tmplManual), 'no §10 pipelines');
+
+  // ---------- /brain:doctor 15-check health monitor (Phase 8) ----------
+  console.log('doctor.js (skill /brain:doctor — 15 health checks + health.json surfacing)');
+  const DOCTOR = path.join(SKILLS, 'doctor', 'scripts', 'doctor.js');
+  let dr = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
+  check('doctor runs all 15 checks, exit 0 by default', dr.status === 0 && /15-check health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
+  const HEALTHP = path.join(BRAIN, 'sessions', 'health.json');
+  check('doctor writes sessions/health.json', fs.existsSync(HEALTHP), 'no health.json');
+  let dj = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN, '--json'], { encoding: 'utf8', timeout: 20000 });
+  let hrep = {}; try { hrep = JSON.parse(dj.stdout); } catch {}
+  check('doctor --json reports exactly 15 findings + numeric counts', Array.isArray(hrep.findings) && hrep.findings.length === 15 && typeof hrep.ok === 'number' && typeof hrep.crit === 'number', `findings=${(hrep.findings || []).length}`);
+  check('doctor flags the fixture orphan (check 2)', (hrep.findings || []).some((f) => f.check === 'orphans' && f.level === 'warn' && /orphan-page/.test(f.detail)), JSON.stringify((hrep.findings || []).find((f) => f.check === 'orphans')));
+  check('doctor flags a feature+ spec with no test plan (check 13)', (hrep.findings || []).some((f) => f.check === 'specs-without-tests' && f.level === 'warn'), 'no specs-without-tests warn');
+  check('doctor reports model-mix from agents.md', typeof hrep.model_mix === 'string' && /sonnet/.test(hrep.model_mix), hrep.model_mix);
+  write('.brain/projects/security.md', '---\ntitle: "Security"\ntype: project\nstatus: active\ntier: feature\n---\n\n## Blockers\n- P0: SQL injection in login (open)\n');
+  dj = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN, '--json'], { encoding: 'utf8', timeout: 20000 });
+  hrep = {}; try { hrep = JSON.parse(dj.stdout); } catch {}
+  check('an open P0 finding is critical (check 14, gates wrap)', (hrep.findings || []).some((f) => f.check === 'open-p0' && f.level === 'crit' && /security/.test(f.detail)), JSON.stringify((hrep.findings || []).find((f) => f.check === 'open-p0')));
+  r = run('brain-status.js', evt({ hook_event_name: 'SessionStart', source: 'startup' }));
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  const hctx = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('brain-status surfaces the doctor health report next session', hctx.includes('🩺 Health') && /critical/.test(hctx), hctx.slice(0, 300));
+  dr = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN, '--strict'], { encoding: 'utf8', timeout: 20000 });
+  check('doctor --strict exits 1 when warnings/criticals exist', dr.status === 1, `status=${dr.status}`);
+  dr = spawnSync(process.execPath, [DOCTOR, '--brain', os.tmpdir()], { encoding: 'utf8', timeout: 20000 });
+  check('doctor is a silent no-op without a brain', dr.status === 0 && /No Monkey Brain/.test(dr.stdout), `status=${dr.status}`);
 
   // ---------- no-brain /brain:init offer (activation fallback) ----------
   console.log('brain-status.js — no-brain offer');

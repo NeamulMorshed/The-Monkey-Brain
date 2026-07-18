@@ -11,7 +11,7 @@
       "source": "./plugin",
       "displayName": "The Monkey Brain",
       "description": "Per-project .brain/ knowledge engine: budgeted session context injection, an enforced knowledge SDLC (ingest / query / lint / wrap), token discipline with receipts, and compounding domain expertise packs.",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "author": {
         "name": "NeamulMorshed"
       },

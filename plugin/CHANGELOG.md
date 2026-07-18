@@ -1,5 +1,32 @@
 # Changelog — brain plugin
 
+## 0.12.0 — 2026-07-18 (Phase 8: /brain:doctor health monitor)
+
+Fifteen deterministic health checks (MewVault parity), with receipts, and a
+report that the next session's status block surfaces on its own.
+
+- **`/brain:doctor`** (`skills/doctor/` + `scripts/doctor.js`) — the mechanical
+  scan is injected via `` !`…` `` (zero model tokens), then the skill triages.
+  The 15 checks: **1** broken links · **2** orphans · **3** stale/contradiction
+  flags · **4** index freshness vs page count · **5** Clippings backlog · **6**
+  log gaps (session activity newer than the log) · **7** uncommitted `.brain/` ·
+  **8** hook registration · **9** injection size vs budget (reads
+  `injection-stats.json`) · **10** semantic-index freshness · **11** WIP limits
+  (≤3 active, none idle 21+ days) · **12** instinct-queue overflow · **13** specs
+  without a test plan · **14** open **P0** findings · **15** schema version vs
+  engine — plus a **model-mix** line from `sessions/agents.md`. Levels
+  `ok · info · warn · crit`; **criticals gate `/brain:wrap`**.
+- **Health report surfaced next session:** `doctor.js` writes
+  `sessions/health.json`; **hook #1 `brain-status`** reads it and injects a compact
+  `🩺 Health` line (counts + top findings + staleness) whenever the last run had
+  open warnings/criticals — so failures carry into the next session for free.
+- **Routing:** `effort: high` (main-model triage); the trigger-router now routes
+  "brain doctor / brain health / is the brain healthy / health-check the brain" →
+  `/brain:doctor` (and keeps "lint the brain" → `/brain:lint`).
+- `--strict` exits nonzero on any warning/critical (CI); `--json` emits the report.
+- Selftest 144 → **156 checks** (doctor ×10, router ×2); both manifests validate
+  `--strict`.
+
 ## 0.11.0 — 2026-07-18 (Phase 7: product & game pipelines)
 
 Two domain pipelines codified on top of the develop lifecycle — research always

@@ -32,7 +32,7 @@ plugin/
 │                                #   #6 wrap (+ decision nudge + qmd
 │                                #     re-index), #7 agent-track,
 │                                #   #8 resume+resume-log; qmd-mcp;
-│                                #   selftest (120 checks)             ✅
+│                                #   selftest (156 checks)             ✅
 ├── skills/                      # /brain:* skills                     ✅ Phase 3 complete
 │   ├── init/                    #   + bundled brain-template + scaffold script
 │   │                            #   + recommended-plugins.json + plugins.js  ✅ Phase 6
@@ -41,7 +41,8 @@ plugin/
 │   ├── research/  plan/  build/  review/    # develop lifecycle (v2 schema)
 │   ├── terse/  compress/        #   token discipline (Caveman-inspired)
 │   ├── product-design/          #   domain-expertise pack (data+templates+gate) ✅ Phase 6.5
-│   └── game/                    #   game pipeline (GDD → prototype → playtest)   ✅ Phase 7
+│   ├── game/                    #   game pipeline (GDD → prototype → playtest)   ✅ Phase 7
+│   └── doctor/                  #   15-check health monitor (doctor.js)          ✅ Phase 8
 ├── agents/                      # brain-librarian, brain-researcher   ✅ Phase 5.5
 └── .mcp.json                    # brain-search (opt-in qmd)           ✅ Phase 5
 ```
@@ -50,7 +51,7 @@ plugin/
 
 | # | Event | Script | Does |
 | --- | --- | --- | --- |
-| 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, semantic-search state); `/brain:init` offer in brainless projects; writes an **injection-size receipt** to `sessions/injection-stats.json` |
+| 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, **health report**, semantic-search state); `/brain:init` offer in brainless projects; writes an **injection-size receipt** to `sessions/injection-stats.json` |
 | 2 | UserPromptSubmit | `trigger-router` | natural phrases → `/brain:*` routing hints (never blocks) |
 | 3 | PreToolUse Write\|Edit | `guards` | secrets everywhere · raw-sources add-only · log append-only · plan gate (architecture tier) · TDD gate (feature+ tiers, new code files need a test) |
 | 4 | PostToolUse Write\|Edit | `wiki-check` + `instinct-track` | self-healing wiki (frontmatter/orphan block, TODO advisory); **instinct advisory** when a file is revised across 3+ sessions |
@@ -67,7 +68,9 @@ dormant unless the brain enables qmd (`.qmd` marker / `MONKEY_BRAIN_QMD=1` + qmd
 **Knowledge SDLC:** `/brain:init` (self-contained scaffold — bundled template +
 Node script, works from a marketplace install) · `/brain:ingest` (8-step
 compile) · `/brain:query` (index-first + file-back) · `/brain:lint` (mechanical
-scan injected, reasoning follows) · `/brain:wrap` (definition-of-done).
+scan injected, reasoning follows) · `/brain:wrap` (definition-of-done) ·
+`/brain:doctor` (15-check health monitor, `doctor.js` injected; writes
+`sessions/health.json` for hook #1 to surface next session).
 **Develop lifecycle:** `/brain:research` (filed to `wiki/research/`) ·
 `/brain:plan` (numbered ACs + tier, curator-owned approval) · `/brain:build`
 (test-first against the ACs) · `/brain:review` (verification + findings filed
@@ -149,7 +152,7 @@ wraps it.
   `claude plugin validate . --strict` (marketplace).
 - Test before committing: `node hooks/scripts/selftest.js` — builds a temp
   `.brain` fixture and drives every hook and skill script with synthetic
-  events (120 checks), and checks skill routing frontmatter + agent definitions.
+  events (156 checks), and checks skill routing frontmatter + agent definitions.
 - **Template bundling:** `schema/brain-template/` is the canonical master;
   `skills/init/brain-template/` is the copy that ships with installs. Selftest
   fails on drift — refresh with
