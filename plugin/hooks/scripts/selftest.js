@@ -531,6 +531,26 @@ try {
     check('bundled template in sync with schema/brain-template (fix: new-brain.js --sync-template)', sameSet && sameBytes, sameSet ? 'content differs' : 'file sets differ');
   }
 
+  // ---------- recommended-plugins manifest + offer (Phase 6) ----------
+  console.log('recommended-plugins.json + plugins.js (/brain:init capability-plugin offer)');
+  const PMANIFEST = path.join(SKILLS, 'init', 'recommended-plugins.json');
+  const PLUGINSJS = path.join(SKILLS, 'init', 'scripts', 'plugins.js');
+  let manifest = {};
+  try { manifest = JSON.parse(fs.readFileSync(PMANIFEST, 'utf8')); } catch {}
+  const plist = Array.isArray(manifest.plugins) ? manifest.plugins : [];
+  const expectedPlugins = ['github', 'frontend-design', 'superpowers', 'security-guidance', 'product-tracking-skills', 'code-modernization', 'productivity', 'product-management', 'ui-ux-pro-max'];
+  check('manifest lists all 9 recommended plugins', plist.length === 9 && expectedPlugins.every((n) => plist.some((p) => p.name === n)), plist.map((p) => p.name).join(','));
+  check('every plugin declares category/fires_on/brain_integration/records', plist.length > 0 && plist.every((p) => p.category && p.fires_on && p.brain_integration && Array.isArray(p.records) && p.records.length && p.records.every((r) => r.what && r.to)), 'missing fields');
+  check('every record target is a real .brain/ folder', plist.length > 0 && plist.every((p) => p.records.every((r) => /^(wiki\/|raw-sources\/|specs\/|projects\/|sessions\/|decisions\/|instincts\/)/.test(r.to))), 'bad record target');
+  check('manifest states the "brain records the knowledge" contract', /records the knowledge/i.test(manifest.contract || ''));
+  let pj = spawnSync(process.execPath, [PLUGINSJS], { encoding: 'utf8', timeout: 15000 });
+  check('plugins.js lists every plugin + contract, exit 0', pj.status === 0 && expectedPlugins.every((n) => pj.stdout.includes(n)) && /records the knowledge/i.test(pj.stdout), `status=${pj.status} ${(pj.stderr || '').slice(0, 120)}`);
+  pj = spawnSync(process.execPath, [PLUGINSJS, '--json'], { encoding: 'utf8', timeout: 15000 });
+  let pjJson = {}; try { pjJson = JSON.parse(pj.stdout); } catch {}
+  check('plugins.js --json emits the parseable manifest', pj.status === 0 && Array.isArray(pjJson.plugins) && pjJson.plugins.length === 9, `status=${pj.status}`);
+  const tmplManual = fs.readFileSync(path.join(bundled, 'CLAUDE.md'), 'utf8');
+  check('instance manual §9 states the plugin recording contract', /##\s*9\.\s*Capability plugins/.test(tmplManual) && /records the knowledge/i.test(tmplManual), 'no §9 contract');
+
   // ---------- no-brain /brain:init offer (activation fallback) ----------
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');

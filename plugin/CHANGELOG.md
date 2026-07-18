@@ -1,5 +1,33 @@
 # Changelog — brain plugin
 
+## 0.9.0 — 2026-07-18 (Phase 6: bundled-plugin manifest)
+
+Capability plugins do the craft; the brain records the knowledge. `/brain:init`
+now offers a curated set, and every plugin's output has a named home in `.brain/`.
+
+- **Recommended-plugins manifest** (`skills/init/recommended-plugins.json`): the
+  authoritative set of nine capability plugins — `github`, `frontend-design`,
+  `superpowers`, `security-guidance`, `product-tracking-skills`,
+  `code-modernization`, `productivity`, `product-management`, and
+  `ui-ux-pro-max` — each with its category, what it auto-fires on, a
+  brain-integration note, and the exact `.brain/` folder(s) its decisions,
+  findings, and artifacts get **filed back into**.
+- **`scripts/plugins.js`** renders the offer deterministically (`--verbose` adds
+  the integration notes, `--json` dumps the manifest for the future
+  `/brain:doctor`) — the same script-does-the-mechanics / skill-does-the-judgment
+  split as `lint.js`.
+- **`/brain:init` step 6** now offers the set: it lists them, recommends only the
+  ones relevant to the project, and installs **model-driven** via `/plugin` after
+  confirming the current command with the curator (marketplace names evolve) —
+  never silently. Skipped on `--update`.
+- **Instance manual §9 "Capability plugins (the craft layer)"** (schema master +
+  bundle, re-synced) states the contract — *plugins do the craft; the brain
+  records the knowledge* — with the per-plugin filing map and the precedence
+  chain (deterministic trigger > domain pack > domain skill > craft plugin >
+  general model).
+- Selftest 120 → **127 checks** (manifest shape ×4, `plugins.js` ×2, §9 ×1);
+  both manifests validate `--strict`.
+
 ## 0.8.0 — 2026-07-17 (Phase 5.5: model routing & parallel fan-out)
 
 The right model does each kind of work by default, and routine work can fan out

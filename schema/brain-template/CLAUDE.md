@@ -174,4 +174,25 @@ The engine then activates the **`brain-search`** MCP (qmd's `query` / `get` tool
 by Tool Search) — query it before substantive work, and the session-end hook keeps the index
 fresh. Until enabled it stays fully dormant (zero token cost).
 
+---
+
+## 9. Capability plugins (the craft layer)
+
+Craft is done by **capability plugins** (github, frontend-design, superpowers,
+security-guidance, ui-ux-pro-max, …) that `/brain:init` offers to install. The rule:
+**plugins do the craft; the brain records the knowledge** — every plugin output that is a
+decision, a finding, or a durable artifact is filed into a `.brain/` folder by my skills and
+hooks, so the capability stays transient while its knowledge compounds here:
+
+- design-system & UI decisions (ui-ux-pro-max / frontend-design) → `decisions/` ADRs; their
+  anti-patterns seed `instincts/pending/`.
+- security findings (security-guidance) → `wiki/`; open **P0s gate `/brain:wrap`**.
+- reviews & PR links (github) → `wiki/syntheses/`; workstream status → `projects/`.
+- PRDs (product-management) → `raw-sources/` → ingested; tracking plans → `projects/`;
+  migration notes (code-modernization) → `wiki/research/`.
+
+Plugins auto-activate by their own descriptions; the trigger-router routes **my** workflows.
+When a plugin and one of mine both apply, precedence is: **deterministic trigger > domain
+pack > domain skill > craft plugin > general model**.
+
 See also: [[index]] · [[log]] · [[dashboard]]

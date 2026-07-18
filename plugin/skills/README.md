@@ -6,7 +6,7 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 
 | Skill | Purpose | Status |
 | --- | --- | --- |
-| `init` | Scaffold `.brain/` — self-contained: bundled `brain-template/` + `scripts/new-brain.js` (marketplace installs don't ship `bootstrap/`); wires the root `@.brain/CLAUDE.md` import | ✅ |
+| `init` | Scaffold `.brain/` — self-contained: bundled `brain-template/` + `scripts/new-brain.js` (marketplace installs don't ship `bootstrap/`); wires the root `@.brain/CLAUDE.md` import; offers the recommended capability plugins (`recommended-plugins.json` + `scripts/plugins.js`) | ✅ |
 | `ingest` | The 8-step compile of a source into the wiki (hook #4 checks every page) | ✅ |
 | `query` | Index-first answering with citations; novel answers filed back to `syntheses/` | ✅ |
 | `lint` | Mechanical scan (`scripts/lint.js`, injected via `` !`…` ``) + reasoning over contradictions/staleness | ✅ |
@@ -46,3 +46,18 @@ synthesizes on the main model; batch `ingest` delegates to **`brain-librarian`**
 (Sonnet) so the main session sees only log entries; `build` + `review` pair a
 Sonnet implementer with a main-model auditor. See the Agents section in
 `../README.md` and the definitions in `../agents/`.
+
+## Capability plugins (Phase 6)
+
+The skills own the brain's *knowledge* workflows; **craft** (UI builds, security
+audits, PR flows, PRDs…) is done by external **capability plugins** that
+`/brain:init` offers. `init/recommended-plugins.json` is the authoritative set of
+nine (`github`, `frontend-design`, `superpowers`, `security-guidance`,
+`product-tracking-skills`, `code-modernization`, `productivity`,
+`product-management`, `ui-ux-pro-max`); `init/scripts/plugins.js` renders the
+offer. The contract — **plugins do the craft; the brain records the knowledge** —
+means every plugin output that is a decision, finding, or artifact is filed into a
+named `.brain/` folder by the brain's skills and hooks (the manifest maps each
+plugin to its target folder; the instance manual's §9 states the rule and the
+precedence chain). Plugins auto-activate by their own descriptions; the
+trigger-router only nudges the brain's own workflows.

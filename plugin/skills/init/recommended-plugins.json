@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-07-18",
+  "contract": "Plugins do the craft; the brain records the knowledge. Every plugin output that is a decision, a finding, or a durable artifact gets filed into this project's .brain/ by the brain's skills and hooks — so the capability is transient but its knowledge compounds.",
+  "install": {
+    "how": "Claude Code plugins install with /plugin. Add the source marketplace once, then install the plugin: `/plugin marketplace add <source>` then `/plugin install <name>@<marketplace>`. The official plugins are browsable at https://claude.com/plugins. /brain:init offers this set but never installs silently — it confirms the exact current command with the curator, because marketplace names and sources evolve.",
+    "scope": "Install these at user scope so they are present in every project; the per-project .brain/ decides which knowledge each produces gets filed."
+  },
+  "categories": ["dev", "design", "security", "product", "workflow"],
+  "plugins": [
+    {
+      "name": "github",
+      "category": "dev",
+      "source": "official",
+      "homepage": "https://claude.com/plugins/github",
+      "fires_on": "PR / issue / CI work",
+      "brain_integration": "Reviews and PR links are filed to the wiki; /brain:wrap posts status back to the PR.",
+      "records": [
+        { "what": "review synthesis + PR link", "to": "wiki/syntheses/" },
+        { "what": "workstream status", "to": "projects/" }
+      ]
+    },
+    {
+      "name": "frontend-design",
+      "category": "design",
+      "source": "official",
+      "homepage": "https://claude.com/plugins/frontend-design",
+      "fires_on": "any UI build",
+      "brain_integration": "Design decisions are distilled to decisions/ as ADRs; audit scores land in the workstream's project-status page. Executes the build that ui-ux-pro-max's design system decides.",
+      "records": [
+        { "what": "design-system + component ADRs", "to": "decisions/" },
+        { "what": "audit_score", "to": "projects/" }
+      ],
+      "precedence": "ui-ux-pro-max decides the design system; frontend-design executes the build (domain pack > craft plugin)."
+    },
+    {
+      "name": "superpowers",
+      "category": "dev",
+      "source": "official",
+      "homepage": "https://claude.com/plugins/superpowers",
+      "fires_on": "build / debug phases",
+      "brain_integration": "Provides the TDD methodology behind /brain:build; root-cause findings from debugging are filed as wiki pages and repeated corrections seed instincts/pending/.",
+      "records": [
+        { "what": "regression tests + root-cause pages", "to": "wiki/" },
+        { "what": "repeated-correction rules", "to": "instincts/pending/" }
+      ]
+    },
+    {
+      "name": "security-guidance",
+      "category": "security",
+      "source": "official",
+      "homepage": "https://claude.com/plugins/security-guidance",
+      "fires_on": "auth / crypto / input-handling code",
+      "brain_integration": "Findings are filed as wiki pages; open P0 findings gate /brain:wrap exactly like a MewVault-style audit gate.",
+      "records": [
+        { "what": "security findings", "to": "wiki/syntheses/" },
+        { "what": "P0 gate (blocks wrap until resolved)", "to": "projects/" }
+      ]
+    },
+    {
+      "name": "product-tracking-skills",
+      "category": "product",
+      "source": "official",
+      "homepage": "https://claude.com/plugins/product-tracking-skills",
+      "fires_on": "product / metrics work",
+      "brain_integration": "Tracking plans live in projects/ alongside the workstream they measure.",
+      "records": [
+        { "what": "tracking plan", "to": "projects/" }
+      ]
+    },
+    {
+      "name": "code-modernization",
+      "category": "dev",
+      "source": "official",
+      "homepage": "https://claude.com/plugins/code-modernization",
+      "fires_on": "legacy refactors",
+      "brain_integration": "Migration notes and before/after analysis are filed to wiki/research/ so the rationale survives the refactor.",
+      "records": [
+        { "what": "migration notes", "to": "wiki/research/" }
+      ]
+    },
+    {
+      "name": "productivity",
+      "category": "workflow",
+      "source": "official",
+      "homepage": "https://claude.com/plugins/productivity",
+      "fires_on": "standup / planning triggers",
+      "brain_integration": "Feeds the standup brief from the brain's active projects, recent log, and open specs.",
+      "records": [
+        { "what": "standup brief", "to": "sessions/" }
+      ]
+    },
+    {
+      "name": "product-management",
+      "category": "product",
+      "source": "official",
+      "homepage": "https://claude.com/plugins/product-management",
+      "fires_on": "PRD / roadmap requests",
+      "brain_integration": "PRDs land in raw-sources/ and are ingested into the wiki so requirements become searchable, cross-linked knowledge.",
+      "records": [
+        { "what": "PRD (then ingested)", "to": "raw-sources/" }
+      ]
+    },
+    {
+      "name": "ui-ux-pro-max",
+      "category": "design",
+      "source": "github",
+      "homepage": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "fires_on": "UI / UX design-system requests",
+      "brain_integration": "Decides the design system (palette / style / type / industry reasoning); frontend-design executes the build. Choices are filed as decisions/ ADRs; its anti-patterns seed instincts/. Architecturally a mini Monkey Brain — validates the domain-pack format the engine generalizes in the product-design pack.",
+      "records": [
+        { "what": "design-system choices (palette/style/type)", "to": "decisions/" },
+        { "what": "anti-patterns", "to": "instincts/pending/" }
+      ],
+      "precedence": "Decides the design system that frontend-design then builds."
+    }
+  ]
+}

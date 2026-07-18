@@ -35,6 +35,7 @@ plugin/
 │                                #   selftest (120 checks)             ✅
 ├── skills/                      # /brain:* skills                     ✅ Phase 3 complete
 │   ├── init/                    #   + bundled brain-template + scaffold script
+│   │                            #   + recommended-plugins.json + plugins.js  ✅ Phase 6
 │   ├── ingest/  query/  wrap/
 │   ├── lint/                    #   + mechanical lint.js (injected via !`…`)
 │   ├── research/  plan/  build/  review/    # develop lifecycle (v2 schema)
@@ -71,6 +72,18 @@ scan injected, reasoning follows) · `/brain:wrap` (definition-of-done).
 back, feeding `decisions/` and `instincts/`). **Token discipline:**
 `/brain:terse` (session output compression) · `/brain:compress` (permanent
 instruction-file compression with receipts).
+
+### Capability plugins (Phase 6)
+
+The skills own the brain's knowledge workflows; **craft** is done by external
+capability plugins that `/brain:init` offers to install.
+`skills/init/recommended-plugins.json` is the authoritative set of nine (github,
+frontend-design, superpowers, security-guidance, product-tracking-skills,
+code-modernization, productivity, product-management, ui-ux-pro-max), each mapped
+to the `.brain/` folder its output is filed into; `skills/init/scripts/plugins.js`
+renders the offer. The contract — **plugins do the craft; the brain records the
+knowledge** — is stated in the instance manual's §9 with the precedence chain.
+Install is model-driven (via `/plugin`, confirmed with the curator), never silent.
 
 ### Agents (Phase 5.5)
 
