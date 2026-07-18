@@ -74,7 +74,7 @@ const broken = new Set();
 for (const p of pages) {
   const stripped = p.raw.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
   for (const m of stripped.matchAll(/\[\[([^[\]]+)\]\]/g)) {
-    const t = m[1].split('|')[0].split('#')[0].trim();
+    const t = m[1].split(/\\?\|/)[0].split('#')[0].trim();
     if (t && !resolves(t)) broken.add(t);
   }
 }

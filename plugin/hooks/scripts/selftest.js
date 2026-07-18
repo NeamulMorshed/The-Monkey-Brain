@@ -67,7 +67,7 @@ write(
 );
 write(
   '.brain/wiki/concepts/todo-page.md',
-  '---\ntitle: "Todo Page"\ntype: concept\nupdated: 2026-07-17\n---\n\nLinks [[index]] and a TODO marker: [[missing-target]]. Code is ignored: `[[not-a-link]]`.\n'
+  '---\ntitle: "Todo Page"\ntype: concept\nupdated: 2026-07-17\n---\n\nLinks [[index]] and a TODO marker: [[missing-target]]. Code is ignored: `[[not-a-link]]`. In a table cell the pipe is escaped: [[a-page\\|the A page]].\n'
 );
 write('project-notes.md', '# notes outside the brain\n');
 write(
@@ -177,6 +177,7 @@ try {
   const adv = (out.hookSpecificOutput || {}).additionalContext || '';
   check('TODO link → advisory, not block', !out.decision && adv.includes('missing-target'), r.stdout);
   check('code spans ignored', !adv.includes('not-a-link'));
+  check('escaped-pipe table wikilink resolves (not flagged)', !adv.includes('a-page'), adv);
 
   r = run('wiki-check.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'project-notes.md') } }));
   check('non-wiki .md is a silent no-op', r.status === 0 && r.stdout === '', `status=${r.status}`);
@@ -300,6 +301,7 @@ try {
   let lr = spawnSync(process.execPath, [LINT, '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
   check('reports the orphan page', lr.stdout.includes('orphan-page'), lr.stdout.slice(0, 300));
   check('reports the broken TODO link', lr.stdout.includes('missing-target'));
+  check('escaped-pipe table wikilink resolves (not broken)', !/a-page\\/.test(lr.stdout), lr.stdout.slice(0, 400));
   check('index in sync initially', lr.stdout.includes('Index stats: in sync'));
   check('default exit 0 despite issues (injection-safe)', lr.status === 0, `status=${lr.status}`);
   lr = spawnSync(process.execPath, [LINT, '--brain', BRAIN, '--strict'], { encoding: 'utf8', timeout: 20000 });

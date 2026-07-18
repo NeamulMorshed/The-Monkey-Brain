@@ -4,7 +4,7 @@ type: schema
 status: living
 tags: [schema, config, conventions]
 created: 2026-06-17
-updated: 2026-07-17
+updated: 2026-07-18
 version: 2.0
 ---
 
@@ -17,9 +17,11 @@ when ingesting sources, answering queries, or linting.
 
 > **Engine note.** This repo is the **engine** (the reusable tool); see the top-level
 > [README](../README.md). Real project knowledge lives in per-project `.brain/` **instances**
-> scaffolded by `bootstrap/new-brain.ps1`, each carrying its own copy of this manual (from
-> `schema/brain-template/CLAUDE.md`). This file is the master those instances derive from. For a
-> complete worked brain built with these conventions, see [`examples/claude-code-brain/`](../examples/claude-code-brain/).
+> scaffolded by `bootstrap/new-brain.ps1` — or, in v2, by the **`brain` plugin**'s `/brain:init`
+> (which also enforces these conventions with hooks; see [`plugin/README.md`](../plugin/README.md)).
+> Each instance carries its own copy of this manual (from `schema/brain-template/CLAUDE.md`);
+> this file is the master they derive from. For a complete worked brain built with these
+> conventions, see [`examples/claude-code-brain/`](../examples/claude-code-brain/).
 
 > **Roles.** The human is the **curator** (sources, exploration, questions). The LLM is
 > the **programmer** (summarizing, cross-referencing, filing, bookkeeping). Obsidian is

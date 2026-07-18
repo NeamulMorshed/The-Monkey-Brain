@@ -5,7 +5,13 @@ updated: 2026-07-18
 ---
 
 ## Where we left off
-v2 build, session 4 (2026-07-18): **Phases 6 + 6.5 + 7 + 8 are complete** (plugin v0.12.0).
+v2 build, session 4 (2026-07-18): **Phases 6 → 9 done; only the PR to `main` remains** (plugin
+v0.12.0). **P9** dogfooded the engine on a fresh scratch brain (scaffold → **lint-clean +
+doctor-clean**; **7/7 enforcement gates fire**) and, in doing so, **found + fixed a real parser
+bug** — escaped-pipe wikilinks in markdown tables (`[[page\|Label]]`) were false-positive
+"broken" in `lint.js`/`doctor.js`/`wiki-check.js`; fixed all three, so the example brain now
+lints CLEAN. Root README + `schema/CLAUDE.md` got the v2.0 pass. Selftest **158 GREEN**; both
+manifests validate `--strict`. **Next: open the PR** `monkey-brain-enhancement` → `main`.
 **P8** shipped `/brain:doctor` — `doctor.js` runs 15 deterministic health checks (links,
 orphans, stale flags, index freshness, clippings, log gaps, uncommitted, hook registration,
 injection budget, semantic index, WIP, instinct queue, specs-without-tests, **open P0s**, schema
@@ -38,7 +44,7 @@ two Sonnet subagents (`brain-researcher` read-only slice + `brain-librarian` bat
 and fan-out patterns documented in the skills. Selftest **120/120 GREEN**; `claude plugin
 validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Session log.
 
-- [ ] **P9 dogfood + PR to main**: run the full engine on a scratch project (`/brain:init` → ingest → plan → build a toy feature → `/brain:doctor` → `/brain:wrap`), verify every gate fires and every log updates; final v2.0 pass on README + `schema/CLAUDE.md`; lint the example brain clean; open the PR from `monkey-brain-enhancement` → `main`.
+- [ ] **Open the PR** `monkey-brain-enhancement` → `main` (all engine work for Phases 1–9 is committed and green; branch is ahead of `origin`). Dogfood, docs v2.0, and the example-brain lint are done.
 - [ ] Optional dogfood now: `/plugin marketplace add "F:\The Monkey Brain\The-Monkey-Brain"` → `/plugin install brain@monkey-brain`
 
 ## Task log (auto)
@@ -56,3 +62,4 @@ validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Ses
 - [2026-07-18] ✔ P6.5 complete — product-design pack (5-phase process + data/ [Nielsen+WCAG+methods] + templates/ + checklist.md P0 gate; pack: field → /brain:wrap gate; router phrases) (v0.10.0, selftest 137/137)
 - [2026-07-18] ✔ P7 complete — product & game pipelines (/brain:game concept→GDD→prototype→playtest→balance; gdd.md template; §10 manual; router game phrases) (v0.11.0, selftest 144/144)
 - [2026-07-18] ✔ P8 complete — /brain:doctor 15-check health monitor (doctor.js injected; sessions/health.json surfaced by hook #1; open P0s gate wrap; model-mix; router doctor phrases) (v0.12.0, selftest 156/156)
+- [2026-07-18] ✔ P9 dogfood + docs — fresh scaffold lint+doctor clean, 7/7 gates fire; fixed escaped-pipe wikilink false-positives in lint/doctor/wiki-check (example brain now clean); README + schema v2.0 pass (selftest 158/158); PR to main pending

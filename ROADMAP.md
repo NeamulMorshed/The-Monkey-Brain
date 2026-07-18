@@ -51,11 +51,29 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P6.5** product-design pack: first domain-expertise pack (`skills/product-design/` — 5-phase process + `data/` + `templates/` + `checklist.md` gate) | ✅ 2026-07-18 | v0.10.0 — pack format `SKILL.md`+`data/`+`templates/`+`checklist.md`; data cites Nielsen's 10 + WCAG 2.2 AA; `pack:` field on project-status → `/brain:wrap` runs the checklist, open **P0s block done** (like security); router routes design-process phrases; selftest **137/137**, validates `--strict` |
 | **P7** Product & game pipelines: `/brain:game` (concept→GDD→prototype→build→playtest→balance) + `gdd.md` template + product-pipeline codified + instance-manual §10 | ✅ 2026-07-18 | v0.11.0 — both pipelines reuse research→plan→build→wrap; game adds the GDD (`type: gdd`, MDA/core-loop), playtests **ingested as sources**, balance as **ADRs**, engine entity pages; product pipeline is the lifecycle + product plugins (no new skill); router routes game phrases; selftest **144/144**, validates `--strict` |
 | **P8** `/brain:doctor` (15 checks) + health-report surfacing | ✅ 2026-07-18 | v0.12.0 — `doctor.js` runs 15 deterministic checks (links · orphans · stale · index · clippings · log gaps · uncommitted · hooks · injection budget · semantic index · WIP · instinct queue · specs-without-tests · **open P0s** · schema version) + model-mix; injected via `` !`…` ``; writes `sessions/health.json` → **hook #1 surfaces failures next session**; criticals gate wrap; router routes doctor phrases; selftest **156/156**, validates `--strict` |
-| **P9** Dogfood on scratch project → docs v2.0 → lint example brain → PR to `main` | ⬜ | |
+| **P9** Dogfood on scratch project → docs v2.0 → lint example brain → PR to `main` | 🔄 2026-07-18 | Dogfood ✅ (fresh scaffold lint-clean + doctor-clean 13/13; **7/7 enforcement gates fire** — plan · TDD · docs-exempt · secrets · immutability · append-only). Dogfooding **found + fixed a real parser bug**: `[[page\|label]]` links in markdown tables (escaped pipe) were false-positive "broken" in lint/doctor/wiki-check — fixed in all three, example brain now **lint-clean**. Root README + `schema/CLAUDE.md` v2.0 pass ✅. Selftest **158/158**. PR to `main`: pending curator |
 
 ### Session log (engine work, newest first — instances get `sessions/` in P4)
 
-**[2026-07-18] Session 4 — Phases 6 + 6.5 + 7 + 8 (v0.9.0 → v0.12.0)**
+**[2026-07-18] Session 4 — Phases 6 + 6.5 + 7 + 8 + 9 (v0.9.0 → v0.12.0)**
+
+*Phase 9 — dogfood + docs v2.0 (PR to main pending curator):*
+- **Dogfooded the whole engine on a fresh scratch brain:** `new-brain.js` scaffold → the brain
+  is **lint-clean and doctor-clean** (13/13 ok, schema matches engine); then drove `guards.js`
+  through the develop lifecycle — **all 7 gates fire** (secrets · plan gate blocks unapproved
+  architecture source · docs exempt · TDD gate blocks a testless source file · a test companion
+  opens it · raw-sources immutable · log append-only).
+- **Dogfooding found a real bug:** wikilinks inside markdown tables escape the pipe
+  (`[[page\|Label]]`), and the link parser split on `|` only — leaving a dangling `\` so the
+  target read as `page\` and was wrongly reported **broken**. This false-positived 16 links in
+  the 69-page example brain. Fixed the target extraction (`split(/\\?\|/)`) in **all three**
+  parsers — `lint.js`, `doctor.js`, `wiki-check.js`; added regression cases. The example brain
+  now lints **CLEAN** (0 broken, 0 orphans) under `--strict`.
+- **Docs v2.0 pass:** root README gains a prominent **"The plugin (v2)"** section (install + the
+  14 skills / 10 hooks / packs / doctor), Node ≥ 18 requirement, and a refreshed layout line;
+  `schema/CLAUDE.md` notes the plugin distribution and bumps its date.
+- **Verified:** selftest 156 → **158 checks ALL GREEN** (escaped-pipe ×2); both manifests
+  validate `--strict`. Branch `monkey-brain-enhancement` ready for the PR to `main`.
 
 *Phase 8 — `/brain:doctor` health monitor (v0.12.0):*
 - **`doctor.js`** runs **15 deterministic checks** (MewVault parity), zero model tokens,
@@ -229,13 +247,13 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 
 **▶ Resume here (next session):** the live pointer is **`resume.md` at the repo root** —
 hook #8 injects it and asks to continue once the plugin is installed; until then, read it
-first. Phases 1–8 are done (plugin v0.12.0, **14 skills** with routing frontmatter incl. the
+first. **Phases 1–9 are done** (plugin v0.12.1, **14 skills** with routing frontmatter incl. the
 `product-design` pack + `game` pipeline + `doctor` health monitor, **2 Sonnet subagents**, 10 hook
-scripts + 1 MCP wrapper, a 9-plugin recommended manifest, selftest 156/156). Next: **Phase 9** —
-dogfood the whole engine on a scratch project (`/brain:init` → ingest → plan → build a toy feature
-→ `/brain:doctor` → `/brain:wrap`, verifying every gate fires and every log updates), give the
-README + `schema/CLAUDE.md` a final v2.0 pass, lint the example brain clean, then open the PR from
-`monkey-brain-enhancement` to `main`. Optional dogfood at any point:
+scripts + 1 MCP wrapper, a 9-plugin recommended manifest, selftest **158/158**). P9 dogfooded the
+engine end-to-end (fresh scaffold lint+doctor clean, 7/7 gates fire) and fixed the escaped-pipe
+wikilink bug it surfaced; README + `schema/CLAUDE.md` got the v2.0 pass. **The only remaining step
+is opening the PR** `monkey-brain-enhancement` → `main` (branch committed + green, ahead of
+`origin`). Optional dogfood at any point:
 `/plugin marketplace add "F:\The Monkey Brain\The-Monkey-Brain"` → `/plugin install brain@monkey-brain`.
 
 ---

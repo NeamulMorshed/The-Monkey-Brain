@@ -32,7 +32,7 @@ plugin/
 │                                #   #6 wrap (+ decision nudge + qmd
 │                                #     re-index), #7 agent-track,
 │                                #   #8 resume+resume-log; qmd-mcp;
-│                                #   selftest (156 checks)             ✅
+│                                #   selftest (158 checks)             ✅
 ├── skills/                      # /brain:* skills                     ✅ Phase 3 complete
 │   ├── init/                    #   + bundled brain-template + scaffold script
 │   │                            #   + recommended-plugins.json + plugins.js  ✅ Phase 6
@@ -152,7 +152,7 @@ wraps it.
   `claude plugin validate . --strict` (marketplace).
 - Test before committing: `node hooks/scripts/selftest.js` — builds a temp
   `.brain` fixture and drives every hook and skill script with synthetic
-  events (156 checks), and checks skill routing frontmatter + agent definitions.
+  events (158 checks), and checks skill routing frontmatter + agent definitions.
 - **Template bundling:** `schema/brain-template/` is the canonical master;
   `skills/init/brain-template/` is the copy that ships with installs. Selftest
   fails on drift — refresh with

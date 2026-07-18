@@ -1,5 +1,19 @@
 # Changelog — brain plugin
 
+## 0.12.1 — 2026-07-18 (Phase 9: dogfood — escaped-pipe wikilink fix)
+
+Dogfooding the engine on a fresh brain (scaffold → lint-clean + doctor-clean;
+7/7 enforcement gates fire) surfaced a real parser bug, now fixed.
+
+- **Escaped-pipe wikilinks in tables** — a link like `[[page\|Label]]` inside a
+  markdown table (where the display pipe must be escaped as `\|`) was parsed by
+  splitting on `|` only, leaving a dangling `\` so the target read as `page\` and
+  was wrongly reported **broken**. Fixed the target extraction (`split(/\\?\|/)`)
+  in all three link parsers — `lint.js`, `doctor.js`, and `wiki-check.js`. The
+  bundled 69-page example brain, which had 16 such false positives, now lints
+  **clean** (0 broken, 0 orphans) under `--strict`.
+- Selftest 156 → **158 checks** (escaped-pipe regression in lint + wiki-check).
+
 ## 0.12.0 — 2026-07-18 (Phase 8: /brain:doctor health monitor)
 
 Fifteen deterministic health checks (MewVault parity), with receipts, and a

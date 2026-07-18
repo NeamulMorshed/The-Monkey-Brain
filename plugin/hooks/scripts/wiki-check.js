@@ -62,7 +62,7 @@ async function main() {
   // Outbound links of the touched page (code spans/fences stripped).
   const stripped = raw.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
   const targets = [...stripped.matchAll(/\[\[([^[\]]+)\]\]/g)]
-    .map((m) => m[1].split('|')[0].split('#')[0].trim())
+    .map((m) => m[1].split(/\\?\|/)[0].split('#')[0].trim())
     .filter(Boolean);
   const resolves = (t) =>
     qualified.has(t) || slugs.has(t) || slugs.has(t.split('/').pop()) || aliases.has(t.toLowerCase());
