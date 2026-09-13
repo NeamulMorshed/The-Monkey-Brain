@@ -299,6 +299,8 @@ try {
   check('"more verbose" routes to brain:terse (the off switch)', t.ctx.includes('brain:terse'), t.ctx);
   t = routed('brief me on the billing decisions');
   check('"brief me on X" routes to brain:brief', t.ctx.includes('brain:brief'), t.ctx);
+  t = routed('show me a token usage report', PLAIN_R);
+  check('"token usage report" routes to brain:usage (no brain needed)', t.ctx.includes('brain:usage'), t.ctx);
   t = routed('compress the CLAUDE.md file');
   check('"compress CLAUDE.md" routes to brain:compress', t.ctx.includes('brain:compress'), t.ctx);
   t = routed('design a product for our new users');
@@ -484,6 +486,7 @@ try {
     init: { model: 'sonnet', effort: 'low' },
     terse: { model: 'haiku', effort: 'low' },
     brief: { model: 'sonnet', effort: 'low' },
+    usage: { model: 'sonnet', effort: 'low' },
     plan: { effort: 'high' },
     review: { effort: 'high' },
     wrap: { effort: 'high' },
@@ -636,16 +639,16 @@ try {
   check('GDD template ships (type: gdd, MDA + core loop)', /^type:\s*gdd/m.test(gddTmpl) && /MDA/.test(gddTmpl) && /core loop/i.test(gddTmpl), 'gdd template');
   check('instance manual §10 documents product + game pipelines', /##\s*10\.\s*Domain pipelines/.test(tmplManual) && /Product:/.test(tmplManual) && /Game:/.test(tmplManual), 'no §10 pipelines');
 
-  // ---------- /brain:doctor 15-check health monitor (Phase 8) ----------
+  // ---------- /brain:doctor 18-check health monitor (Phase 8 + v3 P11) ----------
   console.log('doctor.js (skill /brain:doctor — 15 health checks + health.json surfacing)');
   const DOCTOR = path.join(SKILLS, 'doctor', 'scripts', 'doctor.js');
   let dr = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
-  check('doctor runs all 15 checks, exit 0 by default', dr.status === 0 && /15-check health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
+  check('doctor runs all 18 checks, exit 0 by default', dr.status === 0 && /18-check health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout) && /18\. dispatch-outcomes/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
   const HEALTHP = path.join(BRAIN, 'sessions', 'health.json');
   check('doctor writes sessions/health.json', fs.existsSync(HEALTHP), 'no health.json');
   let dj = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN, '--json'], { encoding: 'utf8', timeout: 20000 });
   let hrep = {}; try { hrep = JSON.parse(dj.stdout); } catch {}
-  check('doctor --json reports exactly 15 findings + numeric counts', Array.isArray(hrep.findings) && hrep.findings.length === 15 && typeof hrep.ok === 'number' && typeof hrep.crit === 'number', `findings=${(hrep.findings || []).length}`);
+  check('doctor --json reports exactly 18 findings + numeric counts', Array.isArray(hrep.findings) && hrep.findings.length === 18 && typeof hrep.ok === 'number' && typeof hrep.crit === 'number', `findings=${(hrep.findings || []).length}`);
   check('doctor flags the fixture orphan (check 2)', (hrep.findings || []).some((f) => f.check === 'orphans' && f.level === 'warn' && /orphan-page/.test(f.detail)), JSON.stringify((hrep.findings || []).find((f) => f.check === 'orphans')));
   check('doctor flags a feature+ spec with no test plan (check 13)', (hrep.findings || []).some((f) => f.check === 'specs-without-tests' && f.level === 'warn'), 'no specs-without-tests warn');
   check('doctor reports model-mix from agents.md', typeof hrep.model_mix === 'string' && /sonnet/.test(hrep.model_mix), hrep.model_mix);
@@ -661,6 +664,62 @@ try {
   check('doctor --strict exits 1 when warnings/criticals exist', dr.status === 1, `status=${dr.status}`);
   dr = spawnSync(process.execPath, [DOCTOR, '--brain', os.tmpdir()], { encoding: 'utf8', timeout: 20000 });
   check('doctor is a silent no-op without a brain', dr.status === 0 && /No Monkey Brain/.test(dr.stdout), `status=${dr.status}`);
+
+  // ---------- v3 P11: real receipts (usage.js · SubagentStop outcomes · doctor 16–18) ----------
+  console.log('usage.js + agent outcomes + doctor 16–18 (v3 P11 — real receipts)');
+  const USAGEJS = path.join(HERE, 'usage.js');
+  const CCFG = path.join(ROOT, 'ccfg');
+  const TDIR = path.join(CCFG, 'projects', path.resolve(PROJ).replace(/[^A-Za-z0-9]/g, '-'));
+  const nowIso = new Date().toISOString();
+  const oldIso = new Date(Date.now() - 30 * 86400000).toISOString();
+  const aLine = (id, ts, model, u, extra) => JSON.stringify({ type: 'assistant', timestamp: ts, cwd: PROJ, gitBranch: 'main', isSidechain: false, ...extra, message: { id, model, usage: { input_tokens: u[0], cache_creation_input_tokens: u[1], cache_read_input_tokens: u[2], output_tokens: u[3] } } });
+  fs.mkdirSync(path.join(TDIR, 's1', 'subagents'), { recursive: true });
+  const m1 = aLine('m1', nowIso, 'claude-sonnet-5', [100, 1000, 9000, 50]);
+  fs.writeFileSync(path.join(TDIR, 's1.jsonl'), [JSON.stringify({ type: 'user', timestamp: nowIso, message: { content: 'hi' } }), m1, m1, aLine('m2', nowIso, 'claude-haiku-4-5', [10, 0, 890, 5]), aLine('m0', oldIso, 'claude-sonnet-5', [999, 999, 999, 999])].join('\n') + '\n');
+  const SUBT = path.join(TDIR, 's1', 'subagents', 'agent-x1.jsonl');
+  fs.writeFileSync(SUBT, aLine('m3', nowIso, 'claude-haiku-4-5', [5, 0, 95, 20], { isSidechain: true }) + '\n');
+  const ccEnv = { CLAUDE_CONFIG_DIR: CCFG, ANTHROPIC_BASE_URL: '' };
+  let ur = spawnSync(process.execPath, [USAGEJS, '--project', PROJ, '--json'], { encoding: 'utf8', timeout: 15000, env: { ...process.env, ...ccEnv } });
+  let uj = {}; try { uj = JSON.parse(ur.stdout); } catch {}
+  const ut = uj.totals || {};
+  check('usage totals real transcript tokens, deduped per API response', ur.status === 0 && uj.calls === 3 && ut.input === 115 && ut.cacheWrite === 1000 && ut.cacheRead === 9985 && ut.output === 75, JSON.stringify(ut));
+  check('usage reports cache-hit ratio, subagent share, sessions', Math.abs((uj.hitRatio || 0) - 9985 / 11100) < 1e-9 && uj.subagentShare > 0 && uj.sessions === 1, `hit=${uj.hitRatio} sub=${uj.subagentShare} sessions=${uj.sessions}`);
+  check('usage breaks tokens down by model and branch', !!(uj.byModel && uj.byModel['claude-haiku-4-5'] && uj.byBranch && uj.byBranch.main), JSON.stringify(uj.byModel));
+  ur = spawnSync(process.execPath, [USAGEJS, '--project', PROJ], { encoding: 'utf8', timeout: 15000, env: { ...process.env, ...ccEnv } });
+  check('usage prints a readable report', ur.status === 0 && /cache-hit 90%/.test(ur.stdout) && /total/.test(ur.stdout), (ur.stdout || '').slice(0, 200));
+  if (process.platform === 'win32') {
+    const lowerDir = path.join(CCFG, 'projects', path.basename(TDIR).toLowerCase());
+    fs.renameSync(TDIR, lowerDir);
+    ur = spawnSync(process.execPath, [USAGEJS, '--project', PROJ, '--json'], { encoding: 'utf8', timeout: 15000, env: { ...process.env, ...ccEnv } });
+    uj = {}; try { uj = JSON.parse(ur.stdout); } catch {}
+    fs.renameSync(lowerDir, TDIR);
+    check('usage finds the transcript folder case-insensitively on Windows', uj.calls === 3, `calls=${uj.calls}`);
+  }
+
+  const AGLOG = path.join(BRAIN, 'sessions', 'agents.md');
+  const agentStop = (extra) => run('agent-track.js', { cwd: PROJ, session_id: `st${process.pid}`, hook_event_name: 'SubagentStop', agent_id: 'x1', agent_type: 'Explore', ...extra });
+  const lastAgentLine = () => { try { return fs.readFileSync(AGLOG, 'utf8').trim().split('\n').pop(); } catch { return ''; } };
+  let ar = agentStop({ last_assistant_message: 'found 3 files', agent_transcript_path: SUBT });
+  check('SubagentStop logs outcome, real tokens and model', ar.status === 0 && ar.stdout === '' && /↳ done · Explore · on claude-haiku-4-5 · 120 tokens · 1 turn/.test(lastAgentLine()), lastAgentLine());
+  ar = agentStop({ last_assistant_message: '', transcript_path: path.join(TDIR, 's1.jsonl') });
+  check('SubagentStop finds the transcript from the session path; empty result logged', ar.status === 0 && /↳ empty · Explore · on claude-haiku-4-5 · 120 tokens/.test(lastAgentLine()), lastAgentLine());
+
+  const DOCTOR2 = path.join(SKILLS, 'doctor', 'scripts', 'doctor.js');
+  const docFindings = (env) => {
+    const d = spawnSync(process.execPath, [DOCTOR2, '--brain', BRAIN, '--json'], { encoding: 'utf8', timeout: 30000, env: { ...process.env, ...env } });
+    let o = {}; try { o = JSON.parse(d.stdout); } catch {}
+    return o.findings || [];
+  };
+  const finding = (list, name) => list.find((f) => f.check === name) || {};
+  let dfs = docFindings(ccEnv);
+  check('doctor 16: no proxy → cache-safety ok', finding(dfs, 'cache-safety').level === 'ok', JSON.stringify(finding(dfs, 'cache-safety')));
+  check('doctor 17: cache-hit ratio from real transcripts', finding(dfs, 'cache-hit').level === 'ok' && /90%/.test(finding(dfs, 'cache-hit').detail || ''), JSON.stringify(finding(dfs, 'cache-hit')));
+  check('doctor 18: dispatch outcomes from the ledger', finding(dfs, 'dispatch-outcomes').level === 'ok' && /1 done · 1 returned nothing/.test(finding(dfs, 'dispatch-outcomes').detail || ''), JSON.stringify(finding(dfs, 'dispatch-outcomes')));
+  dfs = docFindings({ ...ccEnv, ANTHROPIC_BASE_URL: 'https://llm-proxy.example.com' });
+  check('doctor 16: a non-Anthropic base URL warns', finding(dfs, 'cache-safety').level === 'warn', JSON.stringify(finding(dfs, 'cache-safety')));
+  fs.appendFileSync(AGLOG, '- [x] ↳ empty · a\n- [x] ↳ empty · b\n- [x] ↳ empty · c\n', 'utf8');
+  dfs = docFindings(ccEnv);
+  check('doctor 18: frequent empty results warn', finding(dfs, 'dispatch-outcomes').level === 'warn', JSON.stringify(finding(dfs, 'dispatch-outcomes')));
 
   // ---------- v3 P10: built-in recall (search.js · recall hook) ----------
   console.log('search.js + recall.js (v3 P10 — always-on recall)');

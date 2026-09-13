@@ -2,7 +2,7 @@
 /**
  * doctor.js — the mechanical layer of /brain:doctor (ROADMAP Phase 8).
  *
- * 15 deterministic health checks over a brain (MewVault-parity), zero model
+ * 18 deterministic health checks over a brain (MewVault-parity + v3 P11 receipts), zero model
  * tokens. The SKILL.md injects this output via !` ` preprocessing; the model
  * then reasons over the findings (what to fix first, what to file). It also
  * writes sessions/health.json so hook #1 (brain-status) can surface open
@@ -19,9 +19,11 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const lib = require(path.join(__dirname, '..', '..', '..', 'hooks', 'scripts', 'lib.js'));
+const usage = require(path.join(__dirname, '..', '..', '..', 'hooks', 'scripts', 'usage.js'));
 
 const args = process.argv.slice(2);
 const strict = args.includes('--strict');
@@ -195,6 +197,32 @@ const mix = {};
 for (const m of agentsText.matchAll(/model:\s*([A-Za-z0-9.-]+)/g)) mix[m[1]] = (mix[m[1]] || 0) + 1;
 const mixStr = Object.keys(mix).length ? Object.entries(mix).map(([k, v]) => `${k}×${v}`).join(' · ') : 'no dispatches logged';
 
+// ---- 16. cache safety (no prompt-rewriting proxy) ---------------------------
+const projectRoot = path.dirname(brain);
+const cfgDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
+const envBase = (f) => (((lib.readJsonSafe(f, {}) || {}).env) || {}).ANTHROPIC_BASE_URL;
+const baseUrl =
+  process.env.ANTHROPIC_BASE_URL ||
+  envBase(path.join(projectRoot, '.claude', 'settings.local.json')) ||
+  envBase(path.join(projectRoot, '.claude', 'settings.json')) ||
+  envBase(path.join(cfgDir, 'settings.json'));
+if (!baseUrl || /^https:\/\/([a-z0-9-]+\.)*anthropic\.com(\/|$)/i.test(baseUrl)) add(16, 'cache-safety', 'ok', 'requests go straight to the Anthropic API');
+else add(16, 'cache-safety', 'warn', `ANTHROPIC_BASE_URL routes through ${baseUrl} — a proxy that rewrites prompts breaks prompt caching and re-bills the conversation every turn (fine if it passes requests through unchanged)`);
+
+// ---- 17. cache-hit ratio (real transcripts, last 7 days) --------------------
+const use = usage.summarize(projectRoot, { days: 7 });
+if (!use.calls) add(17, 'cache-hit', 'info', 'no Claude Code transcripts for this project in the last 7 days');
+else {
+  const hr = use.hitRatio || 0;
+  add(17, 'cache-hit', hr < 0.5 ? 'warn' : hr < 0.8 ? 'info' : 'ok', `${Math.round(hr * 100)}% of input tokens were cache reads over ${use.calls} API call(s) in 7 days${hr < 0.8 ? ' — /brain:usage shows what breaks caching' : ''}`);
+}
+
+// ---- 18. dispatch outcomes (agents.md ledger) -------------------------------
+const outcomes = [...agentsText.matchAll(/↳ (done|empty)/g)].map((m) => m[1]).slice(-20);
+const empties = outcomes.filter((o) => o === 'empty').length;
+if (!outcomes.length) add(18, 'dispatch-outcomes', 'info', 'no subagent outcomes recorded yet');
+else add(18, 'dispatch-outcomes', outcomes.length >= 4 && empties / outcomes.length >= 0.25 ? 'warn' : 'ok', `last ${outcomes.length} dispatch(es): ${outcomes.length - empties} done · ${empties} returned nothing${empties ? ' — check those agents\' prompts and models in sessions/agents.md' : ''}`);
+
 // ---- verdict + report -------------------------------------------------------
 const counts = { ok: 0, info: 0, warn: 0, crit: 0 };
 for (const f of findings) counts[f.level]++;
@@ -212,7 +240,7 @@ if (asJson) {
   process.exit(strict && counts.warn + counts.crit > 0 ? 1 : 0);
 }
 
-const out = [`🩺 brain doctor — 15-check health of ${brain}`];
+const out = [`🩺 brain doctor — 18-check health of ${brain}`];
 for (const f of findings.sort((a, b) => a.n - b.n)) out.push(`  ${SYM[f.level]} ${f.n}. ${f.check}: ${f.detail}`);
 out.push(`  · model-mix (agents.md): ${mixStr}`);
 const verdict = counts.crit ? `${counts.crit} CRITICAL · ${counts.warn} warning(s) — fix criticals first (they gate wrap)` : counts.warn ? `${counts.warn} warning(s) · ${counts.ok} ok — triage below` : `all clear (${counts.ok} ok, ${counts.info} info)`;

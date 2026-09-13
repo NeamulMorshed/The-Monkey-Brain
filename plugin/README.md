@@ -29,7 +29,7 @@ skills deterministically.
 plugin/
 ├── .claude-plugin/plugin.json   # manifest (name: brain)              ✅ Phase 1
 ├── hooks/
-│   ├── hooks.json               # registers 8 hook events             ✅ Phase 2+5
+│   ├── hooks.json               # registers 9 hook events             ✅ Phase 2+5
 │   └── scripts/                 # Node runtime (stdlib-only): lib,
 │                                #   #1 brain-status (+ decisions +
 │                                #     injection receipts), #2 trigger-
@@ -48,7 +48,7 @@ plugin/
 │   ├── terse/  compress/        #   token discipline (Caveman-inspired)
 │   ├── product-design/          #   domain-expertise pack (data+templates+gate) ✅ Phase 6.5
 │   ├── game/                    #   game pipeline (GDD → prototype → playtest)   ✅ Phase 7
-│   └── doctor/                  #   15-check health monitor (doctor.js)          ✅ Phase 8
+│   └── doctor/                  #   18-check health monitor (doctor.js)          ✅ Phase 8
 ├── agents/                      # brain-librarian, brain-researcher   ✅ Phase 5.5
 └── .mcp.json                    # brain-search (opt-in qmd)           ✅ Phase 5
 ```
@@ -63,7 +63,7 @@ plugin/
 | 4 | PostToolUse Write\|Edit | `wiki-check` + `instinct-track` | self-healing wiki (frontmatter/orphan block, TODO advisory); **instinct advisory** when a file is revised across 3+ sessions |
 | 5 | PreCompact | `snapshot` | working-state snapshot (next steps, **active specs/projects**, log heads) → `.brain/sessions/` |
 | 6 | Stop + SessionEnd | `wrap` | once-per-session unlogged-work stop gate + **decision-distillation nudge**; index stat self-heal; **`qmd update` re-index** when opted in |
-| 7 | PreToolUse Agent | `agent-track` | dispatch log → `sessions/agents.md`; heavy spawns need an explicit model (once-per-session gate) |
+| 7 | PreToolUse Agent + SubagentStop | `agent-track` | dispatch log → `sessions/agents.md`; heavy spawns need an explicit model (once-per-session gate); **outcome ledger** — each finished subagent's result, model and real token count from its own transcript (doctor check 18) |
 | 8 | SessionStart + Task events | `resume` / `resume-log` | resume.md injection + ask-to-continue; auto task log |
 
 Plus **`search-mcp`** — the `brain-search` MCP server registered in `.mcp.json`. In any
@@ -80,7 +80,7 @@ Node script, works from a marketplace install) · `/brain:ingest` (8-step
 compile) · `/brain:query` (index-first + file-back) · `/brain:brief`
 (cited ≤ ~2k-token pack from built-in recall) · `/brain:lint` (mechanical
 scan injected, reasoning follows) · `/brain:wrap` (definition-of-done) ·
-`/brain:doctor` (15-check health monitor, `doctor.js` injected; writes
+`/brain:doctor` (18-check health monitor, `doctor.js` injected; writes
 `sessions/health.json` for hook #1 to surface next session).
 **Develop lifecycle:** `/brain:research` (filed to `wiki/research/`) ·
 `/brain:plan` (numbered ACs + tier, curator-owned approval) · `/brain:build`
@@ -88,7 +88,8 @@ scan injected, reasoning follows) · `/brain:wrap` (definition-of-done) ·
 back, feeding `decisions/` and `instincts/`). **Token discipline:**
 `/brain:terse` (output compression — on by default via hook #1; the skill
 toggles it off/on per session) · `/brain:compress` (permanent
-instruction-file compression with receipts).
+instruction-file compression with receipts) · `/brain:usage` (real token receipts
+from Claude Code's transcripts — per day, model and branch, plus the cache-hit ratio).
 
 ### Capability plugins (Phase 6)
 

@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 /**
- * agent-track.js — hook #7 (PreToolUse on Agent|Task).
+ * agent-track.js — hook #7 (PreToolUse on Agent|Task + SubagentStop).
  *
  * Model economics made visible (ROADMAP Phase 2 #7, feeding the P5.5 routing
  * policy): every agent dispatch inside a brain project is logged to
  * .brain/sessions/agents.md (type · model · purpose), and heavy dispatches
  * without an explicit model are blocked ONCE per session with the routing
  * table — one corrective retry, then the session is left alone.
+ *
+ * On SubagentStop (v3 P11) it appends the outcome: done/empty, the model(s)
+ * that actually ran, and the real token count from the subagent's own
+ * transcript — the ledger doctor check 18 reads. It never blocks a stop.
  *
  *   Routing policy: scripts = deterministic checks · haiku = classification /
  *   triage · sonnet = routine execution / research fan-out · main model =
@@ -21,6 +25,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
+const usage = require(path.join(__dirname, 'usage.js'));
 
 /** Agent types that default to the (expensive) main model when unpinned. */
 const HEAVY_TYPES = new Set(['', 'general-purpose', 'claude', 'Plan', 'fork']);
@@ -36,12 +41,47 @@ title: "Agent dispatch log"
 type: agent-log
 ---
 
-One line per subagent dispatch (hook #7). Routing policy: haiku = triage ·
-sonnet = routine · main model = judgment. Doctor (P8) reads the model mix here.
+One line per subagent dispatch (hook #7), and a "↳" line with each outcome,
+model and real token count when it finishes. Routing policy: haiku = triage ·
+sonnet = routine · main model = judgment. Doctor reads the model mix and outcomes here.
 `;
+
+function appendLog(brain, line) {
+  const dir = path.join(brain, 'sessions');
+  fs.mkdirSync(dir, { recursive: true });
+  const file = path.join(dir, 'agents.md');
+  if (!fs.existsSync(file)) fs.writeFileSync(file, HEADER, 'utf8');
+  fs.appendFileSync(file, line + '\n', 'utf8');
+}
+
+function recordOutcome(input) {
+  const brain = lib.findBrainDir(input.cwd);
+  if (!brain) return;
+  const file =
+    input.agent_transcript_path ||
+    (input.transcript_path && input.agent_id
+      ? path.join(String(input.transcript_path).replace(/\.jsonl$/, ''), 'subagents', `agent-${input.agent_id}.jsonl`)
+      : '');
+  const seen = new Set();
+  const models = new Set();
+  let tokens = 0;
+  for (const r of file ? usage.readTranscript(file) : []) {
+    if (seen.has(r.id)) continue;
+    seen.add(r.id);
+    models.add(r.model);
+    tokens += r.input + r.cacheWrite + r.cacheRead + r.output;
+  }
+  const outcome = String(input.last_assistant_message || '').trim() ? 'done' : 'empty';
+  appendLog(
+    brain,
+    `- [${stamp()}] ↳ ${outcome} · ${input.agent_type || 'agent'} · on ${[...models].join('+') || 'unknown'} · ` +
+      `${tokens.toLocaleString('en-US')} tokens · ${seen.size} turn(s)`
+  );
+}
 
 async function main() {
   const input = await lib.readStdinJson();
+  if (input.hook_event_name === 'SubagentStop') return recordOutcome(input);
   if (!/^(Agent|Task)$/.test(input.tool_name || '')) return;
   const brain = lib.findBrainDir(input.cwd);
   if (!brain) return;
@@ -60,15 +100,10 @@ async function main() {
   const willBlock = !model && HEAVY_TYPES.has(type) && !fs.existsSync(marker);
 
   // Log first so blocked attempts leave a trace too.
-  const dir = path.join(brain, 'sessions');
-  fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, 'agents.md');
-  if (!fs.existsSync(file)) fs.writeFileSync(file, HEADER, 'utf8');
-  fs.appendFileSync(
-    file,
+  appendLog(
+    brain,
     `- [${stamp()}] ${type || 'general-purpose'} · model: ${model || '(inherit)'} · ${what}` +
-      `${willBlock ? ' · ⛔ blocked: no explicit model' : ''}\n`,
-    'utf8'
+      `${willBlock ? ' · ⛔ blocked: no explicit model' : ''}`
   );
 
   if (willBlock) {

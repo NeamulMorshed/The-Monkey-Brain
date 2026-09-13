@@ -102,6 +102,12 @@ const RULES = [
     what: 'brain query',
   },
   {
+    re: /\btoken (usage|report|spend|costs?)\b|\busage report\b|\bcache[- ]hit\b|\bhow many tokens\b/i,
+    skill: 'usage',
+    needsBrain: false,
+    what: 'token usage report',
+  },
+  {
     re: /\bterse( mode)?\b|\bshorter (answers|responses|output)\b|\b(less|more) verbose\b|\bnormal verbosity\b/i,
     skill: 'terse',
     needsBrain: false,

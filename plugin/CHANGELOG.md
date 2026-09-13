@@ -1,5 +1,29 @@
 # Changelog — brain plugin
 
+## 0.16.0 — 2026-09-13 (v3 P11: real receipts)
+
+Token accounting from Claude Code's own transcripts instead of estimates.
+
+- **`/brain:usage`** (`hooks/scripts/usage.js`, injected) — tokens per day, model and git
+  branch, the prompt-cache hit ratio (cache reads ÷ all input) and the subagent share, read
+  from `~/.claude/projects/<project>/` transcripts and each session's `subagents/`. Every API
+  response is logged once per content block, so totals dedupe by message id. Honors
+  `CLAUDE_CONFIG_DIR`, and matches the transcript folder case-insensitively on Windows (Claude
+  Code records `f--…` for `F:\…` — the smoke test on this repo's live session caught it).
+  About 100 ms on a session of 67 API calls.
+- **Outcome ledger** — hook #7 `agent-track` also runs on `SubagentStop`: each finished
+  subagent adds a `↳ done|empty` line to `sessions/agents.md` with the model(s) that actually
+  ran and its real token count from its own transcript.
+- **Doctor 15 → 18 checks:** 16 cache safety (warns when `ANTHROPIC_BASE_URL`, from the
+  environment or settings, routes through a non-Anthropic host); 17 cache-hit ratio over 7
+  days (warn < 50%, info < 80%); 18 dispatch outcomes (warn when ≥ 25% of the last 20
+  subagents returned nothing).
+- **CI** — `.github/workflows/selftest.yml` runs the hook self-check, the selftest and a strict
+  lint of the example brain on Windows, macOS and Linux × Node 18 and 22.
+- Router: "token usage / token report / cache hit" → `/brain:usage` (no brain needed). Hook
+  events 8 → 9.
+- Selftest 184 → **197 checks** (196 off Windows).
+
 ## 0.15.0 — 2026-09-13 (v3 P10: always-on recall)
 
 MewVault's always-on memory, without its database, embedding server, or install steps.

@@ -20,7 +20,8 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `compress` | Permanent instruction-file compression with before/after receipts | ✅ |
 | `product-design` | First domain-expertise **pack** — 5-phase process + `data/` (methods, Nielsen heuristics, WCAG) + `templates/` + `checklist.md` (the `/brain:wrap` gate) | ✅ |
 | `game` | Game pipeline — concept → GDD (`templates/gdd.md`) → prototype spec → build → playtest (ingested) → balance ADRs | ✅ |
-| `doctor` | 15-check health monitor (`scripts/doctor.js`, injected) → writes `sessions/health.json`; hook #1 surfaces failures next session | ✅ |
+| `doctor` | 18-check health monitor (`scripts/doctor.js`, injected) → writes `sessions/health.json`; hook #1 surfaces failures next session | ✅ |
+| `usage` | Real token receipts from Claude Code's own transcripts (`hooks/scripts/usage.js`, injected): per day, model and branch, cache-hit ratio, subagent share | ✅ |
 
 Conventions: SKILL.md < 150 lines (body stays in context); bundled scripts run
 via `${CLAUDE_SKILL_DIR}` and are covered by `hooks/scripts/selftest.js`;
@@ -39,7 +40,7 @@ run in scripts at zero model cost.
 | --- | --- | --- | --- |
 | **Judgment & synthesis** | `plan` · `review` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression, design reasoning, health triage — never downgraded |
 | **Routine execution** | `ingest` · `research` · `build` | `model: sonnet` · `effort: medium` | summaries, research reads, standard implementation — pinned to Sonnet regardless of the session model |
-| **Mechanical** | `init` · `brief` | `model: sonnet` · `effort: low` | scaffolding / pack-building run a Node script; little reasoning |
+| **Mechanical** | `init` · `brief` · `usage` | `model: sonnet` · `effort: low` | scaffolding, packs and reports run a Node script; little reasoning |
 | **Trivial** | `terse` | `model: haiku` · `effort: low` | flips an output mode |
 
 **Parallel fan-out** (subagents in `../agents/`, run concurrently; only summaries

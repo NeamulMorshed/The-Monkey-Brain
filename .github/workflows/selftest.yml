@@ -1,0 +1,25 @@
+name: selftest
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  selftest:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [18, 22]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Hook runtime self-check
+        run: node plugin/hooks/scripts/lib.js
+      - name: Engine selftest
+        run: node plugin/hooks/scripts/selftest.js
+      - name: Example brain lints clean
+        run: node plugin/skills/lint/scripts/lint.js --brain examples/claude-code-brain --strict
