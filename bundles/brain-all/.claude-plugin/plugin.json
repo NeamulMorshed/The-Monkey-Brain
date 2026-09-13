@@ -1,0 +1,1194 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "brain-all",
+  "displayName": "The Monkey Brain — every official plugin",
+  "version": "0.14.0",
+  "description": "Opt-in bundle: one install pulls in brain plus every plugin in Anthropic's official marketplace (except the output styles that contradict terse mode). Heavy by design — each enabled plugin adds context every turn; service connectors still need your own login, LSP plugins their language binaries.",
+  "author": {
+    "name": "NeamulMorshed",
+    "url": "https://github.com/NeamulMorshed"
+  },
+  "homepage": "https://github.com/NeamulMorshed/The-Monkey-Brain",
+  "repository": "https://github.com/NeamulMorshed/The-Monkey-Brain",
+  "license": "MIT",
+  "keywords": [
+    "bundle",
+    "plugins",
+    "monkey-brain"
+  ],
+  "dependencies": [
+    "brain",
+    {
+      "name": "42crunch-api-security-testing",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "activecampaign",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "adobe-for-creativity",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "agent-sdk-dev",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "agentforce-adlc",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "ai-plugins",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aikido",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "airtable",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "airwallex-agentos",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "airwallex-dev",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aiven",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "alloydb",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "alloydb-omni",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "altimate-code",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "amazon-location-service",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "amd-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "amplitude",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "apollo",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "apollo-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "appwrite",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "asana",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "astronomer-data-agents",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "atlan",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "atlassian",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "atlassian-twg-cli",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "atomic-agents",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "auth0",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aws-agents",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aws-agents-for-devsecops",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aws-amplify",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aws-core",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aws-data-analytics",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aws-serverless",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aws-startup-advisor",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "aws-transform",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "azure",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "azure-cosmos-db-assistant",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "azure-sql-developer",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "base44",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "bigdata-com",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "bigquery-data-analytics",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "boltz",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "box",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "brightdata-plugin",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "browser-use",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "build-with-wordpress",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "buildkite",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "canva",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "carbone-skill",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "carta-cap-table",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "carta-crm",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "carta-investors",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "catalyst-by-zoho",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "cds-mcp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "chrome-devtools-mcp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "circle-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "circleback",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "ckeditor",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "clangd-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "claude-code-setup",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "claude-md-management",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "claude-security",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "clickhouse",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "clickhouse-best-practices",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "cloud-sql-mysql",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "cloud-sql-postgresql",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "cloud-sql-sqlserver",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "cloudflare",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "cloudinary",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "cockroachdb",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "code-modernization",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "code-review",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "code-simplifier",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "coderabbit",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "codspeed",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "commit-commands",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "confidence",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "context7",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "convex",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "crowdsec",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "crowdstrike-falcon-foundry",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "crowdstrike-falcon-fusion",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "csharp-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "cwc-makers",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "dash0",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "data",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "data-agent-kit-starter-pack",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "data-engineering",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "databases-on-aws",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "databricks",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "datadog",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "datahub-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "dataproc",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "datarobot-agent-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "dataverse",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "deepeval",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "deploy-on-aws",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "desktop-commander",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "discord",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "dominodatalab",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "dropbox",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "duckdb-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "duende-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "dynatrace",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "exa",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "expo",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "fakechat",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "fastly-agent-toolkit",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "feature-dev",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "fiftyone",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "figma",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "firebase",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "firecrawl",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "firestore-native",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "forge-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "frontend-design",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "fullstory",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "gc-ai",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "github",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "gitkraken",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "gitlab",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "google-cloud-storage",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "gopls-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "grafana-assistant",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "grafana-cloud-mcp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "grafana-mcp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "greptile",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "growthbook",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "honeycomb",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "hookify",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "hostinger",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "hubspot-sales",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "huggingface-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "hunter",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "hyperframes",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "idmp-plugin",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "imessage",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "intercom",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "jdtls-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "jfrog",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "knowledge-catalog",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "kotlin-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "langfuse",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "langfuse-observability",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "laravel-boost",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "learn-with-coursera",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "legalzoom",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "linear",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "liquid-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "liquid-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "logfire",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "logrocket",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "looker",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "lovable",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "lua-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "lumen",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "lusha",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mapbox",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "math-olympiad",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mattpocock-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mcp-apps",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mcp-server-dev",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mcp-tunnels",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mercadopago",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mergify",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "microsoft-docs",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "migration-to-aws",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mintlify",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "miro",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mlflow",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "modern-web-guidance",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "monday-crm",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mongodb",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "mongodb-atlas",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "neon",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "netlify-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "netsuite-ai-companion",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "netsuite-finance-analyst",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "netsuite-suitecloud",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "newrelic",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "nightvision",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "nimble",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "noibu",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "notion",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "nvidia-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "oracle-ai-data-platform-workbench-databricks-migrator",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "oracle-ai-data-platform-workbench-engineer-agent",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "oracle-ai-data-platform-workbench-spark-connectors",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "oracledb",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "outputai",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pagerduty",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "paypal",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "php-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pigment",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pinecone",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pixeltable",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "planetscale",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "playground",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "playwright",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "plugin-dev",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "posthog",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "postiz",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "postman",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pr-review-toolkit",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "preset-cli-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "prisma",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "project-artifact",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pydantic-ai",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pyright-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "qdrant-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "qodo",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "qodo-standards",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "qt-development-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "quarkus-agent",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "railway",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "ralph-loop",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "rc",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "receipts",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "redis-development",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "remember",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "render",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "resend",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "revenuecat",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "rill",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "rootly",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "ruby-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "runway-api",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "rust-analyzer-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sagemaker-ai",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "salesforce-development",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sanity",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sap-cds-mcp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sap-fiori-mcp-server",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sap-hana-cli",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sap-mdk-server",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "save-to-spotify",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "scandit-sdk",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "security-guidance",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "semgrep",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sentry",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sentry-cli",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "serena",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "servicenow-sdk",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "session-report",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "shippo",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "shopify-ai-toolkit",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "skill-creator",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "slack",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "snowflake-cortex-code",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sonarqube",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sonatype-guide",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sourcegraph",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "spanner",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "spotify-ads-api",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "stackhawk-api",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "stackhawk-hawkscan",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "streaming-skills-plugin",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "stripe",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "sumup",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "supabase",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "superdesign",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "superpowers",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "swift-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "synthflow",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "tavily",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "teamcity-cli",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "telegram",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "terraform",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "togetherai-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "twilio-developer-kit",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "typescript-lsp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "ui-theme-designer",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "ui5",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "ui5-modernization",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "ui5-typescript-conversion",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "unity",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "unreal-engine-skills-for-claude-code",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "valtown",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "vanta",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "vanta-mcp-plugin",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "vercel",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "vibe-prospecting",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "vsql-extension-builder",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "windsor-ai",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "wix",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "workos",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "youdotcom-agent-skills",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "zapier",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "zilliz",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "zoom-plugin",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "zoominfo",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "zscaler",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "zyte-web-data",
+      "marketplace": "claude-plugins-official"
+    }
+  ]
+}

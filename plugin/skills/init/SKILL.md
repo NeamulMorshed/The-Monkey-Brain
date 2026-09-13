@@ -35,13 +35,15 @@ staging, `raw-sources/`, `memory/`, and `resume.md`. Once it exists, the plugin'
    `.brain/raw-sources/` (or web-clip into `.brain/Clippings/`, or paste in chat) and say
    **"ingest this"**; `.brain/` opens as an Obsidian vault for graph browsing.
 6. **Offer the capability plugins** (the craft layer). Run
-   `node "${CLAUDE_SKILL_DIR}/scripts/plugins.js"` to list the recommended set, then offer
-   the ones relevant to *this* project — don't push all nine. The contract:
-   **plugins do the craft; the brain records the knowledge** — each plugin's decisions,
-   findings, and artifacts get filed back into `.brain/` by the brain's skills and hooks
-   (the manifest names the target folder per plugin). Install is model-driven: confirm the
-   current `/plugin` command with the curator (marketplace names evolve); never install
-   silently. Skip on `--update` unless asked.
+   `node "${CLAUDE_SKILL_DIR}/scripts/plugins.js"` to list the recommended set. The ones
+   marked ✓ ship with the brain plugin as dependencies — already installed and enabled, so
+   just mention them. Offer the unmarked ones relevant to *this* project — don't push them
+   all. The contract: **plugins do the craft; the brain records the knowledge** — each
+   plugin's decisions, findings, and artifacts get filed back into `.brain/` by the brain's
+   skills and hooks (the manifest names the target folder per plugin). Install is
+   model-driven: confirm the current `/plugin` command with the curator (marketplace names
+   evolve); never install silently. Mention the opt-in `brain-all` bundle only if the
+   curator wants every official plugin — it is heavy on context. Skip on `--update` unless asked.
 7. **Commit** (offer first): `feat: scaffold .brain (Monkey Brain instance)`. The
    `Clippings/.gitignore` keeps staging drops out of git by design.
 

@@ -5,13 +5,14 @@
     "email": "neamul.morshed.nahid@gmail.com"
   },
   "description": "The Monkey Brain — a compounding LLM-wiki knowledge engine for any project or product",
+  "allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"],
   "plugins": [
     {
       "name": "brain",
       "source": "./plugin",
       "displayName": "The Monkey Brain",
-      "description": "Per-project .brain/ knowledge engine: budgeted session context injection, an enforced knowledge SDLC (ingest / query / lint / wrap), token discipline with receipts, and compounding domain expertise packs.",
-      "version": "0.13.0",
+      "description": "Per-project .brain/ knowledge engine: budgeted session context injection, an enforced knowledge SDLC (ingest / query / lint / wrap), token discipline with receipts, and compounding domain expertise packs. Ships with five capability plugins from the official marketplace.",
+      "version": "0.14.0",
       "author": {
         "name": "NeamulMorshed"
       },
@@ -26,6 +27,25 @@
         "second-brain",
         "obsidian",
         "sdlc"
+      ],
+      "category": "productivity"
+    },
+    {
+      "name": "brain-all",
+      "source": "./bundles/brain-all",
+      "displayName": "The Monkey Brain — every official plugin",
+      "description": "Opt-in bundle: one install pulls in brain plus every plugin in Anthropic's official marketplace (except the output styles that contradict terse mode). Heavy by design — each enabled plugin adds context every turn; service connectors still need your own login, LSP plugins their language binaries.",
+      "version": "0.14.0",
+      "author": {
+        "name": "NeamulMorshed"
+      },
+      "homepage": "https://github.com/NeamulMorshed/The-Monkey-Brain",
+      "repository": "https://github.com/NeamulMorshed/The-Monkey-Brain",
+      "license": "MIT",
+      "keywords": [
+        "bundle",
+        "plugins",
+        "monkey-brain"
       ],
       "category": "productivity"
     }

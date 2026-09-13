@@ -40,15 +40,16 @@ function render(manifest, opts) {
   const nameW = Math.max(...manifest.plugins.map((p) => p.name.length), 12);
   for (const p of manifest.plugins) {
     const to = (p.records || []).map((r) => r.to).join(', ');
-    lines.push(`  ${pad(p.category, catW)}  ${pad(p.name, nameW)}  ${pad(p.fires_on, 28)} → ${to}`);
+    lines.push(`${p.auto_install ? '✓' : ' '} ${pad(p.category, catW)}  ${pad(p.name, nameW)}  ${pad(p.fires_on, 28)} → ${to}`);
     if (opts.verbose) {
       lines.push(`  ${' '.repeat(catW + nameW + 4)}${p.brain_integration}`);
       if (p.precedence) lines.push(`  ${' '.repeat(catW + nameW + 4)}↳ precedence: ${p.precedence}`);
     }
   }
   lines.push('');
-  lines.push(`Install with /plugin (${manifest.install.how.split('.')[0]}).`);
-  lines.push('/brain:init offers these — confirm the exact command with the curator before installing.');
+  lines.push('✓ ships with brain — installed and enabled as a plugin dependency; nothing to do.');
+  lines.push('Offer the rest with /plugin — confirm the exact command with the curator before installing.');
+  if (manifest.bundle) lines.push(`Everything (opt-in, heavy): ${manifest.bundle.install}`);
   return lines.join('\n');
 }
 

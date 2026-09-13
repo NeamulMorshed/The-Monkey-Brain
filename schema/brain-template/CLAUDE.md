@@ -178,8 +178,10 @@ fresh. Until enabled it stays fully dormant (zero token cost).
 
 ## 9. Capability plugins (the craft layer)
 
-Craft is done by **capability plugins** (github, frontend-design, superpowers,
-security-guidance, ui-ux-pro-max, …) that `/brain:init` offers to install. The rule:
+Craft is done by **capability plugins**. Five ship with the brain plugin as its
+dependencies — github, frontend-design, superpowers, security-guidance, code-modernization,
+installed and enabled with it — and `/brain:init` offers the rest (ui-ux-pro-max,
+product-management, …). The rule:
 **plugins do the craft; the brain records the knowledge** — every plugin output that is a
 decision, a finding, or a durable artifact is filed into a `.brain/` folder by my skills and
 hooks, so the capability stays transient while its knowledge compounds here:

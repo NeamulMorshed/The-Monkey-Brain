@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.13.0](https://img.shields.io/badge/plugin-v0.13.0-blue)
+![Plugin v0.14.0](https://img.shields.io/badge/plugin-v0.14.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -99,14 +99,15 @@ The engine stands on three pillars:
 - A **product-design pack** (Nielsen heuristics + WCAG 2.2 AA + method catalog) with a validation
   gate that blocks "done" on open P0s.
 - A **game pipeline** (`/brain:game`: concept → GDD → prototype → playtest → balance).
-- **9 recommended capability plugins** it offers to install — *plugins do the craft; the brain
-  records the knowledge.*
+- **Capability plugins included** — 5 ship with it (auto-installed from the official
+  marketplace), 4 more it offers, and an opt-in `brain-all` bundle adds every official plugin —
+  *plugins do the craft; the brain records the knowledge.*
 
 **🩺 Health monitoring**
 - `/brain:doctor` runs **15 deterministic checks** (links, orphans, staleness, budget, WIP,
   open P0s, schema drift…). Failures inject a health report into the *next* session.
 
-**14 `/brain:*` skills · 8 hook events · 2 subagents · 9 recommended plugins · cross-platform (Node).**
+**14 `/brain:*` skills · 8 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
 
 ---
 
@@ -118,6 +119,13 @@ Install the plugin once (this repo doubles as its own marketplace):
 /plugin marketplace add NeamulMorshed/The-Monkey-Brain
 /plugin install brain@monkey-brain
 ```
+
+That one install also installs and enables five capability plugins from Anthropic's official
+marketplace: github, frontend-design, superpowers, security-guidance, code-modernization.
+Want every official plugin? `/plugin install brain-all@monkey-brain` — opt-in, and heavy on
+context (each enabled plugin costs tokens every turn; connectors still need your own login).
+If `/plugin` reports a missing dependency, the official marketplace isn't added yet:
+`/plugin marketplace add anthropics/claude-plugins-official`.
 
 Then, in any project:
 
@@ -283,9 +291,9 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 
 Say **"start a brain here"** (or run **`/brain:init`**) inside a project. This scaffolds `.brain/`
 and, if needed, drops a one-line root `CLAUDE.md` that imports it (`@.brain/CLAUDE.md`) so the
-operating manual always loads. `/brain:init` also offers the relevant **capability plugins**
-(github, frontend-design, superpowers, security-guidance, ui-ux-pro-max, …) — it never installs
-silently.
+operating manual always loads. The five core **capability plugins** already came with the
+plugin; `/brain:init` offers the relevant rest (ui-ux-pro-max, product-management, …) — it never
+installs silently.
 
 ### 2. Feed it knowledge
 

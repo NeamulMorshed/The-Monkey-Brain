@@ -1,15 +1,21 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-07-18",
+  "updated": "2026-09-13",
   "contract": "Plugins do the craft; the brain records the knowledge. Every plugin output that is a decision, a finding, or a durable artifact gets filed into this project's .brain/ by the brain's skills and hooks — so the capability is transient but its knowledge compounds.",
   "install": {
-    "how": "Claude Code plugins install with /plugin. Add the source marketplace once, then install the plugin: `/plugin marketplace add <source>` then `/plugin install <name>@<marketplace>`. The official plugins are browsable at https://claude.com/plugins. /brain:init offers this set but never installs silently — it confirms the exact current command with the curator, because marketplace names and sources evolve.",
+    "how": "Plugins marked auto_install ship as dependencies of the brain plugin: Claude Code installs and enables them from claude-plugins-official together with brain — no extra step. The rest install with /plugin (`/plugin marketplace add <source>` then `/plugin install <name>@<marketplace>`); /brain:init offers the relevant ones but never installs silently — it confirms the exact current command with the curator, because marketplace names and sources evolve. Browse everything at https://claude.com/plugins.",
     "scope": "Install these at user scope so they are present in every project; the per-project .brain/ decides which knowledge each produces gets filed."
+  },
+  "bundle": {
+    "name": "brain-all",
+    "install": "/plugin install brain-all@monkey-brain",
+    "what": "Opt-in: brain plus every plugin in claude-plugins-official (minus the output styles that contradict terse mode). Heavy on context — offer only when the curator asks for everything."
   },
   "categories": ["dev", "design", "security", "product", "workflow"],
   "plugins": [
     {
       "name": "github",
+      "auto_install": true,
       "category": "dev",
       "source": "official",
       "homepage": "https://claude.com/plugins/github",
@@ -22,6 +28,7 @@
     },
     {
       "name": "frontend-design",
+      "auto_install": true,
       "category": "design",
       "source": "official",
       "homepage": "https://claude.com/plugins/frontend-design",
@@ -35,6 +42,7 @@
     },
     {
       "name": "superpowers",
+      "auto_install": true,
       "category": "dev",
       "source": "official",
       "homepage": "https://claude.com/plugins/superpowers",
@@ -47,6 +55,7 @@
     },
     {
       "name": "security-guidance",
+      "auto_install": true,
       "category": "security",
       "source": "official",
       "homepage": "https://claude.com/plugins/security-guidance",
@@ -70,6 +79,7 @@
     },
     {
       "name": "code-modernization",
+      "auto_install": true,
       "category": "dev",
       "source": "official",
       "homepage": "https://claude.com/plugins/code-modernization",

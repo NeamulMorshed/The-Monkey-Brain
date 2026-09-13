@@ -580,6 +580,21 @@ try {
   check('plugins.js --json emits the parseable manifest', pj.status === 0 && Array.isArray(pjJson.plugins) && pjJson.plugins.length === 9, `status=${pj.status}`);
   const tmplManual = fs.readFileSync(path.join(bundled, 'CLAUDE.md'), 'utf8');
   check('instance manual §9 states the plugin recording contract', /##\s*9\.\s*Capability plugins/.test(tmplManual) && /records the knowledge/i.test(tmplManual), 'no §9 contract');
+  let pmeta = {}; try { pmeta = JSON.parse(fs.readFileSync(path.join(HERE, '..', '..', '.claude-plugin', 'plugin.json'), 'utf8')); } catch {}
+  const pdeps = Array.isArray(pmeta.dependencies) ? pmeta.dependencies : [];
+  const autoNames = plist.filter((p) => p.auto_install).map((p) => p.name);
+  check('plugin.json dependencies == the manifest\'s auto_install set, all from claude-plugins-official', autoNames.length > 0 && pdeps.length === autoNames.length && pdeps.every((d) => d.marketplace === 'claude-plugins-official' && autoNames.includes(d.name)), JSON.stringify(pdeps));
+  pj = spawnSync(process.execPath, [PLUGINSJS], { encoding: 'utf8', timeout: 15000 });
+  check('plugins.js marks the auto-installed plugins with ✓', autoNames.every((n) => pj.stdout.split('\n').some((l) => l.startsWith('✓') && l.includes(n))) && /brain-all@monkey-brain/.test(pj.stdout), pj.stdout.slice(0, 300));
+  const MKT = path.join(HERE, '..', '..', '..', '.claude-plugin', 'marketplace.json');
+  if (fs.existsSync(MKT)) {
+    let mkt = {}; try { mkt = JSON.parse(fs.readFileSync(MKT, 'utf8')); } catch {}
+    check('marketplace allowlists claude-plugins-official for dependencies', (mkt.allowCrossMarketplaceDependenciesOn || []).includes('claude-plugins-official'), JSON.stringify(mkt.allowCrossMarketplaceDependenciesOn));
+    let bundle = {}; try { bundle = JSON.parse(fs.readFileSync(path.join(HERE, '..', '..', '..', 'bundles', 'brain-all', '.claude-plugin', 'plugin.json'), 'utf8')); } catch {}
+    const bdeps = Array.isArray(bundle.dependencies) ? bundle.dependencies : [];
+    const bnames = bdeps.slice(1).map((d) => d.name);
+    check('brain-all bundle = brain + official plugins (incl. the core five, no output styles, no dupes)', (mkt.plugins || []).some((p) => p.name === 'brain-all') && bdeps[0] === 'brain' && bdeps.slice(1).every((d) => d.marketplace === 'claude-plugins-official') && autoNames.every((n) => bnames.includes(n)) && !bnames.some((n) => /output-style/.test(n)) && new Set(bnames).size === bnames.length, `deps=${bdeps.length}`);
+  }
 
   // ---------- product-design pack (Phase 6.5) ----------
   console.log('product-design pack (skills/product-design — first domain-expertise pack)');

@@ -1,5 +1,26 @@
 # Changelog — brain plugin
 
+## 0.14.0 — 2026-09-13 (capability plugins ship with brain + brain-all bundle)
+
+Installing `brain` now installs the core craft layer too — no separate step.
+
+- **Five plugin dependencies** in `.claude-plugin/plugin.json` — github,
+  frontend-design, superpowers, security-guidance, code-modernization — resolved
+  from `claude-plugins-official` and enabled together with brain. The marketplace
+  allowlists that source (`allowCrossMarketplaceDependenciesOn`). They are the
+  `auto_install: true` entries of `recommended-plugins.json`; selftest keeps the two
+  in sync. If the official marketplace is missing (network/policy), brain reports a
+  dependency error until it is added.
+- **`brain-all` opt-in bundle** (`bundles/brain-all/`, `/plugin install
+  brain-all@monkey-brain`) — brain plus every official plugin (293 at generation),
+  minus `explanatory-output-style` / `learning-output-style`, which contradict the
+  default terse mode. `bundles/gen-brain-all.js` regenerates it from the official
+  catalog; `--check` exits 1 on drift — run it before each release, because a
+  plugin the catalog drops makes the whole bundle unloadable.
+- `/brain:init` step 6 and `plugins.js` mark the five as ✓ shipped (mention, don't
+  offer) and name the bundle; instance manual §9 updated.
+- Selftest 164 → **168 checks**.
+
 ## 0.13.0 — 2026-09-13 (terse mode on by default)
 
 Terse output no longer needs activating — installing the plugin turns it on.

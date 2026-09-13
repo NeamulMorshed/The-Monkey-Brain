@@ -51,12 +51,13 @@ Sonnet implementer with a main-model auditor. See the Agents section in
 ## Capability plugins (Phase 6)
 
 The skills own the brain's *knowledge* workflows; **craft** (UI builds, security
-audits, PR flows, PRDs…) is done by external **capability plugins** that
-`/brain:init` offers. `init/recommended-plugins.json` is the authoritative set of
-nine (`github`, `frontend-design`, `superpowers`, `security-guidance`,
-`product-tracking-skills`, `code-modernization`, `productivity`,
-`product-management`, `ui-ux-pro-max`); `init/scripts/plugins.js` renders the
-offer. The contract — **plugins do the craft; the brain records the knowledge** —
+audits, PR flows, PRDs…) is done by external **capability plugins**.
+`init/recommended-plugins.json` is the authoritative set of nine: five
+(`auto_install: true` — `github`, `frontend-design`, `superpowers`,
+`security-guidance`, `code-modernization`) ship as dependencies of the brain plugin;
+`/brain:init` offers the rest (`product-tracking-skills`, `productivity`,
+`product-management`, `ui-ux-pro-max`). `init/scripts/plugins.js` renders the set
+(✓ = ships with brain). The contract — **plugins do the craft; the brain records the knowledge** —
 means every plugin output that is a decision, finding, or artifact is filed into a
 named `.brain/` folder by the brain's skills and hooks (the manifest maps each
 plugin to its target folder; the instance manual's §9 states the rule and the
