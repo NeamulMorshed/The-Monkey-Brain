@@ -18,6 +18,7 @@ const { spawnSync } = require('child_process');
 const lib = require(path.join(__dirname, 'lib.js'));
 const loops = require(path.join(__dirname, 'loop.js'));
 const usage = require(path.join(__dirname, 'usage.js'));
+const lock = require(path.join(__dirname, 'lock.js'));
 
 const DAY = 86400000;
 const dayOf = (d) => {
@@ -129,9 +130,15 @@ function main() {
   const d = digest(brain, { week: argv.includes('--week') });
   let note = '';
   if (!argv.includes('--no-file')) {
-    fs.mkdirSync(path.dirname(d.file), { recursive: true });
-    fs.writeFileSync(d.file, `---\ntitle: "${d.title}"\ntype: ${d.kind}\ndate: ${d.day}\n---\n\n${d.text}`, 'utf8');
-    note = `\n_Filed to ${path.relative(path.dirname(brain), d.file).split(path.sep).join('/')}._`;
+    // On a shared brain, never overwrite a teammate's digest from the same day.
+    const me = lock.identity(path.dirname(brain));
+    const theirs = lib.parseFrontmatter(lib.readTextSafe(d.file)).author;
+    const file = theirs && theirs !== me
+      ? d.file.replace(/\.md$/, `-${me.replace(/@.*$/, '').replace(/[^\w-]+/g, '-').toLowerCase()}.md`)
+      : d.file;
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, `---\ntitle: "${d.title}"\ntype: ${d.kind}\ndate: ${d.day}\nauthor: "${me}"\n---\n\n${d.text}`, 'utf8');
+    note = `\n_Filed to ${path.relative(path.dirname(brain), file).split(path.sep).join('/')}._`;
   }
   console.log(d.text + note);
 }

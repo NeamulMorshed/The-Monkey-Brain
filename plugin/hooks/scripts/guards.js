@@ -24,6 +24,9 @@
  *                   ban (an active instinct's `ban:`, or a declared pack's
  *                   bans.json) is refused (v3 P15). `warn` bans are reported
  *                   after the write by instinct-track.js.
+ *   7. TEAM LOCK  — while a teammate's LOCK.md is active, writes inside its
+ *                   scope (a spec, or the brain's knowledge layers) are
+ *                   refused for everyone else (v3 P16).
  *
  * Gates degrade gracefully: no .brain/ (or no specs/) → the rule is skipped.
  * Blocking = exit 2 with the reason on stderr (shown to Claude).
@@ -35,6 +38,7 @@ const fs = require('fs');
 const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
 const bans = require(path.join(__dirname, 'bans.js'));
+const lockLib = require(path.join(__dirname, 'lock.js'));
 
 const SECRET_PATTERNS = [
   [/\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}/, 'an API key (`sk-…`)'],
@@ -173,6 +177,19 @@ async function main() {
           );
         }
       }
+    }
+  }
+
+  // 7) TEAM LOCK — a teammate's active lock covers this brain file.
+  if (brain && abs.startsWith(brain + path.sep)) {
+    const lock = lockLib.readLock(brain);
+    const relB = path.relative(brain, abs).split(path.sep).join('/');
+    if (lock && lock.active && lockLib.inScope(lock, relB) && lock.author !== lockLib.identity(path.dirname(brain))) {
+      lib.block(
+        `🐵 guard[lock]: ${lock.author} holds the lock on \`${lock.scope}\` until ${lockLib.local(lock.until)}` +
+          `${lock.note ? ` (${lock.note})` : ''} — \`${relB}\` is inside it. Coordinate with them first; once agreed, ` +
+          `\`/brain:lock acquire ${lock.scope} --force\` takes it over.`
+      );
     }
   }
 

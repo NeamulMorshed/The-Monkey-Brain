@@ -1,5 +1,26 @@
 # Changelog — brain plugin
 
+## 0.21.0 — 2026-09-13 (v3 P16: team mode)
+
+One brain, several people, no merge fights.
+
+- **Union merges** — new brains ship `.gitattributes` so `wiki/log.md`, `sessions/agents.md` and
+  `sessions/review-required.md` merge with git's built-in union driver: two people logging work
+  in parallel never conflict. Verified end to end in the selftest with a bare repo and two clones.
+- **Per-machine caches stay local** — `sessions/.gitignore` keeps the graph cache, dashboard,
+  injection receipts, edit counts, health report, gate counters and loop state out of git.
+- **`/brain:lock`** (`hooks/scripts/lock.js`) — a committed, expiring `LOCK.md` on one spec or
+  the whole brain (`acquire` / `release` / `status`, default 8 hours; identity from
+  `MONKEY_BRAIN_AUTHOR`, then git's user.email / user.name). Teammates see it at session start
+  (`brain-status`, never dropped by the budget), and `guards` keeps their writes out of the
+  locked scope until it's released or expires; taking over needs `--force` after agreeing.
+- **Per-author digests** — a teammate's same-day standup is never overwritten: the second
+  author's file gets a name suffix, and every digest records its author.
+- `/brain:init --update` adds `.gitattributes` and `sessions/.gitignore` to existing brains;
+  instance manual §7 explains working as a team. Router: "lock the <x> spec", "who has the lock",
+  "release the lock" — with a guard so app "lock screen" work stays app work.
+- Selftest 267 → **286 checks**.
+
 ## 0.20.0 — 2026-09-13 (v3 P15: learned bans)
 
 A correction made three times becomes a rule; a rule with a pattern becomes enforcement.

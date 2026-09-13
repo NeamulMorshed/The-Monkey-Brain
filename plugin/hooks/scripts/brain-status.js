@@ -27,6 +27,7 @@ const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
 const loopLib = require(path.join(__dirname, 'loop.js'));
 const bansLib = require(path.join(__dirname, 'bans.js'));
+const lockLib = require(path.join(__dirname, 'lock.js'));
 
 const BUDGET = Number(process.env.MONKEY_BRAIN_BUDGET || 3000);
 const TERSE_SKILL = path.join(__dirname, '..', '..', 'skills', 'terse', 'SKILL.md');
@@ -88,6 +89,18 @@ async function main() {
 
   const terse = terseBlock(path.dirname(brain));
   if (terse) sections.push([0, terse]);
+
+  // v3 P16: the team work lock — never dropped by the budget.
+  const lock = lockLib.readLock(brain);
+  if (lock) {
+    const text = lockLib.describeLock(lock, lockLib.identity(path.dirname(brain)));
+    const hint = !lock.active
+      ? ' Take it with `/brain:lock acquire <scope>` if you need it.'
+      : text.startsWith('🔒 You')
+        ? ' Release it with `/brain:lock release` when you are done, then push.'
+        : ' Coordinate before touching it — the hooks keep your writes out of its scope.';
+    sections.push([0, `**Team lock:** ${text}${hint}`]);
+  }
 
   const idxFm = lib.parseFrontmatter(lib.readTextSafe(path.join(brain, 'wiki', 'index.md')));
   if (idxFm.source_count !== undefined || idxFm.page_count !== undefined) {

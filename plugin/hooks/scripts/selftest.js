@@ -318,6 +318,12 @@ try {
   }
   t = routed('build an analytics dashboard page for sales');
   check('an app "dashboard" feature does not route to the brain dashboard', !t.ctx.includes('brain:dashboard'), t.ctx);
+  for (const phrase of ['lock the billing spec', 'who has the lock', 'release the lock']) {
+    t = routed(phrase);
+    check(`"${phrase}" routes to brain:lock`, t.ctx.includes('brain:lock'), t.ctx);
+  }
+  t = routed('fix the lock screen bug');
+  check('app "lock screen" work does not route to the team lock', !t.ctx.includes('brain:lock'), t.ctx);
   t = routed('compress the CLAUDE.md file');
   check('"compress CLAUDE.md" routes to brain:compress', t.ctx.includes('brain:compress'), t.ctx);
   t = routed('design a product for our new users');
@@ -509,6 +515,7 @@ try {
     dump: { model: 'sonnet', effort: 'medium' },
     dashboard: { model: 'haiku', effort: 'low' },
     ci: { model: 'sonnet', effort: 'low' },
+    lock: { model: 'haiku', effort: 'low' },
     plan: { effort: 'high' },
     review: { effort: 'high' },
     wrap: { effort: 'high' },
@@ -686,6 +693,82 @@ try {
   check('doctor --strict exits 1 when warnings/criticals exist', dr.status === 1, `status=${dr.status}`);
   dr = spawnSync(process.execPath, [DOCTOR, '--brain', os.tmpdir()], { encoding: 'utf8', timeout: 20000 });
   check('doctor is a silent no-op without a brain', dr.status === 0 && /No Monkey Brain/.test(dr.stdout), `status=${dr.status}`);
+
+  // ---------- v3 P16: team mode (lock.js · union merges · per-machine ignores) ----------
+  console.log('lock.js + union merges + per-author digests (v3 P16 — team mode)');
+  const ymd = (() => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; })();
+  const lk = (who, ...a) => spawnSync(process.execPath, [path.join(HERE, 'lock.js'), ...a], { cwd: PROJ, encoding: 'utf8', timeout: 15000, env: { ...process.env, MONKEY_BRAIN_AUTHOR: who } });
+  const LOCKF = path.join(BRAIN, 'LOCK.md');
+  write('.brain/specs/billing.md', '---\ntitle: "Billing"\ntype: spec\nstatus: active\ntier: quick\n---\n\n## Acceptance criteria\n- **AC-1** — a\n');
+  let lkr = lk('alice@team.dev', 'acquire', 'billing', '--hours', '2', '--note', 'reworking invoices');
+  check('acquire writes LOCK.md with author, scope and expiry', lkr.status === 0 && fs.existsSync(LOCKF) && /author: "alice@team\.dev"/.test(fs.readFileSync(LOCKF, 'utf8')) && /scope: billing/.test(fs.readFileSync(LOCKF, 'utf8')), lkr.stdout + lkr.stderr);
+  lkr = lk('bob@team.dev', 'acquire', 'billing');
+  check('a teammate cannot take an active lock without --force', lkr.status === 1 && /alice@team\.dev holds the lock on billing/.test(lkr.stderr), lkr.stderr);
+  const lockedEdit = (who) => run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: path.join(BRAIN, 'specs', 'billing.md'), old_string: '— a', new_string: '— b' } }), { MONKEY_BRAIN_AUTHOR: who });
+  let le = lockedEdit('bob@team.dev');
+  check('guards keep a teammate\'s writes out of the locked scope', le.status === 2 && /guard\[lock\]/.test(le.stderr) && /alice@team\.dev/.test(le.stderr), `status=${le.status} ${le.stderr}`);
+  le = lockedEdit('alice@team.dev');
+  check('the lock holder writes freely', le.status === 0, `status=${le.status} ${le.stderr}`);
+  const statusAs = (who) => { const s = run('brain-status.js', evt({ hook_event_name: 'SessionStart', source: 'startup' }), { MONKEY_BRAIN_AUTHOR: who }); try { return JSON.parse(s.stdout).hookSpecificOutput.additionalContext || ''; } catch { return ''; } };
+  let sa = statusAs('bob@team.dev');
+  check('a teammate sees the lock at session start', /🔒 alice@team\.dev holds the lock on billing/.test(sa), sa.slice(0, 300));
+  sa = statusAs('alice@team.dev');
+  check('the holder is reminded to release it', /🔒 You hold the lock on billing/.test(sa), sa.slice(0, 300));
+  lkr = lk('bob@team.dev', 'release');
+  check('only the holder releases an active lock', lkr.status === 1 && fs.existsSync(LOCKF), lkr.stderr);
+  fs.writeFileSync(LOCKF, '---\ntitle: "Work lock"\ntype: lock\nauthor: "alice@team.dev"\nscope: brain\nsince: 2026-01-01T00:00:00.000Z\nuntil: 2026-01-01T08:00:00.000Z\nnote: ""\n---\n', 'utf8');
+  sa = statusAs('bob@team.dev');
+  check('an expired lock shows as free at session start', /🔓 alice@team\.dev's lock on brain expired/.test(sa), sa.slice(0, 300));
+  le = lockedEdit('bob@team.dev');
+  check('an expired lock no longer blocks writes', le.status === 0, `status=${le.status} ${le.stderr}`);
+  lkr = lk('bob@team.dev', 'acquire', 'brain');
+  check('an expired lock can be taken over', lkr.status === 0 && /You hold the lock on brain/.test(lkr.stdout), lkr.stdout + lkr.stderr);
+  lkr = lk('bob@team.dev', 'release');
+  check('release removes LOCK.md', lkr.status === 0 && !fs.existsSync(LOCKF), lkr.stdout + lkr.stderr);
+
+  const digestAs = (who) => spawnSync(process.execPath, [path.join(HERE, 'digest.js')], { cwd: PROJ, encoding: 'utf8', timeout: 30000, env: { ...process.env, MONKEY_BRAIN_AUTHOR: who } });
+  digestAs('alice@team.dev');
+  const bobDigest = digestAs('bob@team.dev');
+  const bobFile = path.join(BRAIN, 'sessions', `standup-${ymd}-bob.md`);
+  check('a teammate\'s same-day digest never overwrites yours', fs.existsSync(path.join(BRAIN, 'sessions', `standup-${ymd}.md`)) && fs.existsSync(bobFile) && /author: "bob@team\.dev"/.test(fs.readFileSync(bobFile, 'utf8')), bobDigest.stdout.slice(-200));
+
+  const UPD = path.join(ROOT, 'upd');
+  fs.mkdirSync(path.join(UPD, '.brain', 'wiki'), { recursive: true });
+  fs.writeFileSync(path.join(UPD, '.brain', 'CLAUDE.md'), '# an older brain\n');
+  const up = spawnSync(process.execPath, [path.join(SKILLS, 'init', 'scripts', 'new-brain.js'), '--project', UPD, '--update'], { encoding: 'utf8', timeout: 30000 });
+  check('--update adds the team files to an existing brain', up.status === 0 && fs.existsSync(path.join(UPD, '.brain', '.gitattributes')) && fs.existsSync(path.join(UPD, '.brain', 'sessions', '.gitignore')), up.stdout + up.stderr);
+
+  if (spawnSync('git', ['--version'], { encoding: 'utf8' }).status === 0) {
+    const GT = path.join(ROOT, 'gitteam');
+    const git = (cwd, ...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@x', '-c', 'init.defaultBranch=main', '-c', 'core.autocrlf=false', ...a], { cwd, encoding: 'utf8', timeout: 30000 });
+    fs.mkdirSync(GT, { recursive: true });
+    git(GT, 'init', '-q', '--bare', 'origin.git');
+    git(GT, 'clone', '-q', 'origin.git', 'a');
+    const CA = path.join(GT, 'a');
+    const CB = path.join(GT, 'b');
+    spawnSync(process.execPath, [path.join(SKILLS, 'init', 'scripts', 'new-brain.js'), '--project', CA], { encoding: 'utf8', timeout: 30000 });
+    git(CA, 'add', '-A');
+    git(CA, 'commit', '-q', '-m', 'brain');
+    git(CA, 'push', '-q', 'origin', 'HEAD:main');
+    git(GT, 'clone', '-q', 'origin.git', 'b');
+    fs.appendFileSync(path.join(CA, '.brain', 'wiki', 'log.md'), '\n## [2026-09-13] build | from alice\n');
+    git(CA, 'commit', '-q', '-am', 'alice');
+    git(CA, 'push', '-q', 'origin', 'HEAD:main');
+    fs.appendFileSync(path.join(CB, '.brain', 'wiki', 'log.md'), '\n## [2026-09-13] build | from bob\n');
+    git(CB, 'commit', '-q', '-am', 'bob');
+    const pulled = git(CB, 'pull', '-q', '--no-rebase', '--no-edit', 'origin', 'main');
+    const mergedLog = fs.readFileSync(path.join(CB, '.brain', 'wiki', 'log.md'), 'utf8');
+    check('two teammates\' log entries merge without a conflict (union driver)', pulled.status === 0 && /from alice/.test(mergedLog) && /from bob/.test(mergedLog) && !/^(<<<<<<<|>>>>>>>)/m.test(mergedLog), (pulled.stderr || pulled.stdout || '').slice(0, 300));
+    fs.writeFileSync(path.join(CA, '.brain', 'sessions', 'graph.json'), '{}');
+    fs.writeFileSync(path.join(CA, '.brain', 'sessions', 'agents.md'), '# dispatch log\n');
+    const porcelain = git(CA, 'status', '--porcelain').stdout;
+    check('per-machine caches stay out of git; shared logs are tracked', !/graph\.json/.test(porcelain) && /agents\.md/.test(porcelain), porcelain);
+  } else {
+    check('git not installed — union-merge test skipped', true);
+  }
+  for (const f of ['specs/billing.md', `sessions/standup-${ymd}.md`, `sessions/standup-${ymd}-bob.md`]) fs.rmSync(path.join(BRAIN, f), { force: true });
+  fs.rmSync(UPD, { recursive: true, force: true });
+  fs.rmSync(path.join(ROOT, 'gitteam'), { recursive: true, force: true });
 
   // ---------- v3 P15: learned bans (bans.js · instincts.js) + frontmatter comments ----------
   console.log('bans.js + instincts.js + frontmatter comments (v3 P15 — learned bans)');

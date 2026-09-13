@@ -54,6 +54,12 @@ const RULES = [
     what: 'brain lint',
   },
   {
+    re: /\b(lock|unlock)\s+(the\s+)?(brain|[\w-]+\s+spec)\b|\brelease (the |my )?lock\b|\bwho (has|holds) the lock\b|\btake (over )?the lock\b/i,
+    skill: 'lock',
+    needsBrain: true,
+    what: 'team work lock',
+  },
+  {
     re: /\bstand-?up\b|\bdaily brief\b|\bweekly review\b|\bweek in review\b|\bwhat did (we|i) (do|ship|get done)\b/i,
     skill: 'digest',
     needsBrain: true,

@@ -172,6 +172,13 @@ This `.brain/` is committed **with the {{PROJECT}} repo**. Commit per logical st
 the log prefixes as message conventions (`ingest: <title>`, `plan: <feature>`, …).
 `Clippings/` staging and its drops stay out of git.
 
+**Working as a team.** `wiki/log.md`, `sessions/agents.md` and `sessions/review-required.md`
+merge with git's union driver (`.gitattributes`), so parallel log entries never conflict;
+per-machine caches in `sessions/` (graph, dashboard, receipts, health, loops) stay out of git.
+Before a long change, `/brain:lock <spec|brain>` and push `LOCK.md`: teammates see the lock at
+session start, and the hooks keep their writes out of the locked scope until it's released or
+expires.
+
 ## 8. Engine
 
 Scaffolded by **The Monkey Brain** engine (schema v2.0). To refresh conventions later, run

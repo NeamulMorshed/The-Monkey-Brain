@@ -60,8 +60,8 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P13** Blast-radius routing — import-graph scanner → model + tier suggestion | ✅ 2026-09-13 | v0.18.0 — `graph.js` (JS/TS incl. `require(path.join(__dirname,…))`, Python, Go via `go.mod`, C# namespaces; mtime cache in `sessions/graph.json`; 1k files < 2 s); `radius` → files × dirs × types → tier + model; `/brain:plan` uses it; manual §5; selftest **230** |
 | **P14** Daily-driver workflows — standup, weekly review, dump, meeting prep, validate, critique, dashboard, CI | ✅ 2026-09-13 | v0.19.0 — `digest.js` + `/brain:digest` (standup / weekly, filed to `sessions/`), `/brain:dump`, `dashboard.js` + `/brain:dashboard` (offline HTML, escaped), `ci.js` + `/brain:ci` (Node/Python/Go/.NET/Rust) + doctor check 19; validate / critique / meeting prep as modes of research / product-design / brief; router phrases with a false-positive guard; selftest **253** |
 | **P15** Learned bans — instincts with `ban:` patterns enforced by hook; confidence scores | ✅ 2026-09-13 | v0.20.0 — `bans.js` (active instincts' `ban:` / `ban_paths:` / `enforce:` + declared packs' `bans.json`); guards refuses `block`, instinct-track reports `warn`; product-design `bans.json`; `instincts.js` status / promote / prune / test with confidence; **fixed**: frontmatter comments hid spec tiers from the gates (`lib.parseFrontmatter`); selftest **267** |
-| **P16** Team mode — git-native lock, union-merged log, per-author sessions | ⏳ next | |
-| **P17** Life packs (optional) — learning (SM-2), career, ideas | ⏳ | |
+| **P16** Team mode — git-native lock, union-merged log, per-author sessions | ✅ 2026-09-13 | v0.21.0 — template `.gitattributes` (union merge: log, agents, review-required) + `sessions/.gitignore` (per-machine caches); `lock.js` + `/brain:lock` (committed, expiring `LOCK.md`; brain-status shows it; guards enforce its scope); per-author digests; `--update` migrates; real bare-repo + two-clone merge test; selftest **286** |
+| **P17** Life packs (optional) — learning (SM-2), career, ideas | ⏳ next | |
 
 ### Session log (engine work, newest first — instances get `sessions/` in P4)
 
@@ -113,6 +113,10 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   it exposed a real engine bug: YAML inline comments hid spec tiers from the gates, so specs that
   kept the template's comments were never gated. Fixed in `lib.parseFrontmatter`, with
   regression tests. Selftest 253 → 267.
+- **P16 team mode (v0.21.0):** git-native rather than workspace rules: union-merged append-only
+  logs (proven in the selftest with a real bare repo and two clones), per-machine caches
+  gitignored, and a committed, expiring lock that teammates see at session start and the guards
+  enforce. Selftest 267 → 286.
 
 **[2026-07-18] Session 4 — Phases 6 + 6.5 + 7 + 8 + 9 (v0.9.0 → v0.12.0)**
 

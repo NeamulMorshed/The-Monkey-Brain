@@ -26,6 +26,7 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `dump` | Classify a loose note and file each part (decision ADR, memory, workstream Next, ideas page, Clippings, instinct) | ✅ |
 | `dashboard` | One-page offline HTML overview of the brain (`hooks/scripts/dashboard.js`, injected) → `sessions/dashboard.html` | ✅ |
 | `ci` | GitHub Actions workflow from the detected stack — Node, Python, Go, .NET, Rust (`hooks/scripts/ci.js`); never overwrites without asking | ✅ |
+| `lock` | Team work lock (`hooks/scripts/lock.js`): a committed, expiring `LOCK.md` on a spec or the whole brain; teammates see it at session start and guards keep their writes out of its scope | ✅ |
 | `usage` | Real token receipts from Claude Code's own transcripts (`hooks/scripts/usage.js`, injected): per day, model and branch, cache-hit ratio, subagent share | ✅ |
 
 Conventions: SKILL.md < 150 lines (body stays in context); bundled scripts run
@@ -46,7 +47,7 @@ run in scripts at zero model cost.
 | **Judgment & synthesis** | `plan` · `review` · `loop` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression, design reasoning, health triage — never downgraded |
 | **Routine execution** | `ingest` · `research` · `build` · `dump` | `model: sonnet` · `effort: medium` | summaries, research reads, standard implementation — pinned to Sonnet regardless of the session model |
 | **Mechanical** | `init` · `brief` · `usage` · `digest` · `ci` | `model: sonnet` · `effort: low` | scaffolding, packs and reports run a Node script; little reasoning |
-| **Trivial** | `terse` · `dashboard` | `model: haiku` · `effort: low` | flips an output mode; presents a page a script built |
+| **Trivial** | `terse` · `dashboard` · `lock` | `model: haiku` · `effort: low` | flips an output mode; presents a page a script built |
 
 **Parallel fan-out** (subagents in `../agents/`, run concurrently; only summaries
 return): `research` fans out to **`brain-researcher`** (Sonnet, read-only) and
