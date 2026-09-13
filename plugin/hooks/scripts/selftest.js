@@ -21,6 +21,14 @@ const ROOT = path.join(os.tmpdir(), `mb-selftest-${process.pid}`);
 const PROJ = path.join(ROOT, 'project');
 const BRAIN = path.join(PROJ, '.brain');
 
+// Isolate every child process from the real ~/.claude for the whole run — new-brain.js
+// and brain-status.js write to the cross-project registry (registry.js), and dozens of
+// selftest calls scaffold scratch brains; without this they'd pollute the real user's
+// ~/.claude/monkey-brain/projects.json. Individual tests may still override CLAUDE_CONFIG_DIR
+// per-call (e.g. the usage.js tests) — an explicit env always wins over this default.
+const GLOBAL_CFG = path.join(os.tmpdir(), `mb-selftest-cfg-${process.pid}`);
+process.env.CLAUDE_CONFIG_DIR = GLOBAL_CFG;
+
 function write(rel, content) {
   const p = path.join(PROJ, rel);
   fs.mkdirSync(path.dirname(p), { recursive: true });
@@ -504,11 +512,74 @@ try {
     check('qmd installed — real handoff path (fallback test skipped)', true);
   }
 
+  // ---------- Monkey Brain Home: registry.js + home.js + registration wiring ----------
+  console.log('registry.js + home.js (cross-project dashboard)');
+  const HOMEJS = path.join(HERE, 'home.js');
+  const REGCFG = path.join(ROOT, 'regcfg');
+  const regEnv = { CLAUDE_CONFIG_DIR: REGCFG };
+  const REGFILE = path.join(REGCFG, 'monkey-brain', 'projects.json');
+
+  let hr = spawnSync(process.execPath, [HOMEJS], { encoding: 'utf8', timeout: 15000, env: { ...process.env, ...regEnv } });
+  check('home.js with an empty registry writes a friendly empty state', hr.status === 0 && /0 project\(s\)/.test(hr.stdout) && fs.existsSync(path.join(REGCFG, 'monkey-brain', 'home.html')), hr.stdout);
+  check('the empty-state page names /brain:init as the way in', /No projects registered yet/.test(fs.readFileSync(path.join(REGCFG, 'monkey-brain', 'home.html'), 'utf8')));
+
+  const PA = path.join(ROOT, 'proj-a');
+  const PB = path.join(ROOT, 'proj-b');
+  for (const p of [PA, PB]) fs.mkdirSync(p, { recursive: true });
+  let initR = spawnSync(process.execPath, [path.join(SKILLS, 'init', 'scripts', 'new-brain.js'), '--project', PA, '--name', 'Project A'], { encoding: 'utf8', timeout: 30000, env: { ...process.env, ...regEnv } });
+  check('/brain:init registers the new project', initR.status === 0 && fs.existsSync(REGFILE) && JSON.parse(fs.readFileSync(REGFILE, 'utf8'))[Object.keys(JSON.parse(fs.readFileSync(REGFILE, 'utf8')))[0]].name === 'Project A', initR.stdout + initR.stderr);
+  initR = spawnSync(process.execPath, [path.join(SKILLS, 'init', 'scripts', 'new-brain.js'), '--project', PB], { encoding: 'utf8', timeout: 30000, env: { ...process.env, ...regEnv } });
+  check('init also registers unnamed projects, defaulting to the folder name', initR.status === 0 && Object.values(JSON.parse(fs.readFileSync(REGFILE, 'utf8'))).some((v) => v.name === path.basename(PB)), initR.stdout + initR.stderr);
+
+  // Project A: a doctor run with a P0 (critical) and a real usage transcript.
+  const writeRel = (root, rel, content) => { const p = path.join(root, rel); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, content, 'utf8'); };
+  writeRel(PA, '.brain/projects/x.md', '---\ntitle: "X"\ntype: project\nstatus: active\n---\n\n## Blockers\n- P0: broken auth (open)\n');
+  const dr2 = spawnSync(process.execPath, [path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), '--brain', path.join(PA, '.brain'), '--json'], { encoding: 'utf8', timeout: 30000 });
+  check('doctor ran on project A and wrote a health report', dr2.status === 0 && fs.existsSync(path.join(PA, '.brain', 'sessions', 'health.json')), dr2.stderr);
+  // A transcript for project A, in the same CLAUDE_CONFIG_DIR the registry lives in (usage.js reads CLAUDE_CONFIG_DIR too).
+  const encA = path.resolve(PA).replace(/[^A-Za-z0-9]/g, '-');
+  writeRel(
+    REGCFG,
+    path.join('projects', encA, 's1.jsonl'),
+    JSON.stringify({ type: 'assistant', timestamp: new Date().toISOString(), cwd: PA, isSidechain: false, message: { id: 'hm1', model: 'claude-sonnet-5', usage: { input_tokens: 10, cache_creation_input_tokens: 0, cache_read_input_tokens: 990, output_tokens: 20 } } }) + '\n'
+  );
+
+  hr = spawnSync(process.execPath, [HOMEJS], { encoding: 'utf8', timeout: 15000, env: { ...process.env, ...regEnv } });
+  check('home.js aggregates 2 projects, newest-active first', hr.status === 0 && /2 project\(s\)/.test(hr.stdout), hr.stdout);
+  const homeHtml = fs.readFileSync(path.join(REGCFG, 'monkey-brain', 'home.html'), 'utf8');
+  check('project A shows Critical (open P0) and its real token total (1,020)', /Project A[\s\S]*?class="pill critical"/.test(homeHtml) && /1,020/.test(homeHtml), homeHtml.length);
+  check('project B shows as not checked yet (no doctor run there)', /Not checked yet/.test(homeHtml), 'no "Not checked yet" pill found');
+  check('the needs-attention section names project A', /Needs attention[\s\S]*?Project A/.test(homeHtml), homeHtml.slice(homeHtml.indexOf('Needs attention'), homeHtml.indexOf('Needs attention') + 300));
+  check('home.js HTML-escapes project names (no raw script injection)', !/<script>/i.test(homeHtml) || /&lt;script&gt;/.test(homeHtml));
+
+  // Deregistration: a project whose .brain/ is gone drops out of the next list().
+  fs.rmSync(path.join(PB, '.brain'), { recursive: true, force: true });
+  hr = spawnSync(process.execPath, [HOMEJS], { encoding: 'utf8', timeout: 15000, env: { ...process.env, ...regEnv } });
+  check('a deleted .brain/ self-prunes from the registry', hr.status === 0 && /1 project\(s\)/.test(hr.stdout), hr.stdout);
+
+  // brain-status.js touches (and lazily registers) a brain it finds, independent of init.
+  const PC = path.join(ROOT, 'proj-c');
+  fs.mkdirSync(path.join(PC, '.brain'), { recursive: true });
+  fs.writeFileSync(path.join(PC, '.brain', 'CLAUDE.md'), '# c\n');
+  run('brain-status.js', { cwd: PC, hook_event_name: 'SessionStart', source: 'startup' }, regEnv);
+  check('brain-status registers a brain it finds, even without going through init', Object.values(JSON.parse(fs.readFileSync(REGFILE, 'utf8'))).some((v) => path.resolve(v.root) === path.resolve(PC)), fs.readFileSync(REGFILE, 'utf8'));
+
+  let t2 = routed('show me all my brains');
+  check('"all my brains" routes to brain:home', t2.ctx.includes('brain:home'), t2.ctx);
+  t2 = routed('give me a dashboard across all my projects');
+  check('"dashboard across all my projects" routes to brain:home', t2.ctx.includes('brain:home'), t2.ctx);
+  t2 = routed('show me the dashboard');
+  check('"show me the dashboard" (no "all") still routes to the per-project brain:dashboard', t2.ctx.includes('brain:dashboard') && !t2.ctx.includes('brain:home'), t2.ctx);
+
+  for (const p of [PA, PB, PC]) fs.rmSync(p, { recursive: true, force: true });
+  fs.rmSync(REGCFG, { recursive: true, force: true });
+
   // ---------- skill routing frontmatter (P5.5) ----------
   console.log('skill routing frontmatter (P5.5 model/effort policy)');
   const MODELS = new Set(['haiku', 'sonnet', 'opus']);
   const EFFORTS = new Set(['low', 'medium', 'high']);
   const routing = {
+    home: { model: 'haiku', effort: 'low' },
     build: { model: 'sonnet', effort: 'medium' },
     ingest: { model: 'sonnet', effort: 'medium' },
     research: { model: 'sonnet', effort: 'medium' },
@@ -1178,6 +1249,7 @@ try {
   check('.no-brain + .no-terse → fully silent', r.status === 0 && r.stdout === '');
 } finally {
   fs.rmSync(ROOT, { recursive: true, force: true });
+  fs.rmSync(GLOBAL_CFG, { recursive: true, force: true });
   try {
     for (const f of fs.readdirSync(os.tmpdir())) {
       if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`)) {

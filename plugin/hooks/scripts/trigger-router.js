@@ -84,6 +84,12 @@ const RULES = [
     what: 'note capture',
   },
   {
+    re: /\b(all|every) (my |our )?brains?\b|\bmonkey[- ]?brain home\b|\bbrain home\b|\bdashboard (for|of|across) (all|every) (my |our )?projects?\b|\bglobal (brain|monkey brain) dashboard\b/i,
+    skill: 'home',
+    needsBrain: false,
+    what: 'cross-project dashboard',
+  },
+  {
     re: /\b(brain|vault|project) dashboard\b|\bdashboard (of|for) (the |my |this )?(brain|vault|project)\b|^\s*(open |show )?(me )?(the )?dashboard\s*[.!?]?\s*$|\bshow (me )?the dashboard\b/i,
     skill: 'dashboard',
     needsBrain: true,

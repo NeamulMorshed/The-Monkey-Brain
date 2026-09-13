@@ -57,7 +57,7 @@ plugin/
 
 | # | Event | Script | Does |
 | --- | --- | --- | --- |
-| 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, **health report**, semantic-search state, **team lock**, running loops, review-required specs); **terse-mode rules, on by default** in every project (`.no-terse` / `MONKEY_BRAIN_TERSE=0` opt out); `/brain:init` offer in brainless projects; writes an **injection-size receipt** to `sessions/injection-stats.json` |
+| 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, **health report**, semantic-search state, **team lock**, running loops, review-required specs); **terse-mode rules, on by default** in every project (`.no-terse` / `MONKEY_BRAIN_TERSE=0` opt out); `/brain:init` offer in brainless projects; **registers/refreshes the project in the cross-machine registry** (`registry.js`) that `/brain:home` reads; writes an **injection-size receipt** to `sessions/injection-stats.json` |
 | 2 | UserPromptSubmit | `trigger-router` + `recall` | natural phrases → `/brain:*` routing hints (never blocks); **first-prompt recall** — the session's first prompt is searched against the brain and the top 3 matching pages are injected (`MONKEY_BRAIN_RECALL=0` off) |
 | 3 | PreToolUse Write\|Edit | `guards` | secrets everywhere · raw-sources add-only · log append-only · plan gate (architecture tier) · TDD gate (feature+ tiers, new code files need a test); a spec the plan gate blocks twice is escalated to `sessions/review-required.md` and surfaced next session; a write matching an `enforce: block` **learned ban** is refused; writes inside a teammate's active **lock** are refused; an uncleared **case study** can't be marked publishable or leave `private/` |
 | 4 | PostToolUse Write\|Edit | `wiki-check` + `instinct-track` | self-healing wiki (frontmatter/orphan block, TODO advisory); **instinct advisory** when a file is revised across 3+ sessions; `warn`-level **learned bans** (active instincts' `ban:` patterns and declared packs' `bans.json`) reported right after the write |
@@ -90,7 +90,9 @@ back, feeding `decisions/` and `instincts/`) · `/brain:loop` (bounded build, re
 and design loops that stop on the brain's own criteria). **Daily drivers:**
 `/brain:digest` (standup · weekly review, filed to `sessions/`) · `/brain:dump` (classify
 and file a loose note) · `/brain:dashboard` (one-page offline HTML) · `/brain:ci` (GitHub
-Actions from the detected stack) · `/brain:lock` (a committed, expiring team lock) · `/brain:learn` (SM-2 spaced repetition) ·
+Actions from the detected stack) · `/brain:home` (one dashboard across every registered project
+on the machine, with combined token usage — `hooks/scripts/registry.js` + `home.js`) ·
+`/brain:lock` (a committed, expiring team lock) · `/brain:learn` (SM-2 spaced repetition) ·
 `/brain:career` (private case studies, CV, skill matrix, mock interviews); idea validation, URL critiques and meeting prep are modes of
 research, product-design and brief. **Token discipline:**
 `/brain:terse` (output compression — on by default via hook #1; the skill

@@ -25,6 +25,8 @@
 
 const fs = require('fs');
 const path = require('path');
+let registry;
+try { registry = require(path.join(__dirname, '..', '..', '..', 'hooks', 'scripts', 'registry.js')); } catch { registry = { register: () => {} }; }
 
 function parseArgs(argv) {
   const a = { project: null, name: null, update: false, force: false, sync: false };
@@ -150,6 +152,7 @@ function main() {
       expandPlaceholders(resumeDst, name, date);
       console.log('Added resume.md (new in schema).');
     }
+    registry.register(project, name);
     console.log(`Refreshed schema in ${brain} for '${name}' (knowledge left untouched).`);
     return;
   }
@@ -161,6 +164,7 @@ function main() {
 
   fs.cpSync(template, brain, { recursive: true });
   for (const f of mdFilesUnder(brain)) expandPlaceholders(f, name, date);
+  registry.register(project, name);
 
   const pages = mdFilesUnder(path.join(brain, 'wiki')).length;
   console.log(`Created .brain for '${name}' (${pages} seed pages) at ${brain}`);

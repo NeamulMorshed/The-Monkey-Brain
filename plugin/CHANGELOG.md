@@ -1,5 +1,30 @@
 # Changelog — brain plugin
 
+## 0.23.0 — 2026-09-13 (Monkey Brain Home: a per-user dashboard)
+
+`/brain:dashboard` shows one project. Nothing showed all of them — until now.
+
+- **`hooks/scripts/registry.js`** — a lightweight cross-project registry at
+  `~/.claude/monkey-brain/projects.json` (or under `CLAUDE_CONFIG_DIR`), keyed by each project's
+  resolved path (case-folded on Windows). `/brain:init` (`new-brain.js`, both create and
+  `--update` paths) registers a project the moment it scaffolds or refreshes a brain; hook #1
+  `brain-status` also touches the registry on every session start, so a brain that predates this
+  feature — or was never re-inited — still shows up the next time someone opens it. Listing
+  self-prunes any entry whose `.brain/` is gone.
+- **`/brain:home`** + `hooks/scripts/home.js` — one self-contained, offline HTML page
+  (`~/.claude/monkey-brain/home.html`) aggregating every registered project still on disk: a
+  health-status pill from its last doctor run, open-spec and running-loop counts, and real token
+  usage + cache-hit ratio (same source as `/brain:usage`) — per project and combined. A "needs
+  attention" section rolls up anything critical or awaiting curator review across every project
+  at a glance. All project text is HTML-escaped.
+- Router: "show all my brains", "dashboard across all my projects", "monkey brain home" — with a
+  guard so a plain "show me the dashboard" still means the current project's own
+  `/brain:dashboard`.
+- Selftest isolated from the real `~/.claude` for the whole run (`CLAUDE_CONFIG_DIR` pointed at a
+  throwaway temp dir globally) — without that, every scratch brain the suite scaffolds would have
+  registered itself in the real user's registry. Verified end to end against this repo, too:
+  scaffold → register → generate → self-prune on delete, all for real. Selftest 304 → 319.
+
 ## 0.22.0 — 2026-09-13 (v3 P17: life packs — v3 complete)
 
 Two optional packs for the work around the work.

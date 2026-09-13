@@ -707,4 +707,17 @@ checks and a changelog entry.
 **Status (2026-09-13): all eight phases shipped** on branch `v3-plugin-upgrade` — v0.15.0 →
 v0.22.0, selftest 168 → 304. Two real bugs surfaced and were fixed on the way: Claude Code's
 lowercase-drive transcript folder on Windows (P11), and YAML inline comments hiding spec tiers
-from the gates (P15).
+from the gates (P15). Merged to `main` 2026-09-13.
+
+## Post-v3 — Monkey Brain Home (v0.23.0)
+
+The curator asked for a dashboard scoped to *them*, not to one project: every `.brain/` on their
+machine, its status, and combined token usage. `/brain:dashboard` (P14) only ever showed one
+project. Added `hooks/scripts/registry.js` (a cross-machine `~/.claude/monkey-brain/
+projects.json`, self-registering via `/brain:init` and hook #1 `brain-status`, self-pruning
+deleted projects) and `/brain:home` + `home.js` (the aggregate page: health, open specs, running
+loops, and real token usage per project and combined, a "needs attention" rollup). Selftest
+required a real fix first: the whole run had to isolate `CLAUDE_CONFIG_DIR` globally, or every
+scratch brain the suite scaffolds would have registered itself in the real user's registry.
+Verified end to end for real on this machine (scaffold → register → generate → self-prune),
+then the demo entry was removed. Selftest 304 → 319.

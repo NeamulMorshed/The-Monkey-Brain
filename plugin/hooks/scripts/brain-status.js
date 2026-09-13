@@ -28,6 +28,7 @@ const lib = require(path.join(__dirname, 'lib.js'));
 const loopLib = require(path.join(__dirname, 'loop.js'));
 const bansLib = require(path.join(__dirname, 'bans.js'));
 const lockLib = require(path.join(__dirname, 'lock.js'));
+const registry = require(path.join(__dirname, 'registry.js'));
 
 const BUDGET = Number(process.env.MONKEY_BRAIN_BUDGET || 3000);
 const TERSE_SKILL = path.join(__dirname, '..', '..', 'skills', 'terse', 'SKILL.md');
@@ -75,6 +76,8 @@ async function main() {
     }
     return;
   }
+
+  registry.touch(path.dirname(brain)); // best-effort: registers pre-existing brains lazily too
 
   const rel = (path.relative(input.cwd || process.cwd(), brain) || '.brain').split(path.sep).join('/');
   // [priority, text] — priority 0 is never dropped; 2 drops first.
