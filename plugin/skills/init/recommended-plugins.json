@@ -60,7 +60,7 @@
       "source": "official",
       "homepage": "https://claude.com/plugins/security-guidance",
       "fires_on": "auth / crypto / input-handling code",
-      "brain_integration": "Findings are filed as wiki pages; open P0 findings gate /brain:wrap exactly like a MewVault-style audit gate.",
+      "brain_integration": "Findings are filed as wiki pages; open P0 findings gate /brain:wrap exactly like a hard security-audit gate.",
       "records": [
         { "what": "security findings", "to": "wiki/syntheses/" },
         { "what": "P0 gate (blocks wrap until resolved)", "to": "projects/" }

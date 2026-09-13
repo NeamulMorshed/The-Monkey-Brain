@@ -6,7 +6,7 @@ tags: [expertise-packs, skills, knowledge, pattern, design]
 created: 2026-07-17
 updated: 2026-07-17
 sources: ["[[ui-ux-pro-max-readme]]"]
-related: ["[[skills]]", "[[plugins]]", "[[search-tooling]]", "[[ui-ux-pro-max]]", "[[monkey-brain-vs-mewvault]]", "[[llm-wiki-pattern]]"]
+related: ["[[skills]]", "[[plugins]]", "[[search-tooling]]", "[[ui-ux-pro-max]]", "[[llm-wiki-pattern]]"]
 aliases: ["expertise pack", "expertise packs", "domain pack"]
 ---
 
@@ -40,7 +40,7 @@ use. The Monkey Brain v2 pack format (engine `ROADMAP.md` Phase 6.5) keeps this 
 adds **compounding**: every recommendation files back into the project instance — design
 choices become ADRs in `decisions/`, banned anti-patterns become active instinct rules that
 [[hooks]] enforce, findings become wiki pages. *Their expertise is output; a brain's
-expertise is memory.* See [[monkey-brain-vs-mewvault]].
+expertise is memory.*
 
 ## Planned packs (Phase 6.5)
 

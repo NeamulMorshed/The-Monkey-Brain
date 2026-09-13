@@ -7,7 +7,7 @@ created: 2026-07-17
 updated: 2026-07-17
 raw: "../../raw-sources/Caveman README.md"
 origin: "https://github.com/JuliusBrussee/caveman"
-related: ["[[caveman]]", "[[skills]]", "[[claude-md]]", "[[context-window]]", "[[monkey-brain-vs-mewvault]]"]
+related: ["[[caveman]]", "[[skills]]", "[[claude-md]]", "[[context-window]]"]
 aliases: ["caveman readme"]
 ---
 
@@ -19,7 +19,7 @@ aliases: ["caveman readme"]
 A [[skills|skill]]/[[plugins|plugin]] for Claude Code and 30+ other agents that compresses the
 agent's **output style** — "same answers, 65% fewer output tokens" — while keeping code,
 commands, and errors **byte-for-byte exact**. Ingested as the **token-economy benchmark** for
-the Monkey Brain v2 roadmap (see [[monkey-brain-vs-mewvault]]).
+the Monkey Brain v2 roadmap.
 
 ## Key takeaways
 - **Shrinks the mouth, not the brain.** Compresses what the agent *says*, never what it knows.

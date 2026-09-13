@@ -20,7 +20,7 @@ Two optional packs for the work around the work.
 - Router: "practice <language> flashcards", "spaced repetition", "case study", "mock interview",
   "update my CV" — with a guard so "best practice" stays out of the learn pack.
 - Selftest 286 → **304 checks**. **v3 is complete:** P10–P17 close all seven gaps from the
-  MewVault re-benchmark.
+  competitive re-benchmark.
 
 ## 0.21.0 — 2026-09-13 (v3 P16: team mode)
 
@@ -164,7 +164,7 @@ Token accounting from Claude Code's own transcripts instead of estimates.
 
 ## 0.15.0 — 2026-09-13 (v3 P10: always-on recall)
 
-MewVault's always-on memory, without its database, embedding server, or install steps.
+Always-on recall like a competitor's, without its database, embedding server, or install steps.
 
 - **Built-in recall** (`hooks/scripts/search.js`) — pure-Node BM25 over the compiled layers
   (`wiki/`, `decisions/`, `specs/`, `projects/`, `memory/`; never `raw-sources/` or the
@@ -236,7 +236,7 @@ Dogfooding the engine on a fresh brain (scaffold → lint-clean + doctor-clean;
 
 ## 0.12.0 — 2026-07-18 (Phase 8: /brain:doctor health monitor)
 
-Fifteen deterministic health checks (MewVault parity), with receipts, and a
+Fifteen deterministic health checks (benchmark parity), with receipts, and a
 report that the next session's status block surfaces on its own.
 
 - **`/brain:doctor`** (`skills/doctor/` + `scripts/doctor.js`) — the mechanical

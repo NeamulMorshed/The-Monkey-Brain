@@ -4,7 +4,7 @@
  *
  * Detects the project's .brain/ and injects a BUDGETED status block so every
  * session starts brain-aware (kills the CLAUDE.md loading caveat). Design
- * rules (ROADMAP Phase 2 #1 + the MewVault cache postmortem):
+ * rules (ROADMAP Phase 2 #1 + a prompt-cache postmortem from a competitor's field notes):
  *   - hard token budget (default 3000, MONKEY_BRAIN_BUDGET to change);
  *   - over budget, whole low-priority sections drop — the identity/manual
  *     and index lines are never dropped;

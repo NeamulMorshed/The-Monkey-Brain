@@ -395,8 +395,8 @@ mature brain looks like — start at its [`wiki/index.md`](examples/claude-code-
 Built on the [LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
 by Andrej Karpathy (lineage: Vannevar Bush's 1945 *Memex*). Its enforcement, token-discipline, and
 domain-pack designs were sharpened against three studied projects:
-[Caveman](https://github.com/juliusbrussee/caveman) (token economy),
-[MewVault](https://github.com/mewking2099/MewVault) (enforcement over advice), and
+[Caveman](https://github.com/juliusbrussee/caveman) (token economy), an enforcement-focused
+Claude Code workspace design (hard hook gates over advisory rules), and
 [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (domain-expertise packs).
 
 See [`plugin/README.md`](plugin/README.md) for plugin internals and [`ROADMAP.md`](ROADMAP.md) for

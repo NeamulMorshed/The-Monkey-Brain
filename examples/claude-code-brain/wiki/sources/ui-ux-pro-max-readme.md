@@ -65,7 +65,7 @@ Monkey Brain pre-compiled for one domain (see [[domain-expertise-packs]]).
 > recommendations don't learn from use. The Monkey Brain v2 pack format keeps the
 > data+search+checklist architecture but **files every recommendation back** into the
 > instance (design decisions → ADRs, anti-patterns → instincts), so packs compound. See
-> [[domain-expertise-packs]] and [[monkey-brain-vs-mewvault]].
+> [[domain-expertise-packs]].
 
 ## Pages updated on ingest
 - [[index]], [[ui-ux-pro-max]], [[skills]], [[frontend-design]], [[search-tooling]], [[plugins]], [[entities]]

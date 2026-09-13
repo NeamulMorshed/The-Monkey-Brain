@@ -2,7 +2,7 @@
 /**
  * doctor.js — the mechanical layer of /brain:doctor (ROADMAP Phase 8).
  *
- * 19 deterministic health checks over a brain (MewVault-parity + v3 receipts and CI), zero model
+ * 19 deterministic health checks over a brain (benchmark-parity + v3 receipts and CI), zero model
  * tokens. The SKILL.md injects this output via !` ` preprocessing; the model
  * then reasons over the findings (what to fix first, what to file). It also
  * writes sessions/health.json so hook #1 (brain-status) can surface open

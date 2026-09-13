@@ -18,7 +18,7 @@ in any project or product — development, products, and games.
 - [Caveman](https://github.com/juliusbrussee/caveman) — token discipline: ~65% output
   compression, `/caveman-compress` cuts memory-file input tokens ~46% *permanently*,
   cache-aware design, stats receipts.
-- [MewVault](https://github.com/mewking2099/MewVault) — the quality bar: *enforcement over
+- An enforcement-focused Claude Code workspace design — the quality bar: *enforcement over
   advice*. 7 lifecycle hooks, hard quality gates (plan-before-code, TDD, secrets,
   immutability), spec-driven workflow, project tiers, semantic memory (SQLite-vec MCP),
   instinct system, 15-check doctor, 3k-token budgeted session injection.
@@ -31,7 +31,7 @@ in any project or product — development, products, and games.
 - Our own wiki: `claude-md-vs-skills-vs-hooks`, `hooks`, `skill-authoring`, `plugins`,
   `mcp-tool-search`, `search-tooling` (qmd upgrade path), `schema/CLAUDE.md` §8.
 
-**North star:** MewVault enforces quality; Caveman enforces economy; the LLM wiki compounds
+**North star:** hard hook gates enforce quality; Caveman enforces economy; the LLM wiki compounds
 knowledge. Monkey Brain v2 does all three in one plugin, portable to any project.
 
 ---
@@ -40,7 +40,7 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| **P9.2** Research ingests: Caveman, MewVault, ui-ux-pro-max → example brain; filed `monkey-brain-vs-mewvault` synthesis + `domain-expertise-packs` concept | ✅ 2026-07-17 | 4 commits (`ingest:` ×3, `query:` ×1); vault 16 sources / 69 pages |
+| **P9.2** Research ingests: Caveman, an enforcement-focused workspace benchmark, ui-ux-pro-max → example brain; filed a benchmark-comparison synthesis + `domain-expertise-packs` concept (the benchmark source + comparison synthesis were later removed from the example brain; now 15 sources / 66 pages) | ✅ 2026-07-17 | 4 commits (`ingest:` ×3, `query:` ×1); vault 16 sources / 69 pages at the time |
 | **P1** Plugin skeleton: `plugin/` (plugin.json, hooks.json, skills/, agents/, .mcp.json), root `marketplace.json`, Node hook runtime | ✅ 2026-07-17 | plugin named **`brain`** (→ `/brain:*` commands), displayName "The Monkey Brain", marketplace **`monkey-brain`** → install `brain@monkey-brain`; both manifests pass `claude plugin validate --strict`; MIT licensed; Node.js 24.18.0 LTS installed 2026-07-17 |
 | **P2** Hooks — #1 brain-status, #3 guards, #4 wiki-check, #8 resume; then #2 trigger-router, #6 wrap, #5 snapshot, #7 agent-track | ✅ 2026-07-17 | **Complete, 8/8.** #1/#3/#4/#8 v0.3.0; #2/#5/#6/#7 v0.4.0 — trigger routing (phrases → skills), pre-compact snapshots → `sessions/`, once-per-session unlogged-work stop gate + SessionEnd index-stat self-heal, agent dispatch log + explicit-model gate. #1 grew the no-brain `/brain:init` offer (`.no-brain` silences). Selftest **79/79 GREEN** |
 | **P3** Skills — init/ingest/query/lint/wrap → research/plan/build/review → terse/compress | ✅ 2026-07-17 | **Complete, 11 skills.** Core 5 (v0.4.0): `/brain:{init,ingest,query,lint,wrap}` — `init` self-contained (bundled template + Node `new-brain.js`; `--sync-template` guard), `lint` injects `scripts/lint.js` via `` !`…` ``. Develop lifecycle (v0.6.0): `/brain:{research,plan,build,review}` — research filed with sources; specs with AC-n + tier, **approval curator-owned**; build test-first with the gates; review files back (synthesis + ADRs + `instincts/pending/` — Gap #9 loop live). Token discipline (v0.6.0): `/brain:terse` (compression guard), `/brain:compress` (permanent, with receipts). Router phrases for all. Selftest **95/95 GREEN** |
@@ -71,16 +71,16 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   `brain-all` (`cb0cc3e`). The curator chose "core + opt-in bundle" over bundling all ~295
   official plugins into brain — context cost, dependency lock-in (a dependency can't be disabled
   while brain is enabled), and the output styles contradicting terse.
-- **Re-benchmarked MewVault** (`main` @ 2026-09-11, 13 commits since our July study): it added a
+- **Re-benchmarked a competitor vault** (13 commits since our July study): it added a
   project lock + master spec, always-on vector memory, graph-loop engineering (blast-radius
   routing, loop primitives, dispatch ledger), and collaboration rules. Scorecard: we lead 5 ·
-  even 2 · MewVault leads 7. Filed the plan as **"v3 — Outgrowing MewVault"** (P10–P17, end of
+  even 2 · the competitor leads 7. Filed the plan as **"v3 — Closing the Gap"** (P10–P17, end of
   this file), also published as an artifact for the curator. Work continues on branch
-  `v3-outgrow-mewvault`, one phase per commit.
+  `v3-plugin-upgrade`, one phase per commit.
 - **P10 always-on recall (v0.15.0):** pure-Node BM25 (`search.js`) served by the existing
   `brain-search` MCP as `brain_search` / `brain_brief`, plus `/brain:brief` and a first-prompt
   recall hook. Deliberately *no* index file: it re-reads the compiled layers per call (~100 ms
-  on the 69-page example brain), so it can't go stale — simpler than MewVault's SQLite +
+  on the 69-page example brain), so it can't go stale — simpler than the competitor's SQLite +
   Ollama + ChromaDB stack, and zero install. The smoke test on the example brain caught
   heading/table-separator noise in snippets; fixed before commit. Selftest 168 → 184.
 - **P11 real receipts (v0.16.0):** `usage.js` totals tokens from Claude Code's own transcripts
@@ -97,7 +97,7 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   Smoke-tested on a scratch brain first; the selftest's first run crashed on a redeclared
   variable, fixed. Selftest 197 → 218.
 - **P13 blast-radius routing (v0.18.0):** `graph.js` scans JS/TS, Python, Go and C# imports with
-  no dependencies (MewVault needs graphify + ChromaDB), caches by mtime, and turns a change's
+  no dependencies (the competitor needs graphify + ChromaDB), caches by mtime, and turns a change's
   radius into a tier + model that `/brain:plan` records. Routing and enforcement now read one
   signal: a wide radius means architecture, which arms the plan gate. The first smoke run on
   this repo found 0 imports (the `require(path.join(__dirname, …))` idiom) — fixed and tested.
@@ -109,7 +109,7 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   router got a guard so "build an analytics dashboard" stays app work. Selftest 230 → 253.
 - **P15 learned bans (v0.20.0):** corrections → rules → enforcement: an active instinct's `ban:`
   pattern is flagged after a write (`warn`) or refused before it (`block`), and packs ship their
-  anti-patterns as data (`bans.json`) instead of a hard-coded detector like MewVault's. Designing
+  anti-patterns as data (`bans.json`) instead of a hard-coded detector like the competitor's. Designing
   it exposed a real engine bug: YAML inline comments hid spec tiers from the gates, so specs that
   kept the template's comments were never gated. Fixed in `lib.parseFrontmatter`, with
   regression tests. Selftest 253 → 267.
@@ -120,7 +120,7 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 - **P17 life packs (v0.22.0) — v3 complete:** `/brain:learn` (SM-2; only due cards enter context)
   and `/brain:career` (private case studies, CV, skill matrix, mock interviews; guards keep
   uncleared case studies private and unpublishable). All eight phases shipped on
-  `v3-outgrow-mewvault` as v0.15.0 → v0.22.0, one commit each; selftest 168 → 304.
+  `v3-plugin-upgrade` as v0.15.0 → v0.22.0, one commit each; selftest 168 → 304.
 
 **[2026-07-18] Session 4 — Phases 6 + 6.5 + 7 + 8 + 9 (v0.9.0 → v0.12.0)**
 
@@ -143,7 +143,7 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   validate `--strict`. Branch `monkey-brain-enhancement` ready for the PR to `main`.
 
 *Phase 8 — `/brain:doctor` health monitor (v0.12.0):*
-- **`doctor.js`** runs **15 deterministic checks** (MewVault parity), zero model tokens,
+- **`doctor.js`** runs **15 deterministic checks** (competitor-benchmark parity), zero model tokens,
   injected into the skill via `` !`…` `` like `lint.js`: broken links · orphans ·
   stale/contradiction flags · index freshness · Clippings backlog · log gaps (session activity
   newer than the log) · uncommitted `.brain/` · hook registration · injection size vs budget
@@ -190,7 +190,7 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 - **The validation gate:** new `pack:` field on the project-status template (master + bundle,
   re-synced); `/brain:wrap` step 1 opens the active pack's `checklist.md` and **blocks "done"
   on open P0s** (Nielsen catastrophes, Level-A a11y failures on core tasks, structural design
-  decisions with no ADR) — the MewVault-style audit gate, generalized. Router routes
+  decisions with no ADR) — a hard security-audit-style gate, generalized. Router routes
   "design a product / create personas / user journey / how-might-we / usability test /
   accessibility audit" → the pack.
 - Docs: `skills/README.md` + `plugin/README.md` gain a Domain-expertise-packs section;
@@ -292,9 +292,11 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   end-to-end (`lint.js --strict` exit 0).
 
 **[2026-07-17] Session 1 — research → plugin → enforcement (9 commits)**
-- **P9.2** Ingested the 3 benchmarks into `examples/claude-code-brain/` (now 16 sources /
-  69 pages, lint-clean): Caveman `2095b5c` · MewVault `39361de` · ui-ux-pro-max `559830d`;
-  filed `monkey-brain-vs-mewvault` + `domain-expertise-packs` `b224e18`; tracker `63839f0`.
+- **P9.2** Ingested the 3 benchmarks into `examples/claude-code-brain/` (16 sources /
+  69 pages at the time, lint-clean): Caveman `2095b5c` · an enforcement-focused workspace
+  benchmark `39361de` · ui-ux-pro-max `559830d`; filed a benchmark-comparison synthesis +
+  `domain-expertise-packs` `b224e18`; tracker `63839f0`. (The benchmark source and its
+  comparison synthesis were later removed from the example brain — now 15 sources / 66 pages.)
 - **P1** Plugin skeleton `47b0259`: plugin **`brain`** (displayName "The Monkey Brain") at
   `plugin/`; repo doubles as marketplace **`monkey-brain`** (`.claude-plugin/marketplace.json`)
   → install `brain@monkey-brain`, commands `/brain:*`. MIT license `f2e2835`.
@@ -342,7 +344,7 @@ is opening the PR** `monkey-brain-enhancement` → `main` (branch committed + gr
    `log.md` / `sessions/` automatically via hooks — not by hoping the model remembers.
 5. **The plugin is the engine's distribution.** Install once (user scope) → every project
    gets the brain automatically; `.brain/` instances stay isolated per project.
-6. **Differentiate, don't imitate.** MewVault is the competitor benchmark, not the blueprint.
+6. **Differentiate, don't imitate.** The studied competitor is a benchmark, not the blueprint.
    Where they have one managed workspace, we have **federated instances + upstream
    promotion** (learnings flow back to the engine). Where they name a model, we ship a
    **routing policy**. Where they sync a wiki, we **compile** one.
@@ -424,7 +426,7 @@ The three goals reinforce rather than compete, if the mechanisms are assigned co
    plugin/
    ├── .claude-plugin/plugin.json      # name: brain (→ /brain:* namespace); displayName "The Monkey Brain"
    ├── skills/                         # Phase 3
-   ├── hooks/hooks.json + scripts/     # Phase 2 (Node.js for cross-platform, like MewVault)
+   ├── hooks/hooks.json + scripts/     # Phase 2 (Node.js for cross-platform)
    ├── agents/                         # brain-librarian, brain-researcher
    └── .mcp.json                       # qmd semantic search (Phase 5)
    ```
@@ -434,7 +436,7 @@ The three goals reinforce rather than compete, if the mechanisms are assigned co
 4. Write hook scripts in **Node.js** (single runtime on Win/mac/Linux) instead of paired
    .ps1/.sh; keep `lint-brain.ps1` as a thin wrapper for humans.
 
-## Phase 2 — Hooks: the enforcement layer (match & beat MewVault's 7)
+## Phase 2 — Hooks: the enforcement layer (match & beat the competitor's 7)
 
 | # | Event | Script | What it enforces / injects |
 | --- | --- | --- | --- |
@@ -511,7 +513,7 @@ New instance layout (additions ★):
 
 ## Phase 5.5 — Model routing & parallel orchestration
 
-MewVault merely *requires* that agent dispatches name a model. We go further: a **routing
+The studied competitor merely *requires* that agent dispatches name a model. We go further: a **routing
 policy** that picks the right model by default, plus parallel multi-model patterns.
 
 **Mechanisms** (all native Claude Code): skill frontmatter `model:` + `effort:`; subagent
@@ -552,7 +554,7 @@ auto-activate by their own skill descriptions; our trigger-router nudges them):
 | [github](https://claude.com/plugins/github) | PR/issue/CI work | reviews & PR links filed to wiki; wrap posts status |
 | [frontend-design](https://claude.com/plugins/frontend-design) | any UI build | design decisions → `decisions/`; audit scores in Project_Status |
 | [superpowers](https://claude.com/plugins/superpowers) | build/debug phases | TDD methodology behind `/brain:build` |
-| [security-guidance](https://claude.com/plugins/security-guidance) | auth/crypto/input-handling code | findings filed as wiki pages; P0s block wrap (MewVault-style audit gate) |
+| [security-guidance](https://claude.com/plugins/security-guidance) | auth/crypto/input-handling code | findings filed as wiki pages; P0s block wrap (a hard security-audit gate) |
 | [product-tracking-skills](https://claude.com/plugins/product-tracking-skills) | product/metrics work | tracking plans live in `projects/` |
 | [code-modernization](https://claude.com/plugins/code-modernization) | legacy refactors | migration notes → `wiki/research/` |
 | [productivity](https://claude.com/plugins/productivity) | standup/planning triggers | feeds the "standup" brief |
@@ -611,7 +613,7 @@ anti-pattern becomes an active instinct rule the hooks enforce.
 
 ## Phase 8 — Quality & health: `/brain:doctor`
 
-Automated checks (target 15, MewVault parity):
+Automated checks (target 15, competitor-benchmark parity):
 broken links · orphans · stale/contradiction flags · index freshness vs page count ·
 Clippings backlog · log gaps (sessions without entries) · uncommitted `.brain/` changes ·
 hook registration · injection size vs budget · semantic index freshness · WIP limits
@@ -622,9 +624,9 @@ Failures inject a health report into the next session (hook #1 carries it).
 ## Phase 9 — Rollout (dogfood everything)
 
 1. Work on `monkey-brain-enhancement`; **commit per phase step** with conventions.
-2. **Ingest Caveman + MewVault as sources** into `examples/claude-code-brain/` — the
-   competitor analysis becomes wiki knowledge (research → synthesis page:
-   `monkey-brain-vs-mewvault`).
+2. **Ingest Caveman + an enforcement-focused workspace benchmark as sources** into
+   `examples/claude-code-brain/` — the competitor analysis becomes wiki knowledge (research →
+   a benchmark-comparison synthesis page).
 3. Build Phase 1–2 first (plugin skeleton + hooks 1, 3, 4 = biggest payoff), then 3, 4, 5;
    6–8 iterate after.
 4. Test on a scratch project: `/brain:init` → ingest → plan → build a toy feature → wrap;
@@ -651,11 +653,11 @@ Failures inject a health report into the next session (hook #1 carries it).
 | 11 | No token accounting — savings and injection costs are invisible | Med | Doctor receipts (P5/P8) |
 | 12 | PowerShell-only scripts — brains don't port to mac/Linux teammates | Med | Node.js hook runtime (P1) |
 | 13 | Lint is manual and on-demand; staleness accumulates silently | Low | Doctor checks + health report injection (P8) |
-| 14 | Isolation is total — patterns learned in one project never benefit others | Low | **Upstream promotion**: project-agnostic instincts & pack improvements flow to the engine repo, redistributed via `-Update`. Federated learning, still zero knowledge bleed — something MewVault's single workspace cannot do. |
+| 14 | Isolation is total — patterns learned in one project never benefit others | Low | **Upstream promotion**: project-agnostic instincts & pack improvements flow to the engine repo, redistributed via `-Update`. Federated learning, still zero knowledge bleed — something a single fixed workspace cannot do. |
 
-## How we beat MewVault (the scorecard)
+## How we beat the competitor (the scorecard)
 
-| Dimension | MewVault | Monkey Brain v2 |
+| Dimension | The competitor | Monkey Brain v2 |
 | --- | --- | --- |
 | Portability | Fixed workspace of silos | **Plugin — any repo, any machine, `.brain/` travels with the project's git** |
 | Knowledge | Wiki synced at session end | **Full LLM-wiki SDLC: compile-time cross-linking, contradiction flags, provenance frontmatter** |
@@ -669,18 +671,18 @@ Failures inject a health report into the next session (hook #1 carries it).
 
 ---
 
-## v3 — Outgrowing MewVault (P10–P17)
+## v3 — Closing the Gap (P10–P17)
 
-Re-benchmarked 2026-09-13 against MewVault `main` @ 2026-09-11. Since our July study
-(`39361de`) it shipped: a project lock + single master spec (07-22) · always-on memory —
+Re-benchmarked 2026-09-13 against a competitor vault, as it stood on 2026-09-11. Since our July
+study it shipped: a project lock + single master spec (07-22) · always-on memory —
 sqlite-vec + Ollama + a code graph across silos (08-19) · removal of its prompt-compressing
 proxy (08-24) · graph-loop engineering — blast-radius routing, a ChromaDB index, loop
 primitives, a dispatch ledger (08-29) · collaboration rules (09-11).
 
 **Scorecard now:** we lead on install/portability, the compiled wiki, token economy, capability
-breadth, and distribution (MIT) · even on enforcement gates and the doctor · **MewVault leads on
-memory recall, receipts, agent loops, model routing, daily workflows, collaboration, and life
-domains.** v3 closes those seven, one phase each, in build order:
+breadth, and distribution (MIT) · even on enforcement gates and the doctor · **the competitor
+leads on memory recall, receipts, agent loops, model routing, daily workflows, collaboration,
+and life domains.** v3 closes those seven, one phase each, in build order:
 
 | Phase | Closes | Adopt | How we do it better | Done when |
 | --- | --- | --- | --- | --- |
@@ -695,14 +697,14 @@ domains.** v3 closes those seven, one phase each, in build order:
 
 **Not copied:** the fixed silo workspace (breaks per-repo portability) · the
 Python/Ollama/ChromaDB/LiteLLM stack (their install is 8 steps; ours stays 2 commands, Node only)
-· third-party model proxies (data leaves the machine; cache risk — MewVault removed its own) ·
+· third-party model proxies (data leaves the machine; cache risk — the competitor removed its own) ·
 macOS-only notifications · **their code** — the repo has no license, so ideas only.
 
 **Held every phase:** 2-command install · Node the only runtime · Windows/macOS/Linux · session
 injection ≤ 3k tokens with recall included · each phase ships as a minor version with selftest
 checks and a changelog entry.
 
-**Status (2026-09-13): all eight phases shipped** on branch `v3-outgrow-mewvault` — v0.15.0 →
+**Status (2026-09-13): all eight phases shipped** on branch `v3-plugin-upgrade` — v0.15.0 →
 v0.22.0, selftest 168 → 304. Two real bugs surfaced and were fixed on the way: Claude Code's
 lowercase-drive transcript folder on Windows (P11), and YAML inline comments hiding spec tiers
 from the gates (P15).

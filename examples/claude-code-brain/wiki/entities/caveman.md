@@ -6,7 +6,7 @@ tags: [claude-code, plugin, skill, token-discipline, compression, receipts]
 created: 2026-07-17
 updated: 2026-07-17
 sources: ["[[caveman-readme]]"]
-related: ["[[plugins]]", "[[skills]]", "[[claude-md]]", "[[context-window]]", "[[mewvault]]", "[[monkey-brain-vs-mewvault]]"]
+related: ["[[plugins]]", "[[skills]]", "[[claude-md]]", "[[context-window]]"]
 aliases: ["caveman skill", "caveman plugin"]
 ---
 
@@ -37,9 +37,8 @@ tokens/turn, so net savings can dip negative on already-terse work. The document
 **readability and speed** — cost savings are the bonus.
 
 ## How it fits The Monkey Brain
-The **token-economy benchmark** of the v2 competitive triangle ([[mewvault]] = enforcement,
-Caveman = economy, the [[llm-wiki-pattern]] = compounding knowledge — see
-[[monkey-brain-vs-mewvault]]). The v2 roadmap adopts its mechanisms: `/brain:compress` on
+The **token-economy benchmark** of the v2 research cluster, alongside the
+[[llm-wiki-pattern]]'s compounding-knowledge angle. The v2 roadmap adopts its mechanisms: `/brain:compress` on
 memory/CLAUDE.md files, `/brain:terse` output mode, doctor-reported savings receipts, and its
 **compression guard** — terseness applies to prose, never to code, commands, errors, specs, or
 acceptance criteria.
