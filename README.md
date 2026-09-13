@@ -27,6 +27,9 @@ synthesis already exist *before* you ask. Knowledge accumulates instead of being
 - [How it works](#how-it-works)
 - [Architecture](#architecture)
 - [Structure](#structure)
+- [All skills](#all-skills)
+- [All hooks](#all-hooks)
+- [Capability plugins](#capability-plugins)
 - [User guide](#user-guide)
 - [Requirements](#requirements)
 - [The example brain](#the-example-brain)
@@ -293,7 +296,7 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 │   ├── templates/              ←   page skeletons (source/concept/entity/synthesis + specs…)
 │   └── brain-template/         ←   exactly what gets copied into a new .brain
 └── examples/
-    └── claude-code-brain/      ←   a complete worked brain (69 pages) to learn from
+    └── claude-code-brain/      ←   a complete worked brain (66 pages) to learn from
 
 <your-project>/.brain/          ← AN INSTANCE (scaffolded by /brain:init; committed with the project)
 ├── CLAUDE.md                   ← loads as the operating manual when you run claude here
@@ -303,8 +306,123 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 ├── specs/  projects/           ← acceptance-criteria specs · per-workstream status (tier, phase)
 ├── sessions/  decisions/       ← auto-written session logs & snapshots · ADRs (the "why")
 ├── instincts/                  ← {pending, active}/ auto-learned correction rules
+├── private/                    ← career pack material — gitignored, never indexed
+├── learning/                   ← learn pack decks (SM-2 spaced repetition)
+├── LOCK.md                     ← present only while a teammate holds the work lock
 └── memory/                     ← durable project facts
 ```
+
+---
+
+## All skills
+
+Every `/brain:*` command. Natural phrases route to the same skill automatically (hook #2) —
+these are the explicit form. Full detail (model routing, fan-out) lives in
+[`plugin/skills/README.md`](plugin/skills/README.md).
+
+**Knowledge SDLC**
+
+| Skill | What it does |
+| --- | --- |
+| `/brain:init` | Scaffold `.brain/` into the current project; wires the root `CLAUDE.md` import; offers capability plugins |
+| `/brain:ingest [source]` | 8-step compile of a source into the cross-linked wiki |
+| `/brain:query <question>` | Index-first answer with citations; novel answers filed back to `syntheses/` |
+| `/brain:brief <topic>` | A ≤ ~2k-token cited context pack from built-in search |
+| `/brain:lint` | Mechanical scan (broken links, orphans, frontmatter) + reasoning over contradictions/staleness |
+| `/brain:wrap` | Definition-of-done: verify, sync log + index, commit |
+| `/brain:doctor` | 19-check health report; failures surface at the next session start |
+
+**Development lifecycle**
+
+| Skill | What it does |
+| --- | --- |
+| `/brain:research <topic>` | Web + codebase research, filed to `wiki/research/` with sources |
+| `/brain:plan <feature>` | Writes `specs/` with numbered ACs + a tier (sized by the import-graph blast radius); approval is curator-owned |
+| `/brain:build <spec>` | Test-first implementation against a spec's ACs, gates armed |
+| `/brain:review` | AC-by-AC verification; files ADRs + instinct candidates |
+| `/brain:loop <spec\|research\|design>` | Bounded loop that stops on the brain's own criteria (every AC ✅, a stable recommendation, no open P0) |
+
+**Daily drivers**
+
+| Skill | What it does |
+| --- | --- |
+| `/brain:digest [week]` | Standup, or the weekly review — blocked / done / in-flight, filed to `sessions/` |
+| `/brain:dump <note>` | Classifies a loose note and files each part (decision, fact, next step, idea, link, correction) |
+| `/brain:dashboard` | One-page, self-contained HTML overview of the brain |
+| `/brain:ci` | Detects the project's stack and writes a GitHub Actions workflow |
+| `/brain:lock <spec\|brain>` | Takes the team work lock so two people don't edit the same thing |
+
+**Token discipline**
+
+| Skill | What it does |
+| --- | --- |
+| `/brain:terse [off]` | Output-compression mode — **on by default**; toggles per session |
+| `/brain:compress <file>` | Permanently shrinks an instruction file (~46% input savings), with receipts |
+| `/brain:usage` | Real token usage from Claude Code's own transcripts — per day, model, branch, cache-hit ratio |
+
+**Domain work**
+
+| Skill | What it does |
+| --- | --- |
+| `/brain:product-design` | 5-phase product-design process (personas, journeys, ideation, design, validation) |
+| `/brain:game` | Game pipeline: concept → GDD → prototype spec → build → playtest → balance |
+| `/brain:learn <topic>` | Spaced-repetition learning (SM-2) — only due cards enter context |
+| `/brain:career` | Private case studies, CV, skill matrix, mock interviews (never committed or indexed) |
+
+Idea validation, URL critique, and meeting prep are *modes* of `/brain:research`,
+`/brain:product-design`, and `/brain:brief` — say what you want in plain language and the right
+one activates, so the always-on skill list stays short.
+
+---
+
+## All hooks
+
+Nine lifecycle events, eleven Node scripts — the enforcement layer that runs whether or not the
+right skill got invoked. Full technical detail in [`plugin/README.md`](plugin/README.md).
+
+| # | Fires on | Script(s) | What it does |
+| --- | --- | --- | --- |
+| 1 | Session start | `brain-status` | Injects a budgeted (≤3k token) status block: index stats, active specs/projects, decisions, health report, running loops, a team lock if one is held, terse-mode rules. Offers `/brain:init` in brainless projects. |
+| 2 | Every prompt | `trigger-router` + `recall` | Routes natural phrases ("ingest this", "wrap up"…) to the right skill; searches the brain for the session's first prompt and surfaces matching pages. |
+| 3 | Before a file write | `guards` | Blocks secrets in any file; blocks edits to immutable raw sources; keeps the log append-only; enforces the plan gate (architecture tier) and TDD gate (feature+ tier); refuses writes matching a `block`-level learned ban or inside a teammate's active lock; keeps uncleared career case studies private. |
+| 4 | After a wiki write | `wiki-check` + `instinct-track` | Self-heals broken links and orphans in the same turn; advises an instinct when a file is revised across 3+ sessions; reports `warn`-level learned bans right after the write. |
+| 5 | Before compaction | `snapshot` | Saves a working-state snapshot (next steps, active specs/projects, recent log) so nothing is lost. |
+| 6 | Session stop/end | `wrap` | Nudges an unlogged session before it ends; refreshes index stats; re-indexes semantic search if enabled. |
+| 7 | Agent dispatch / subagent finish | `agent-track` | Logs every dispatch and requires an explicit model for expensive ones; records each subagent's real outcome and token count; blocks a verifier that shares the generator's model family during a loop. |
+| 8 | Session start + task events | `resume` / `resume-log` | Injects `resume.md` and asks whether to continue; auto-logs task/session events. |
+| — | MCP tool calls | `search-mcp` | Serves `brain_search` and `brain_brief` (built-in recall) in every brain; hands off to qmd for vector search when a brain opts in. |
+
+---
+
+## Capability plugins
+
+Skills own the brain's *knowledge* work; **craft** — UI builds, security review, PR flow, PRDs —
+is done by capability plugins. The rule: *plugins do the craft; the brain records the knowledge* —
+every plugin's decisions, findings, and artifacts get filed into `.brain/` by the brain's own
+skills and hooks.
+
+**Ship automatically** — installed and enabled the moment you install `brain`:
+
+| Plugin | Fires on | Files into |
+| --- | --- | --- |
+| [github](https://claude.com/plugins/github) | PR / issue / CI work | `wiki/syntheses/`, `projects/` |
+| [frontend-design](https://claude.com/plugins/frontend-design) | any UI build | `decisions/`, `projects/` |
+| [superpowers](https://claude.com/plugins/superpowers) | build / debug phases | `wiki/`, `instincts/pending/` |
+| [security-guidance](https://claude.com/plugins/security-guidance) | auth / crypto / input-handling code | `wiki/syntheses/`, `projects/` (P0s gate wrap) |
+| [code-modernization](https://claude.com/plugins/code-modernization) | legacy refactors | `wiki/research/` |
+
+**Offered, not forced** — `/brain:init` suggests these when they fit the project; you approve each install:
+
+| Plugin | Fires on | Files into |
+| --- | --- | --- |
+| [product-tracking-skills](https://claude.com/plugins/product-tracking-skills) | product / metrics work | `projects/` |
+| [productivity](https://claude.com/plugins/productivity) | standup / planning triggers | `sessions/` |
+| [product-management](https://claude.com/plugins/product-management) | PRD / roadmap requests | `raw-sources/` → ingested |
+| [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | UI/UX design-system requests | `decisions/`, `instincts/pending/` |
+
+**Everything at once:** `/plugin install brain-all@monkey-brain` — an opt-in bundle of every
+plugin in Anthropic's official marketplace (minus the output styles that contradict terse mode).
+Heavy on context; only worth it if you want maximum coverage and don't mind the token cost.
 
 ---
 
@@ -383,8 +501,8 @@ links. It's just markdown, so it also reads fine in any editor or on GitHub.
 
 ## The example brain
 
-[`examples/claude-code-brain/`](examples/claude-code-brain/) is a real, finished brain: **16
-sources compiled into 69 cross-linked, lint-clean pages** (0 broken links, 0 orphans), with a
+[`examples/claude-code-brain/`](examples/claude-code-brain/) is a real, finished brain: **15
+sources compiled into 66 cross-linked, lint-clean pages** (0 broken links, 0 orphans), with a
 Mermaid index map, a Dataview dashboard, and a Marp overview deck. It's the best way to see what a
 mature brain looks like — start at its [`wiki/index.md`](examples/claude-code-brain/wiki/index.md).
 
