@@ -1,5 +1,31 @@
 # Changelog — brain plugin
 
+## 0.20.0 — 2026-09-13 (v3 P15: learned bans)
+
+A correction made three times becomes a rule; a rule with a pattern becomes enforcement.
+
+- **Fixed: the gates missed specs that keep the template's comments.** `lib.parseFrontmatter`
+  didn't strip YAML inline comments, so a spec line like
+  `tier: architecture   # quick | feature | architecture` parsed as the whole string and **the plan
+  and TDD gates never fired** for that spec (the P9 dogfood specs had no comments, which hid it).
+  Unquoted values now drop a `#` comment that follows whitespace, as YAML does; quoted values are
+  untouched. Regression tests in `lib.js` and the selftest.
+- **Learned bans** (`hooks/scripts/bans.js`) — an active instinct can carry `ban:` (a
+  single-quoted regex), `ban_paths:` (a regex on the project path) and `enforce: warn|block`.
+  `warn` matches in the text a write adds are reported right after it (instinct-track), with the
+  line; `block` matches are refused before the write (guards). Invalid patterns are skipped, never
+  fatal.
+- **Pack bans** — the product-design pack ships `bans.json` (gradient text, glassmorphism, radii
+  over 16px, accent side-stripes, tracking over 0.15em), active while a workstream declares
+  `pack: product-design`.
+- **The instinct queue** (`hooks/scripts/instincts.js`) — `status` ranks pending rules by
+  confidence (explicit, or from the evidence count) and flags `promote?` (≥ 0.8) and stale
+  (> 30 days); plus `promote`, `prune` (kept in `pruned/`) and `test <file>`. `/brain:review`
+  works the queue; promotion stays the curator's call.
+- `brain-status` lists how many learned bans are enforced; the instinct template gains
+  `confidence`, `ban`, `ban_paths` and `enforce`.
+- Selftest 253 → **267 checks**; the example brain still lints clean under the new parser.
+
 ## 0.19.0 — 2026-09-13 (v3 P14: daily-driver workflows)
 
 The everyday rituals, each reading the compiled brain and filing its result back.

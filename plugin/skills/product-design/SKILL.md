@@ -10,7 +10,9 @@ The **first domain-expertise pack**: a packaged process + searchable knowledge t
 top of the brain. It orchestrates the craft (and hands the visual build to `ui-ux-pro-max` +
 `frontend-design`); the brain **records the knowledge** so each decision compounds. Bundled
 assets: `data/` (methods, heuristics, accessibility), `templates/` (deliverable skeletons),
-`checklist.md` (the validation gate `/brain:wrap` reads).
+`checklist.md` (the validation gate `/brain:wrap` reads), and `bans.json` (UI anti-patterns —
+gradient text, glassmorphism, oversized radii, side-stripes, wide tracking — flagged on every
+write while a workstream declares `pack: product-design`).
 
 > **Pick the phase, don't run all five blindly.** A small feature may need only Definition +
 > Validation; a new product needs the whole diamond. Confirm scope with the curator first.

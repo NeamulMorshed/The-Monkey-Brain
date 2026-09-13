@@ -59,8 +59,8 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P12** Loops that stop — AC-terminated loops, livelock detection, verifier ≠ generator family | ✅ 2026-09-13 | v0.17.0 — `loop.js` + `/brain:loop` (spec / research / design loops; stop conditions read from the brain; livelock · stall · tick-cap halts; state in `sessions/loops/`, spec `## Loop log`); running loops in `brain-status`; `agent-track` blocks same-family verifiers; plan gate escalates its 2nd block to `sessions/review-required.md`; selftest **218** |
 | **P13** Blast-radius routing — import-graph scanner → model + tier suggestion | ✅ 2026-09-13 | v0.18.0 — `graph.js` (JS/TS incl. `require(path.join(__dirname,…))`, Python, Go via `go.mod`, C# namespaces; mtime cache in `sessions/graph.json`; 1k files < 2 s); `radius` → files × dirs × types → tier + model; `/brain:plan` uses it; manual §5; selftest **230** |
 | **P14** Daily-driver workflows — standup, weekly review, dump, meeting prep, validate, critique, dashboard, CI | ✅ 2026-09-13 | v0.19.0 — `digest.js` + `/brain:digest` (standup / weekly, filed to `sessions/`), `/brain:dump`, `dashboard.js` + `/brain:dashboard` (offline HTML, escaped), `ci.js` + `/brain:ci` (Node/Python/Go/.NET/Rust) + doctor check 19; validate / critique / meeting prep as modes of research / product-design / brief; router phrases with a false-positive guard; selftest **253** |
-| **P15** Learned bans — instincts with `ban:` patterns enforced by hook; confidence scores | ⏳ next | |
-| **P16** Team mode — git-native lock, union-merged log, per-author sessions | ⏳ | |
+| **P15** Learned bans — instincts with `ban:` patterns enforced by hook; confidence scores | ✅ 2026-09-13 | v0.20.0 — `bans.js` (active instincts' `ban:` / `ban_paths:` / `enforce:` + declared packs' `bans.json`); guards refuses `block`, instinct-track reports `warn`; product-design `bans.json`; `instincts.js` status / promote / prune / test with confidence; **fixed**: frontmatter comments hid spec tiers from the gates (`lib.parseFrontmatter`); selftest **267** |
+| **P16** Team mode — git-native lock, union-merged log, per-author sessions | ⏳ next | |
 | **P17** Life packs (optional) — learning (SM-2), career, ideas | ⏳ | |
 
 ### Session log (engine work, newest first — instances get `sessions/` in P4)
@@ -107,6 +107,12 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   *modes* of existing skills, because every skill description costs context in every session.
   Smoke-tested on a copy of the 69-page example brain and a multi-stack scratch project; the
   router got a guard so "build an analytics dashboard" stays app work. Selftest 230 → 253.
+- **P15 learned bans (v0.20.0):** corrections → rules → enforcement: an active instinct's `ban:`
+  pattern is flagged after a write (`warn`) or refused before it (`block`), and packs ship their
+  anti-patterns as data (`bans.json`) instead of a hard-coded detector like MewVault's. Designing
+  it exposed a real engine bug: YAML inline comments hid spec tiers from the gates, so specs that
+  kept the template's comments were never gated. Fixed in `lib.parseFrontmatter`, with
+  regression tests. Selftest 253 → 267.
 
 **[2026-07-18] Session 4 — Phases 6 + 6.5 + 7 + 8 + 9 (v0.9.0 → v0.12.0)**
 

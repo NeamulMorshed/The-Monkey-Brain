@@ -26,6 +26,7 @@ const fs = require('fs');
 const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
 const loopLib = require(path.join(__dirname, 'loop.js'));
+const bansLib = require(path.join(__dirname, 'bans.js'));
 
 const BUDGET = Number(process.env.MONKEY_BRAIN_BUDGET || 3000);
 const TERSE_SKILL = path.join(__dirname, '..', '..', 'skills', 'terse', 'SKILL.md');
@@ -158,8 +159,15 @@ async function main() {
   const instincts = lib
     .listFilesRecursive(path.join(brain, 'instincts', 'active'), '.md')
     .map((f) => path.basename(f, '.md'));
-  if (instincts.length) {
-    sections.push([1, `**Instincts (always apply):** ${instincts.join(', ')} — details in \`${rel}/instincts/active/\`.`]);
+  const banList = bansLib.loadBans(brain).filter((b) => b.re);
+  if (instincts.length || banList.length) {
+    const parts = [];
+    if (instincts.length) parts.push(`**Instincts (always apply):** ${instincts.join(', ')} — details in \`${rel}/instincts/active/\`.`);
+    if (banList.length) {
+      const from = [...new Set(banList.map((b) => (b.source.startsWith('instincts/') ? 'instincts' : b.source)))];
+      parts.push(`**Learned bans:** ${banList.length} pattern(s) checked on every write (${from.join(', ')}).`);
+    }
+    sections.push([1, parts.join(' ')]);
   }
 
   // Decisions (the "why") — the memory tier fed back into every session so

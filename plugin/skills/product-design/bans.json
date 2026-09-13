@@ -1,0 +1,31 @@
+{
+  "description": "UI anti-patterns the product-design pack flags on write (warn) while a workstream in projects/ declares pack: product-design. If one keeps coming back, promote a stricter version to an instinct with enforce: block.",
+  "paths": "\\.(css|scss|sass|less|html|jsx|tsx|vue|svelte|astro)$",
+  "bans": [
+    {
+      "id": "gradient-text",
+      "pattern": "background-clip:\\s*text|bg-clip-text",
+      "rule": "No gradient text — it fails contrast checks and reads as decoration, not hierarchy."
+    },
+    {
+      "id": "glassmorphism",
+      "pattern": "backdrop-filter:\\s*blur|backdrop-blur",
+      "rule": "No glassmorphism panels — blurred translucency costs legibility and contrast."
+    },
+    {
+      "id": "oversized-radius",
+      "pattern": "border-radius:\\s*(1[7-9]|[2-9]\\d|\\d{3,})px|rounded-(3xl|\\[(1[7-9]|[2-9]\\d)px\\])",
+      "rule": "Keep corner radii at 16px or less (pills excepted) — oversized radii make every surface look like the same template."
+    },
+    {
+      "id": "side-stripe",
+      "pattern": "border-left:\\s*[3-9]px\\s+solid|border-l-(4|8)\\b",
+      "rule": "No accent side-stripes on cards — mark importance with hierarchy, not decoration."
+    },
+    {
+      "id": "tracked-uppercase",
+      "pattern": "letter-spacing:\\s*0?\\.(1[5-9]|[2-9]\\d?)em|tracking-\\[0?\\.(1[5-9]|[2-9])",
+      "rule": "Don't track text wider than 0.15em — it slows reading; use weight or size for emphasis."
+    }
+  ]
+}

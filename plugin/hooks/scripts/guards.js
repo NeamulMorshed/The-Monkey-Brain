@@ -20,6 +20,10 @@
  *                   <name>.test/.spec, sibling __tests__/, or a root-level
  *                   test|tests|spec|specs dir). Spec `tdd: false` opts out;
  *                   quick tier is advisory-only.
+ *   6. LEARNED BANS — a project write whose new text matches an `enforce: block`
+ *                   ban (an active instinct's `ban:`, or a declared pack's
+ *                   bans.json) is refused (v3 P15). `warn` bans are reported
+ *                   after the write by instinct-track.js.
  *
  * Gates degrade gracefully: no .brain/ (or no specs/) → the rule is skipped.
  * Blocking = exit 2 with the reason on stderr (shown to Claude).
@@ -30,6 +34,7 @@
 const fs = require('fs');
 const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
+const bans = require(path.join(__dirname, 'bans.js'));
 
 const SECRET_PATTERNS = [
   [/\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}/, 'an API key (`sk-…`)'],
@@ -209,6 +214,20 @@ async function main() {
             `No test found for \`${path.basename(abs)}\` (looked for <name>.test/.spec beside it, a sibling __tests__/, ` +
             `and test|tests|spec|specs dirs at the project root). Create the test, then this file — ` +
             `or set \`tdd: false\` in the spec / lower its tier to quick if TDD genuinely doesn't apply.`
+        );
+      }
+    }
+  }
+
+  // 6) LEARNED BANS — block-level bans on project files outside the brain.
+  if (pbrain && !abs.startsWith(pbrain + path.sep)) {
+    const relP = path.relative(path.dirname(pbrain), abs).split(path.sep).join('/');
+    if (!relP.startsWith('..')) {
+      const hit = bans.findMatches(newText, relP, bans.loadBans(pbrain).filter((b) => b.enforce === 'block'))[0];
+      if (hit) {
+        lib.block(
+          `🐵 guard[instinct]: \`${hit.ban.name}\` (${hit.ban.source}) bans this pattern — "${hit.snippet}". ` +
+            `${hit.ban.rule} Rewrite without it; the curator can relax the rule in its instinct file.`
         );
       }
     }

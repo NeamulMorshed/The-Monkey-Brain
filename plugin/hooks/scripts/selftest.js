@@ -687,6 +687,62 @@ try {
   dr = spawnSync(process.execPath, [DOCTOR, '--brain', os.tmpdir()], { encoding: 'utf8', timeout: 20000 });
   check('doctor is a silent no-op without a brain', dr.status === 0 && /No Monkey Brain/.test(dr.stdout), `status=${dr.status}`);
 
+  // ---------- v3 P15: learned bans (bans.js · instincts.js) + frontmatter comments ----------
+  console.log('bans.js + instincts.js + frontmatter comments (v3 P15 — learned bans)');
+  const todayStr = (() => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; })();
+  write('.brain/specs/commented.md', '---\ntitle: "Commented"\ntype: spec\nstatus: active            # draft | active | done\ntier: architecture       # quick | feature | architecture\nplan_approved: false     # the curator flips this\n---\n\n## Acceptance criteria\n- **AC-1** — a\n');
+  let gc = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'app', 'core.js'), content: 'x' } }));
+  check('gates read a spec\'s tier through template comments (plan gate fires)', gc.status === 2 && /commented\.md/.test(gc.stderr), `status=${gc.status} ${gc.stderr}`);
+  fs.rmSync(path.join(BRAIN, 'specs', 'commented.md'), { force: true });
+  fs.rmSync(path.join(BRAIN, 'sessions', 'gate-blocks.json'), { force: true });
+
+  const instinctFile = (name, fmLines, rule) => write(`.brain/instincts/active/${name}.md`, `---\ntitle: "Instinct — ${name}"\ntype: instinct\nstatus: active\n${fmLines}\n---\n\n# ${name}\n\n**Rule:** ${rule}\n`);
+  instinctFile('no-console-log', "ban: 'console\\.log\\('\nban_paths: '\\.(js|ts)$'\nenforce: warn", 'Use the project logger, not console.log.');
+  instinctFile('no-eval', "ban: 'eval\\('\nenforce: block", 'Never call eval — parse instead.');
+  const postWrite = (rel, content) => {
+    write(rel, content);
+    const r = run('instinct-track.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Write', session_id: `st${process.pid}-ban`, tool_input: { file_path: path.join(PROJ, rel), content } }));
+    try { return JSON.parse(r.stdout).hookSpecificOutput.additionalContext || ''; } catch { return r.stdout || ''; }
+  };
+  let bctx = postWrite('app/log.js', 'const a = 1;\nconsole.log("hi")\n');
+  check('a warn ban is reported right after the write, with its line', /learned bans/.test(bctx) && /no-console-log/.test(bctx) && /line 2 of the new text/.test(bctx), bctx);
+  bctx = postWrite('app/note.md', 'console.log("hi")\n');
+  check('ban_paths scopes a ban (a .md file is not checked)', !/no-console-log/.test(bctx), bctx);
+  write('app/x.js', '// placeholder\n');
+  const guardWrite = (content) => run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'app', 'x.js'), content } }));
+  let bg = guardWrite('const v = eval(input);\n');
+  check('a block ban refuses the write before it happens', bg.status === 2 && /guard\[instinct\]/.test(bg.stderr) && /no-eval/.test(bg.stderr), `status=${bg.status} ${bg.stderr}`);
+  bg = guardWrite('const v = JSON.parse(input);\n');
+  check('clean code passes the ban guard', bg.status === 0, `status=${bg.status} ${bg.stderr}`);
+  write('.brain/projects/looks.md', '---\ntitle: "Looks"\ntype: project\nstatus: active\npack: product-design     # governs this workstream\n---\n');
+  bctx = postWrite('app/card.css', '.card { backdrop-filter: blur(8px); }\n');
+  check('a declared pack contributes its bans (product-design: glassmorphism)', /glassmorphism/.test(bctx) && /product-design pack/.test(bctx), bctx);
+  fs.rmSync(path.join(BRAIN, 'projects', 'looks.md'), { force: true });
+  bctx = postWrite('app/card.css', '.card { backdrop-filter: blur(8px); }\n');
+  check('without the pack declared, its bans stay off', !/glassmorphism/.test(bctx), bctx);
+  let bst = ''; try { bst = JSON.parse(run('brain-status.js', evt({ hook_event_name: 'SessionStart', source: 'startup' })).stdout).hookSpecificOutput.additionalContext; } catch {}
+  check('session start lists the learned bans', /Learned bans:\*\* 2 pattern\(s\)/.test(bst), bst.slice(0, 400));
+
+  write('.brain/instincts/pending/use-zod.md', '---\ntitle: "Instinct — use zod"\ntype: instinct\nstatus: pending\nconfidence:               # blank → derived from evidence\ncreated: 2026-01-01\nevidence: [a, b, c, d]\n---\n\n**Rule:** validate input with zod.\n');
+  write('.brain/instincts/pending/maybe.md', `---\ntitle: "Instinct — maybe"\ntype: instinct\nstatus: pending\ncreated: ${todayStr}\nevidence: [a]\n---\n\n**Rule:** maybe.\n`);
+  const inst = (...a) => spawnSync(process.execPath, [path.join(HERE, 'instincts.js'), ...a], { cwd: PROJ, encoding: 'utf8', timeout: 15000 });
+  let ir = inst('status');
+  check('the instinct queue ranks by confidence and flags promote / stale', /use-zod — 0\.85 → promote\? · stale/.test(ir.stdout) && /maybe — 0\.40/.test(ir.stdout) && ir.stdout.indexOf('use-zod') < ir.stdout.indexOf('maybe —'), ir.stdout);
+  ir = inst('promote', 'use-zod');
+  const promoted = path.join(BRAIN, 'instincts', 'active', 'use-zod.md');
+  check('promote moves a rule to active/ and marks it active', ir.status === 0 && fs.existsSync(promoted) && /^status: active/m.test(fs.readFileSync(promoted, 'utf8')), ir.stdout + ir.stderr);
+  ir = inst('prune', 'maybe');
+  check('prune keeps the rule on record in pruned/', ir.status === 0 && fs.existsSync(path.join(BRAIN, 'instincts', 'pruned', 'maybe.md')) && !fs.existsSync(path.join(BRAIN, 'instincts', 'pending', 'maybe.md')), ir.stdout + ir.stderr);
+  ir = inst('test', path.join(PROJ, 'app', 'log.js'));
+  check('instincts test shows which bans fire on a file', /no-console-log/.test(ir.stdout), ir.stdout);
+  instinctFile('broken', "ban: '([unclosed'", 'A broken pattern.');
+  ir = inst('status');
+  check('an invalid ban pattern is reported, never fatal', ir.status === 0 && /invalid ban patterns.*broken/.test(ir.stdout), ir.stdout);
+  bg = guardWrite('ok\n');
+  check('the hooks skip an invalid ban instead of failing', bg.status === 0, `status=${bg.status} ${bg.stderr}`);
+  for (const f of ['instincts/active/no-console-log.md', 'instincts/active/no-eval.md', 'instincts/active/use-zod.md', 'instincts/active/broken.md', 'instincts/pruned/maybe.md']) fs.rmSync(path.join(BRAIN, f), { force: true });
+  fs.rmSync(path.join(PROJ, 'app'), { recursive: true, force: true });
+
   // ---------- v3 P14: daily-driver workflows (digest · dashboard · ci · doctor 19) ----------
   console.log('digest.js + dashboard.js + ci.js + doctor 19 (v3 P14 — daily workflows)');
   const hookRun = (script, args, cwd) => spawnSync(process.execPath, [path.join(HERE, script), ...args], { cwd: cwd || PROJ, encoding: 'utf8', timeout: 30000 });

@@ -90,6 +90,8 @@ function parseFrontmatter(text) {
     const kv = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(line);
     if (!kv) continue;
     let v = kv[2].trim();
+    // YAML inline comment: an unquoted `#` after whitespace (templates annotate fields this way).
+    if (!/^["']/.test(v)) v = v.replace(/(^|\s+)#.*$/, '').trim();
     if ((/^".*"$/.test(v)) || (/^'.*'$/.test(v))) v = v.slice(1, -1);
     else if (v === 'true') v = true;
     else if (v === 'false') v = false;
@@ -168,6 +170,7 @@ if (require.main === module) {
   const fm = parseFrontmatter('---\ntitle: "T"\ntype: concept\nplan_approved: true\npage_count: 69\n---\nbody');
   assert.deepStrictEqual(fm, { title: 'T', type: 'concept', plan_approved: true, page_count: 69 });
   assert.deepStrictEqual(parseFrontmatter('no frontmatter'), {});
+  assert.deepStrictEqual(parseFrontmatter("---\ntier: architecture   # quick | feature\npack:   # optional\nban: 'a#b'\nurl: x#y\n---"), { tier: 'architecture', pack: '', ban: 'a#b', url: 'x#y' });
   assert.ok(listFilesRecursive(__dirname, '.js').some((f) => f.endsWith('lib.js')));
   assert.strictEqual(typeof findBrainDir, 'function');
   console.log('lib.js self-test OK');

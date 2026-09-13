@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.19.0](https://img.shields.io/badge/plugin-v0.19.0-blue)
+![Plugin v0.20.0](https://img.shields.io/badge/plugin-v0.20.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -82,6 +82,9 @@ The engine stands on three pillars:
 - Hard gates: **secrets** blocking, **raw-sources immutability**, **append-only log**, a
   **plan gate** (architecture tier) and a **TDD gate** (feature+ tiers).
 - **Self-healing wiki checks** repair broken links / orphans in the same turn.
+- **Learned bans** — a correction made three times becomes a rule, and a rule with a `ban:` pattern
+  becomes enforcement: flagged right after the write, or refused before it. The product-design
+  pack ships its UI anti-patterns the same way.
 - A budgeted **session-start context injection** (≤3k tokens) — no "did the manual load?"
 - **Always-on recall** — built-in search over the brain (`brain_search`, `/brain:brief`), and each
   session's first prompt is matched against it. No database, no embeddings, nothing to install.

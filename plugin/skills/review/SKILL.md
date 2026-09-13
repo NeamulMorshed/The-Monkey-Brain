@@ -31,7 +31,13 @@ A review that only lives in chat is lost. This one ends in the brain.
      linked from the index and the spec.
    - Durable choices the review surfaced → `decisions/` ADRs.
    - A correction made for the 3rd+ time → draft `instincts/pending/<rule>.md`
-     (template `instinct.md`) for the curator to promote.
+     (template `instinct.md`) for the curator to promote. If the correction is a *pattern*
+     (a CSS property, an API call, an import), give it `ban:` (a single-quoted regex) and
+     `ban_paths:` so the hooks enforce it once promoted — `enforce: block` only with the
+     curator's say-so.
+   - **Work the queue:** `node "${CLAUDE_SKILL_DIR}/../../hooks/scripts/instincts.js" status`
+     ranks pending rules by confidence. Ask the curator about each `promote?`; only their
+     yes runs `instincts.js promote <name>`. Offer `prune` for stale ones.
 5. **Close the spec honestly:** all ACs verified and no blocking findings →
    `status: done`, `phase: done`, `audit_score: <verdict — open findings>`; otherwise it
    stays `active` with the blockers listed. Update the `projects/` page.
