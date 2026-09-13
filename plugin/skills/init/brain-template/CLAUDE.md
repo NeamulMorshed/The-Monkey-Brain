@@ -124,6 +124,7 @@ Fix, log, suggest new questions/sources.
 **Research** files findings to `wiki/research/` → **Plan** produces `specs/<feature>.md`
 with numbered ACs and a tier (curator approves architecture tiers) → **Build** works the
 ACs test-first → **Review** verifies and files results; decisions distill into `decisions/`.
+The spec file *is* the plan: Markdown only — no web page or artifact unless the curator asks.
 
 **Loop** (`/brain:loop`) repeats build, research or design until the brain's own criteria are
 met — every AC ✅, a stable recommendation, or no open P0 — and halts on livelock, stalls or a

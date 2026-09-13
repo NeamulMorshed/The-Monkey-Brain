@@ -21,6 +21,9 @@ Numbered acceptance criteria, a tier, and a truthful approval field — that is 
    - **Test plan** — how each AC will be proven.
    - **Tier** (manual §5) with one line of rationale: `quick` (<2h, advisory only) ·
      `feature` (TDD gate on) · `architecture` (hard plan gate + TDD gate).
+   - **Markdown only.** The spec file *is* the plan — don't also publish it as a web page
+     or artifact unless the curator asks. The gates, `/brain:build` and `/brain:review`
+     read the Markdown; a page is a second copy that drifts.
    - **Size it with the code graph** before settling the tier:
      `node "${CLAUDE_SKILL_DIR}/../../hooks/scripts/graph.js" radius <files, dirs or keywords the feature touches>`.
      It walks everything that imports those files (2 hops) and suggests a tier and model.

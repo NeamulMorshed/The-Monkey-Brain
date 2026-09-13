@@ -1,5 +1,14 @@
 # Changelog — brain plugin
 
+## 0.24.1 — 2026-09-14 (plans are Markdown)
+
+- `/brain:plan` and the instance manual (§4 Develop) now say the spec file *is* the plan:
+  Markdown only, no web page or artifact unless the curator asks. Claude Code's own
+  publishing guidance nudges the model to publish plans as pages; the gates, `/brain:build`
+  and `/brain:review` read the Markdown, so a page is a second copy that drifts.
+- Caveman is credited, not recommended: the brain already ships its token trio (terse,
+  `/brain:compress`, `/brain:usage`), and running both pays for the rules twice per turn.
+
 ## 0.24.0 — 2026-09-14 (plan before build)
 
 The router only sent work through `/brain:plan` when the prompt literally said "spec", and the
