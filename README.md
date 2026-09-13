@@ -96,6 +96,11 @@ The engine stands on three pillars:
 - **Terse output on by default** (Caveman-style, ~65% shorter; `/brain:terse off` for a
   session, a `.no-terse` file to disable) and `/brain:compress` (permanent instruction-file
   compression, ~46% input savings) — never touching code, specs, or acceptance criteria.
+- **Caveman integration** — `/brain:init` recommends [Caveman](https://github.com/juliusbrussee/caveman)
+  as a first plugin install: it compresses output tokens further (65% average), rewrites
+  CLAUDE.md / memory files permanently smaller, and tracks lifetime savings. The brain's
+  session-injection system controls input budget; Caveman controls output and compressed-memory
+  size. Together: speak less, know more.
 - **Model routing** by default: scripts do deterministic work at 0 tokens; Sonnet does routine
   execution; the main model does judgment. Two Sonnet fan-out subagents for parallel work.
 - **Real receipts** — `/brain:usage` reads Claude Code's own transcripts: tokens per day, model and
