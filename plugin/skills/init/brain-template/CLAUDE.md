@@ -207,15 +207,17 @@ the session-end hook keeps that index fresh.
 
 ---
 
-## 9. Capability plugins (the craft layer)
+## 9. Capability plugins (the craft layer) + Caveman (token management)
 
 Craft is done by **capability plugins**. Five ship with the brain plugin as its
 dependencies — github, frontend-design, superpowers, security-guidance, code-modernization,
 installed and enabled with it — and `/brain:init` offers the rest (ui-ux-pro-max,
-product-management, …). The rule:
+product-management, caveman, …). The rule:
 **plugins do the craft; the brain records the knowledge** — every plugin output that is a
 decision, a finding, or a durable artifact is filed into a `.brain/` folder by my skills and
-hooks, so the capability stays transient while its knowledge compounds here:
+hooks, so the capability stays transient while its knowledge compounds here.
+
+**Token management:** This brain injects budgeted input context at session start (`sessions/injection-stats.json` tracks it). To manage output and compressed-memory tokens, `/brain:init` strongly recommends **Caveman** (`github.com/JuliusBrussee/caveman`) — it compresses output 65% on average and rewrites CLAUDE.md / memory files to save 46% input tokens *every session after* (`/caveman-compress`). Token savings are tracked in `/caveman-stats` and the statusline. Together: the brain's session-injection system controls input budget; Caveman controls output size and compressed-memory footprint. **Speak less, know more.**
 
 - design-system & UI decisions (ui-ux-pro-max / frontend-design) → `decisions/` ADRs; their
   anti-patterns seed `instincts/pending/`.
@@ -223,6 +225,10 @@ hooks, so the capability stays transient while its knowledge compounds here:
 - reviews & PR links (github) → `wiki/syntheses/`; workstream status → `projects/`.
 - PRDs (product-management) → `raw-sources/` → ingested; tracking plans → `projects/`;
   migration notes (code-modernization) → `wiki/research/`.
+- token savings receipts (caveman) → `sessions/caveman-stats.json` (lifetime savings, cost,
+  session breakdown); lifetime count in the statusline `[CAVEMAN] ⛏ <tokens>`. Use
+  `/caveman <level>` to set compression and `/caveman-compress <file>` to rewrite memory files
+  permanently smaller.
 
 Plugins auto-activate by their own descriptions; the trigger-router routes **my** workflows.
 When a plugin and one of mine both apply, precedence is: **deterministic trigger > domain
