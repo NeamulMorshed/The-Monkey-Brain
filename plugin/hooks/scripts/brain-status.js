@@ -25,6 +25,7 @@
 const fs = require('fs');
 const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
+const loopLib = require(path.join(__dirname, 'loop.js'));
 
 const BUDGET = Number(process.env.MONKEY_BRAIN_BUDGET || 3000);
 const TERSE_SKILL = path.join(__dirname, '..', '..', 'skills', 'terse', 'SKILL.md');
@@ -123,6 +124,24 @@ async function main() {
       lines.push(`- \`${path.basename(f)}\` — tier: ${fm.tier ?? '?'} · plan_approved: ${fm.plan_approved === true}`);
     }
     if (lines.length) sections.push([1, `**Active specs:**\n${lines.slice(0, 5).join('\n')}`]);
+  }
+
+  // v3 P12: specs the plan gate keeps blocking, and loops still running (this
+  // line is how a loop survives /clear and compaction).
+  const blocks = lib.readJsonSafe(path.join(brain, 'sessions', 'gate-blocks.json'), {}) || {};
+  const stuck = Object.entries(blocks)
+    .filter(([spec, n]) => {
+      if (n < 2) return false;
+      const fm = lib.parseFrontmatter(lib.readTextSafe(path.join(brain, 'specs', spec)));
+      return String(fm.tier) === 'architecture' && fm.plan_approved !== true && !['done', 'closed', 'superseded'].includes(String(fm.status));
+    })
+    .map(([spec, n]) => `\`${spec}\` (${n}×)`);
+  if (stuck.length) {
+    sections.push([1, `**⚠ Review required:** the plan gate keeps blocking ${stuck.join(', ')} — ask the curator to approve, re-tier, or re-plan before more source work.`]);
+  }
+  const running = loopLib.activeLoops(brain);
+  if (running.length) {
+    sections.push([1, `**🔁 Loops running:** ${running.map((l) => loopLib.describe(l)).join('; ')} — continue with \`/brain:loop\`, ticking after each iteration.`]);
   }
 
   const projectsDir = path.join(brain, 'projects');

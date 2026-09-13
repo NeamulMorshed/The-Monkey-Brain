@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.16.0](https://img.shields.io/badge/plugin-v0.16.0-blue)
+![Plugin v0.17.0](https://img.shields.io/badge/plugin-v0.17.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -99,6 +99,9 @@ The engine stands on three pillars:
 **🔧 A full development lifecycle**
 - `research → plan → build → review`, filed back to the brain: specs with numbered acceptance
   criteria, ADRs in `decisions/`, and auto-learned **instincts** from repeated corrections.
+- **Loops that stop** — `/brain:loop` iterates a build, research or design cycle until the brain
+  says it's done (every AC ✅, a stable recommendation, no open P0), halting on livelock, stalls or
+  a tick cap. Verification must run on a different model family than the work.
 
 **📦 Domain expertise, on tap**
 - A **product-design pack** (Nielsen heuristics + WCAG 2.2 AA + method catalog) with a validation
@@ -112,7 +115,7 @@ The engine stands on three pillars:
 - `/brain:doctor` runs **18 deterministic checks** (links, orphans, staleness, budget, WIP, cache safety,
   open P0s, schema drift…). Failures inject a health report into the *next* session.
 
-**16 `/brain:*` skills · 9 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
+**17 `/brain:*` skills · 9 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
 
 ---
 
@@ -220,7 +223,7 @@ gates; **(5)** depth on demand (packs and semantic search stay deferred until a 
 ```mermaid
 flowchart TB
     subgraph Engine["The Monkey Brain — the engine (this repo)"]
-        P["brain plugin: 16 skills, hooks, agents, MCP"]
+        P["brain plugin: 17 skills, hooks, agents, MCP"]
         BT["schema + brain-template (the method)"]
     end
     P -->|/brain:init scaffolds| I1[".brain/ in Project A"]
@@ -246,7 +249,7 @@ v2 adds **record layers** for the development lifecycle: `specs/`, `projects/`, 
 
 ### Inside the plugin
 
-- **16 skills** (`/brain:*`) — the knowledge SDLC, the develop lifecycle, token discipline, the
+- **17 skills** (`/brain:*`) — the knowledge SDLC, the develop lifecycle, token discipline, the
   product-design pack, the game pipeline, and doctor.
 - **9 lifecycle hook events (11 scripts)** — the enforcement + automation layer (Node, stdlib-only,
   one runtime on Windows/macOS/Linux).
@@ -264,9 +267,9 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 ├── README.md                   ← you are here
 ├── .claude-plugin/             ← marketplace manifest (this repo is its own marketplace)
 ├── plugin/                     ← the `brain` plugin — see plugin/README.md
-│   ├── skills/                 ←   16 /brain:* skills (init, ingest, query, brief, lint, wrap,
+│   ├── skills/                 ←   17 /brain:* skills (init, ingest, query, brief, lint, wrap,
 │   │                           ←     research, plan, build, review, terse, compress,
-│   │                           ←     product-design, game, doctor, usage)
+│   │                           ←     product-design, game, doctor, usage, loop)
 │   ├── hooks/                  ←   hooks.json + Node scripts (status, router, guards, …)
 │   ├── agents/                 ←   brain-librarian, brain-researcher (Sonnet)
 │   └── .mcp.json               ←   brain-search (built-in recall; qmd opt-in)

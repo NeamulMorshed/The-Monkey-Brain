@@ -12,7 +12,9 @@
  *                   old_string) or a frontmatter `updated:` date bump.
  *   4. PLAN GATE  — while an architecture-tier spec in .brain/specs/ lacks
  *                   plan_approved: true, project source writes are blocked
- *                   (docs/tests exempt).
+ *                   (docs/tests exempt). The second block on the same spec is
+ *                   escalated to .brain/sessions/review-required.md (v3 P12),
+ *                   which brain-status surfaces next session.
  *   5. TDD GATE   — feature+ tier specs (schema §4.4): creating a NEW project
  *                   code file with no test companion is blocked (same-dir
  *                   <name>.test/.spec, sibling __tests__/, or a root-level
@@ -61,6 +63,28 @@ function isTestPath(abs) {
     /^test_/i.test(base) ||
     /^(test|spec)s?\.[^.]+$/i.test(base)
   );
+}
+
+/** Count a plan-gate block; the 2nd on one spec is written to review-required.md. */
+function recordPlanBlock(brain, spec) {
+  try {
+    const dir = path.join(brain, 'sessions');
+    fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, 'gate-blocks.json');
+    const counts = lib.readJsonSafe(file, {}) || {};
+    counts[spec] = (counts[spec] || 0) + 1;
+    fs.writeFileSync(file, JSON.stringify(counts, null, 2) + '\n', 'utf8');
+    if (counts[spec] === 2) {
+      const rr = path.join(dir, 'review-required.md');
+      if (!fs.existsSync(rr)) {
+        fs.writeFileSync(rr, '---\ntitle: "Review required"\ntype: review-required\n---\n\nSpecs the plan gate blocked twice. The curator approves, re-tiers, or re-plans each.\n\n', 'utf8');
+      }
+      fs.appendFileSync(rr, `- [${lib.today()}] \`${spec}\` — architecture tier, not approved; the plan gate blocked source writes twice\n`, 'utf8');
+    }
+    return counts[spec];
+  } catch {
+    return 0;
+  }
 }
 
 /** Recognized code extensions for the TDD gate (config/docs/styles stay free). */
@@ -161,10 +185,15 @@ async function main() {
       // 4) PLAN GATE — architecture tier needs curator approval before source writes.
       for (const s of specs) {
         if (String(s.fm.tier) === 'architecture' && s.fm.plan_approved !== true) {
+          const n = recordPlanBlock(pbrain, path.basename(s.f));
           lib.block(
             `🐵 guard[plan]: architecture-tier spec \`${path.basename(s.f)}\` is not approved ` +
               `(missing \`plan_approved: true\`). Get the curator's explicit approval on the spec before ` +
-              `writing source files — or lower the spec's tier if this is not architecture-level work.`
+              `writing source files — or lower the spec's tier if this is not architecture-level work.` +
+              (n >= 2
+                ? ` This is block #${n} on this spec — stop retrying: ask the curator to approve the plan, ` +
+                  `re-tier the spec, or re-plan (logged to .brain/sessions/review-required.md).`
+                : '')
           );
         }
       }

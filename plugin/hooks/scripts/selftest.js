@@ -301,6 +301,8 @@ try {
   check('"brief me on X" routes to brain:brief', t.ctx.includes('brain:brief'), t.ctx);
   t = routed('show me a token usage report', PLAIN_R);
   check('"token usage report" routes to brain:usage (no brain needed)', t.ctx.includes('brain:usage'), t.ctx);
+  t = routed('keep going until the tests pass');
+  check('"keep going until…" routes to brain:loop', t.ctx.includes('brain:loop'), t.ctx);
   t = routed('compress the CLAUDE.md file');
   check('"compress CLAUDE.md" routes to brain:compress', t.ctx.includes('brain:compress'), t.ctx);
   t = routed('design a product for our new users');
@@ -487,6 +489,7 @@ try {
     terse: { model: 'haiku', effort: 'low' },
     brief: { model: 'sonnet', effort: 'low' },
     usage: { model: 'sonnet', effort: 'low' },
+    loop: { effort: 'high' },
     plan: { effort: 'high' },
     review: { effort: 'high' },
     wrap: { effort: 'high' },
@@ -664,6 +667,79 @@ try {
   check('doctor --strict exits 1 when warnings/criticals exist', dr.status === 1, `status=${dr.status}`);
   dr = spawnSync(process.execPath, [DOCTOR, '--brain', os.tmpdir()], { encoding: 'utf8', timeout: 20000 });
   check('doctor is a silent no-op without a brain', dr.status === 0 && /No Monkey Brain/.test(dr.stdout), `status=${dr.status}`);
+
+  // ---------- v3 P12: loops that stop (loop.js · verifier family · plan-gate escalation) ----------
+  console.log('loop.js + verifier family + plan-gate escalation (v3 P12 — loops that stop)');
+  const LOOPJS = path.join(HERE, 'loop.js');
+  const lp = (...args) => spawnSync(process.execPath, [LOOPJS, ...args], { cwd: PROJ, encoding: 'utf8', timeout: 15000 });
+  const statusCtx = (source) => { const s = run('brain-status.js', evt({ hook_event_name: 'SessionStart', source })); try { return JSON.parse(s.stdout).hookSpecificOutput.additionalContext || ''; } catch { return ''; } };
+  const specText = (acs) => `---\ntitle: "Loopy"\ntype: spec\nstatus: active\ntier: quick\n---\n\n## Acceptance criteria\n${acs}\n\n## Notes & links\nnone\n`;
+  const specPath = path.join(BRAIN, 'specs', 'loopy.md');
+  write('.brain/specs/loopy.md', specText('- **AC-1** — a\n- **AC-2** — b'));
+  lr = lp('start', 'spec', 'loopy', '--generator', 'sonnet');
+  check('loop starts and states its stop condition', lr.status === 0 && /every AC in specs\/loopy\.md/.test(lr.stdout), lr.stdout + lr.stderr);
+  lr = lp('tick', 'spec-loopy', '--summary', 'wrote the AC-1 test');
+  check('a tick without progress continues', lr.status === 0 && /continue — tick 1\/12 · ACs 0\/2 · no progress/.test(lr.stdout), lr.stdout + lr.stderr);
+  lr = lp('start', 'spec', 'loopy');
+  check('a running loop cannot be started twice', lr.status === 1 && /already running/.test(lr.stderr), lr.stderr);
+  check('running loops show in session-start status (survive /clear)', /Loops running:.*spec-loopy/.test(statusCtx('clear')), statusCtx('clear').slice(0, 300));
+  const dispatch = (model, description) => run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', tool_input: { subagent_type: 'general-purpose', model, description } }));
+  let va = dispatch('sonnet', 'verify the loopy ACs');
+  check('a same-family verifier is blocked while a loop runs', va.status === 2 && /same model family/.test(va.stderr), `status=${va.status} ${va.stderr}`);
+  va = dispatch('opus', 'verify the loopy ACs');
+  check('a verifier on another model family passes', va.status === 0, `status=${va.status} ${va.stderr}`);
+  va = dispatch('sonnet', 'implement the checkout flow');
+  check('non-verification work on the generator family passes', va.status === 0, `status=${va.status} ${va.stderr}`);
+  const markAc = (n) => fs.writeFileSync(specPath, fs.readFileSync(specPath, 'utf8').replace(new RegExp(`(\\*\\*AC-${n}\\*\\* — \\w)`), '$1 ✅ test'), 'utf8');
+  markAc(1);
+  lr = lp('tick', 'spec-loopy', '--summary', 'AC-1 green');
+  check('progress is read from the spec\'s ✅ marks', /continue — tick 2\/12 · ACs 1\/2\s*$/.test(lr.stdout), lr.stdout);
+  markAc(2);
+  lr = lp('tick', 'spec-loopy', '--summary', 'AC-2 green');
+  check('the loop stops itself when every AC is ✅', /✅ done at tick 3 — ACs 2\/2/.test(lr.stdout), lr.stdout);
+  check('each tick is logged in the spec\'s Loop log', (fs.readFileSync(specPath, 'utf8').match(/^- tick \d/gm) || []).length === 3, fs.readFileSync(specPath, 'utf8').slice(-300));
+  write('.brain/specs/loopy2.md', specText('- **AC-1** — a'));
+  lp('start', 'spec', 'loopy2', '--max-no-progress', '9');
+  lp('tick', 'spec-loopy2', '--summary', 'same failing test');
+  lp('tick', 'spec-loopy2', '--summary', 'same failing test');
+  lr = lp('tick', 'spec-loopy2', '--summary', 'Same   failing test');
+  check('three identical results halt the loop (livelock)', /halted at tick 3 — livelock/.test(lr.stdout), lr.stdout);
+  write('.brain/specs/loopy3.md', specText('- **AC-1** — a'));
+  lp('start', 'spec', 'loopy3');
+  lp('tick', 'spec-loopy3', '--summary', 'try one');
+  lp('tick', 'spec-loopy3', '--summary', 'try two');
+  lr = lp('tick', 'spec-loopy3', '--summary', 'try three');
+  check('three ticks without progress halt the loop (stall)', /halted at tick 3 — stalled/.test(lr.stdout), lr.stdout);
+  write('.brain/specs/loopy4.md', specText('- **AC-1** — a'));
+  lp('start', 'spec', 'loopy4', '--max-ticks', '2', '--max-no-progress', '9');
+  lp('tick', 'spec-loopy4', '--summary', 'one');
+  lr = lp('tick', 'spec-loopy4', '--summary', 'two');
+  check('the tick cap halts the loop', /halted at tick 2 — tick cap \(2\)/.test(lr.stdout), lr.stdout);
+  lp('start', 'research', 'caching');
+  lr = lp('tick', 'research-caching', '--summary', 'read three sources');
+  check('a research loop continues while there is no page', /continue — tick 1\/12 · no page yet/.test(lr.stdout), lr.stdout);
+  write('.brain/wiki/research/caching.md', '---\ntitle: "Caching"\ntype: research\n---\n\n## Findings\nx\n\n## Recommendation\nUse the prompt cache.\n');
+  lp('tick', 'research-caching', '--summary', 'drafted the page');
+  lr = lp('tick', 'research-caching', '--summary', 're-read it, no changes');
+  check('a research loop stops once the recommendation is stable', /✅ done at tick 3 — recommendation drafted/.test(lr.stdout), lr.stdout);
+  write('.brain/projects/look.md', '---\ntitle: "Look"\ntype: project\nstatus: paused\n---\n\n## Findings\n- P0: contrast fails on buttons (open)\n');
+  lp('start', 'design', 'look');
+  lr = lp('tick', 'design-look', '--summary', 'critiqued the buttons');
+  check('a design loop continues while a P0 is open', /continue — tick 1\/12 · 1 open P0/.test(lr.stdout), lr.stdout);
+  write('.brain/projects/look.md', '---\ntitle: "Look"\ntype: project\nstatus: paused\n---\n\n## Findings\n- P0: contrast fails on buttons (fixed)\n');
+  lr = lp('tick', 'design-look', '--summary', 'raised contrast to 4.5:1');
+  check('a design loop stops when no P0 is open', /✅ done at tick 2 — 0 open P0/.test(lr.stdout), lr.stdout);
+
+  write('.brain/specs/arch-x.md', '---\ntitle: "Arch"\ntype: spec\nstatus: active\ntier: architecture\nplan_approved: false\n---\n\n## Acceptance criteria\n- **AC-1** — a\n');
+  const srcWrite = () => run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'src', 'engine.js'), content: 'x' } }));
+  let gw = srcWrite();
+  check('plan gate: the first block does not escalate', gw.status === 2 && /arch-x\.md/.test(gw.stderr) && !/block #/.test(gw.stderr), gw.stderr);
+  gw = srcWrite();
+  const rrPath = path.join(BRAIN, 'sessions', 'review-required.md');
+  check('plan gate: the second block escalates to review-required', gw.status === 2 && /block #2 on this spec/.test(gw.stderr) && fs.existsSync(rrPath) && /arch-x\.md/.test(fs.readFileSync(rrPath, 'utf8')), gw.stderr);
+  check('review-required surfaces at the next session start', /Review required:.*arch-x\.md/.test(statusCtx('startup')), statusCtx('startup').slice(0, 400));
+  for (const f of ['specs/loopy.md', 'specs/loopy2.md', 'specs/loopy3.md', 'specs/loopy4.md', 'specs/arch-x.md', 'wiki/research/caching.md', 'projects/look.md', 'sessions/gate-blocks.json', 'sessions/review-required.md']) fs.rmSync(path.join(BRAIN, f), { force: true });
+  fs.rmSync(path.join(BRAIN, 'sessions', 'loops'), { recursive: true, force: true });
 
   // ---------- v3 P11: real receipts (usage.js · SubagentStop outcomes · doctor 16–18) ----------
   console.log('usage.js + agent outcomes + doctor 16–18 (v3 P11 — real receipts)');

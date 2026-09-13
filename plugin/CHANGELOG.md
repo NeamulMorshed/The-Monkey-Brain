@@ -1,5 +1,25 @@
 # Changelog — brain plugin
 
+## 0.17.0 — 2026-09-13 (v3 P12: loops that stop)
+
+Autonomous iteration with a stop condition the brain supplies, not the token budget.
+
+- **`/brain:loop`** + `hooks/scripts/loop.js` — three loop types: `spec` (build → verify; done
+  when every AC in the spec is ✅), `research` (done when `wiki/research/<slug>.md` has a
+  Recommendation and stops changing) and `design` (done when the project page has no open P0).
+  Each tick is checked for livelock (the same result 3 ticks running), stalls
+  (`--max-no-progress`, default 3) and a tick cap (`--max-ticks`, default 12). State lives in
+  `sessions/loops/`; spec loops log every tick in the spec's `## Loop log`.
+- **Survives `/clear` and compaction** — `brain-status` lists running loops at every session start.
+- **Verifier ≠ generator** — while a loop started with `--generator` runs, `agent-track` blocks a
+  verify / review / audit dispatch on the same model family.
+- **Plan-gate escalation** — the second time the plan gate blocks source writes for the same
+  unapproved architecture spec, `guards` tells the model to stop retrying, writes
+  `sessions/review-required.md`, and `brain-status` surfaces it next session.
+- Router: "keep going until…", "loop until…", "iterate … until" → `/brain:loop`. Instance manual
+  §4 notes loops and the escalation.
+- Selftest 197 → **218 checks** (217 off Windows).
+
 ## 0.16.0 — 2026-09-13 (v3 P11: real receipts)
 
 Token accounting from Claude Code's own transcripts instead of estimates.

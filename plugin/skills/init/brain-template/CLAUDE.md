@@ -125,6 +125,11 @@ Fix, log, suggest new questions/sources.
 with numbered ACs and a tier (curator approves architecture tiers) → **Build** works the
 ACs test-first → **Review** verifies and files results; decisions distill into `decisions/`.
 
+**Loop** (`/brain:loop`) repeats build, research or design until the brain's own criteria are
+met — every AC ✅, a stable recommendation, or no open P0 — and halts on livelock, stalls or a
+tick cap; running loops show at session start. A spec the plan gate blocks twice lands in
+`sessions/review-required.md` for the curator.
+
 **Log prefixes** (`wiki/log.md`, append-only):
 `ingest | query | lint | schema | feat | session | research | plan | build | review`.
 

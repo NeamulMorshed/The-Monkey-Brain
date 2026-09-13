@@ -16,6 +16,7 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `plan` | Spec with numbered acceptance criteria + tier; approval stays curator-owned | ✅ |
 | `build` | Test-first loop against a spec's ACs (works with the TDD/plan gates) | ✅ |
 | `review` | AC verification + code review filed back (synthesis page, ADRs, instinct candidates) | ✅ |
+| `loop` | Bounded build / research / design loops (`hooks/scripts/loop.js`) that stop on the brain's own criteria — every AC ✅, a stable recommendation, no open P0 — with livelock, stall and tick-cap halts | ✅ |
 | `terse` | Caveman-style output compression, **on by default** (hook #1 injects the rules); the skill toggles it off/on (code/commands never compressed) | ✅ |
 | `compress` | Permanent instruction-file compression with before/after receipts | ✅ |
 | `product-design` | First domain-expertise **pack** — 5-phase process + `data/` (methods, Nielsen heuristics, WCAG) + `templates/` + `checklist.md` (the `/brain:wrap` gate) | ✅ |
@@ -38,7 +39,7 @@ run in scripts at zero model cost.
 
 | Work class | Skills | Frontmatter | Why |
 | --- | --- | --- | --- |
-| **Judgment & synthesis** | `plan` · `review` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression, design reasoning, health triage — never downgraded |
+| **Judgment & synthesis** | `plan` · `review` · `loop` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression, design reasoning, health triage — never downgraded |
 | **Routine execution** | `ingest` · `research` · `build` | `model: sonnet` · `effort: medium` | summaries, research reads, standard implementation — pinned to Sonnet regardless of the session model |
 | **Mechanical** | `init` · `brief` · `usage` | `model: sonnet` · `effort: low` | scaffolding, packs and reports run a Node script; little reasoning |
 | **Trivial** | `terse` | `model: haiku` · `effort: low` | flips an output mode |

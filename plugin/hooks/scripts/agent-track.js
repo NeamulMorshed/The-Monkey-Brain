@@ -26,6 +26,10 @@ const os = require('os');
 const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
 const usage = require(path.join(__dirname, 'usage.js'));
+const loops = require(path.join(__dirname, 'loop.js'));
+
+/** Dispatches that check work rather than produce it. */
+const VERIFYING = /\b(verif\w*|review\w*|audit\w*|critique\w*|check(s|ing)?)\b/i;
 
 /** Agent types that default to the (expensive) main model when unpinned. */
 const HEAVY_TYPES = new Set(['', 'general-purpose', 'claude', 'Plan', 'fork']);
@@ -92,6 +96,19 @@ async function main() {
   const what = String(ti.description || ti.prompt || '(no description)')
     .replace(/\s+/g, ' ')
     .slice(0, 80);
+
+  // v3 P12: while a loop runs, its verifier must not share the generator's model family.
+  if (model && VERIFYING.test(`${type} ${ti.description || ''}`)) {
+    const clash = loops.activeLoops(brain).find((l) => l.generator && loops.family(l.generator) === loops.family(model));
+    if (clash) {
+      appendLog(brain, `- [${stamp()}] ${type || 'general-purpose'} · model: ${model} · ${what} · ⛔ blocked: verifier shares loop ${clash.id}'s model family`);
+      lib.block(
+        `🐵 agent-track[loop]: loop \`${clash.id}\` generates with ${clash.generator}; a verifier on the same model family ` +
+          `(${loops.family(model)}) tends to miss the same mistakes. Re-dispatch this check on a different family — ` +
+          `e.g. ${loops.family(clash.generator) === 'opus' ? 'sonnet' : 'opus'}.`
+      );
+    }
+  }
 
   const marker = path.join(
     os.tmpdir(),

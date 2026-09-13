@@ -54,6 +54,12 @@ const RULES = [
     what: 'brain lint',
   },
   {
+    re: /\bloop (until|on|over|through)\b|\bkeep (going|iterating) until\b|\biterate\b[^.!?]{0,40}\buntil\b|\bstart an? (build |research |design )?loop\b/i,
+    skill: 'loop',
+    needsBrain: true,
+    what: 'bounded work loop',
+  },
+  {
     re: /\bbrief me\b|\bcatch me up\b|\bbrief (on|about)\b|^\s*brief\s+\S/i,
     skill: 'brief',
     needsBrain: true,
