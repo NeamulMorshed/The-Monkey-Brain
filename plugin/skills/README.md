@@ -9,6 +9,7 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `init` | Scaffold `.brain/` — self-contained: bundled `brain-template/` + `scripts/new-brain.js` (marketplace installs don't ship `bootstrap/`); wires the root `@.brain/CLAUDE.md` import; offers the recommended capability plugins (`recommended-plugins.json` + `scripts/plugins.js`) | ✅ |
 | `ingest` | The 8-step compile of a source into the wiki (hook #4 checks every page) | ✅ |
 | `query` | Index-first answering with citations; novel answers filed back to `syntheses/` | ✅ |
+| `brief` | Cited context pack (≤ ~2k tokens) from built-in BM25 recall over the compiled layers (`hooks/scripts/search.js`) — the command form of the `brain_brief` MCP tool | ✅ |
 | `lint` | Mechanical scan (`scripts/lint.js`, injected via `` !`…` ``) + reasoning over contradictions/staleness | ✅ |
 | `wrap` | Definition-of-done: verify, sync log + index + resume narrative, commit | ✅ |
 | `research` | Web + codebase research filed to `wiki/research/` with sources + recommendation | ✅ |
@@ -38,7 +39,7 @@ run in scripts at zero model cost.
 | --- | --- | --- | --- |
 | **Judgment & synthesis** | `plan` · `review` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression, design reasoning, health triage — never downgraded |
 | **Routine execution** | `ingest` · `research` · `build` | `model: sonnet` · `effort: medium` | summaries, research reads, standard implementation — pinned to Sonnet regardless of the session model |
-| **Mechanical** | `init` | `model: sonnet` · `effort: low` | scaffolding runs a Node script; little reasoning |
+| **Mechanical** | `init` · `brief` | `model: sonnet` · `effort: low` | scaffolding / pack-building run a Node script; little reasoning |
 | **Trivial** | `terse` | `model: haiku` · `effort: low` | flips an output mode |
 
 **Parallel fan-out** (subagents in `../agents/`, run concurrently; only summaries

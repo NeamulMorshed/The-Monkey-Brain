@@ -297,6 +297,8 @@ try {
   check('terse routes even without a brain', t.ctx.includes('brain:terse'), t.ctx);
   t = routed('ok, be more verbose again');
   check('"more verbose" routes to brain:terse (the off switch)', t.ctx.includes('brain:terse'), t.ctx);
+  t = routed('brief me on the billing decisions');
+  check('"brief me on X" routes to brain:brief', t.ctx.includes('brain:brief'), t.ctx);
   t = routed('compress the CLAUDE.md file');
   check('"compress CLAUDE.md" routes to brain:compress', t.ctx.includes('brain:compress'), t.ctx);
   t = routed('design a product for our new users');
@@ -425,17 +427,20 @@ try {
   it = run('instinct-track.js', { cwd: PLAIN_D, hook_event_name: 'PostToolUse', session_id: 's', tool_input: { file_path: path.join(PLAIN_D, 'foo.js') } });
   check('no brain ⇒ instinct-track silent', it.status === 0 && it.stdout === '', `status=${it.status}`);
 
-  // ---------- qmd-mcp: semantic-search MCP wrapper, dormant until enabled (P5.3) ----------
-  console.log('qmd-mcp.js (semantic search MCP — dormant stub until enabled)');
-  const QMDMCP = path.join(HERE, 'qmd-mcp.js');
+  // ---------- search-mcp: the brain-search MCP server (built-in recall; qmd opt-in) ----------
+  console.log('search-mcp.js (brain-search MCP — built-in recall, qmd opt-in)');
+  const SEARCHMCP = path.join(HERE, 'search-mcp.js');
   const rpcLines =
     [
       JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {} } }),
       JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
       JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }),
+      JSON.stringify({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'brain_search', arguments: { query: 'escaped pipe table' } } }),
+      JSON.stringify({ jsonrpc: '2.0', id: 4, method: 'tools/call', params: { name: 'brain_brief', arguments: { topic: 'orphan page' } } }),
+      JSON.stringify({ jsonrpc: '2.0', id: 5, method: 'tools/call', params: { name: 'brain_search', arguments: {} } }),
     ].join('\n') + '\n';
   const parseRpc = (stdout) => (stdout || '').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
-  const runMcp = () => spawnSync(process.execPath, [QMDMCP], { input: rpcLines, cwd: PROJ, encoding: 'utf8', timeout: 15000, env: { ...process.env, MONKEY_BRAIN_QMD: '' } });
+  const runMcp = (cwd) => spawnSync(process.execPath, [SEARCHMCP], { input: rpcLines, cwd: cwd || PROJ, encoding: 'utf8', timeout: 15000, env: { ...process.env, MONKEY_BRAIN_QMD: '' } });
   // Reliable shell-free PATH scan (mirrors the wrapper), so the guard below is deterministic.
   const qmdOnPath = () => {
     const win = process.platform === 'win32';
@@ -444,20 +449,28 @@ try {
   };
   let q = runMcp();
   let qm = parseRpc(q.stdout);
-  const initResp = qm.find((m) => m.id === 1);
-  const listResp = qm.find((m) => m.id === 2);
-  check('qmd-mcp is a valid MCP server (initialize → serverInfo brain-search)', !!(initResp && initResp.result && initResp.result.serverInfo && initResp.result.serverInfo.name === 'brain-search'), (q.stdout || '').slice(0, 200));
-  check('qmd-mcp exposes zero tools when not enabled (dormant)', !!(listResp && listResp.result && Array.isArray(listResp.result.tools) && listResp.result.tools.length === 0), (q.stdout || '').slice(0, 200));
-  check('qmd-mcp never replies to notifications', qm.every((m) => m.id === 1 || m.id === 2));
-  check('qmd-mcp exits cleanly on stdin close', q.status === 0, `status=${q.status} stderr=${(q.stderr || '').slice(0, 150)}`);
+  const byId = (id) => qm.find((m) => m.id === id) || {};
+  const toolText = (m) => ((((m.result || {}).content || [])[0]) || {}).text || '';
+  const init1 = byId(1).result || {};
+  check('brain-search is a valid MCP server (serverInfo + recall instructions)', !!(init1.serverInfo && init1.serverInfo.name === 'brain-search' && /brain_search/.test(init1.instructions || '')), (q.stdout || '').slice(0, 200));
+  const toolNames = ((byId(2).result || {}).tools || []).map((t) => t.name);
+  check('brain-search serves brain_search + brain_brief by default', toolNames.includes('brain_search') && toolNames.includes('brain_brief'), toolNames.join(','));
+  check('brain_search call returns the matching page', /todo-page/.test(toolText(byId(3))) && !(byId(3).result || {}).isError, toolText(byId(3)).slice(0, 200));
+  check('brain_brief call returns a cited pack', /\[\[orphan-page\]\]/.test(toolText(byId(4))), toolText(byId(4)).slice(0, 200));
+  check('a bad tool call is a tool error, not a crash', !!(byId(5).result && byId(5).result.isError), JSON.stringify(byId(5)).slice(0, 200));
+  check('brain-search never replies to notifications', qm.every((m) => [1, 2, 3, 4, 5].includes(m.id)));
+  check('brain-search exits cleanly on stdin close', q.status === 0, `status=${q.status} stderr=${(q.stderr || '').slice(0, 150)}`);
+  q = runMcp(os.tmpdir());
+  qm = parseRpc(q.stdout);
+  check('without a brain: zero tools and no instructions', ((byId(2).result || {}).tools || []).length === 0 && !(byId(1).result || {}).instructions, (q.stdout || '').slice(0, 200));
   if (!qmdOnPath()) {
     fs.writeFileSync(path.join(BRAIN, '.qmd'), '');
     q = runMcp();
     qm = parseRpc(q.stdout);
-    check('opted-in but qmd absent falls back to the dormant stub (never crashes)', q.status === 0 && qm.some((m) => m.id === 1 && m.result), `status=${q.status}`);
+    check('opted into qmd but qmd absent → built-in recall still serves', q.status === 0 && ((byId(2).result || {}).tools || []).length === 2, `status=${q.status}`);
     fs.rmSync(path.join(BRAIN, '.qmd'), { force: true });
   } else {
-    check('qmd installed — real handoff path (stub-fallback test skipped)', true);
+    check('qmd installed — real handoff path (fallback test skipped)', true);
   }
 
   // ---------- skill routing frontmatter (P5.5) ----------
@@ -470,6 +483,7 @@ try {
     research: { model: 'sonnet', effort: 'medium' },
     init: { model: 'sonnet', effort: 'low' },
     terse: { model: 'haiku', effort: 'low' },
+    brief: { model: 'sonnet', effort: 'low' },
     plan: { effort: 'high' },
     review: { effort: 'high' },
     wrap: { effort: 'high' },
@@ -494,7 +508,7 @@ try {
     if (modelOk && effortOk) routingOk++;
     else routingBad.push(`${name}(model=${model},effort=${effort})`);
   }
-  check('all 14 skills declare the expected model/effort routing', routingOk === Object.keys(routing).length, routingBad.join(' '));
+  check(`all ${Object.keys(routing).length} skills declare the expected model/effort routing`, routingOk === Object.keys(routing).length, routingBad.join(' '));
   const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress', 'product-design', 'game', 'doctor'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
   check('judgment skills inherit the main model (no downgrade)', judgmentPinned.length === 0, `pinned: ${judgmentPinned.join(',')}`);
 
@@ -648,6 +662,43 @@ try {
   dr = spawnSync(process.execPath, [DOCTOR, '--brain', os.tmpdir()], { encoding: 'utf8', timeout: 20000 });
   check('doctor is a silent no-op without a brain', dr.status === 0 && /No Monkey Brain/.test(dr.stdout), `status=${dr.status}`);
 
+  // ---------- v3 P10: built-in recall (search.js · recall hook) ----------
+  console.log('search.js + recall.js (v3 P10 — always-on recall)');
+  const SEARCHJS = path.join(HERE, 'search.js');
+  const srch = (args, cwd) => spawnSync(process.execPath, [SEARCHJS, ...args], { cwd: cwd || PROJ, encoding: 'utf8', timeout: 15000 });
+  let sr = srch(['escaped pipe table', '--json']);
+  let sj = []; try { sj = JSON.parse(sr.stdout); } catch {}
+  check('search ranks the matching page first, with a snippet', sr.status === 0 && sj[0] && sj[0].path === 'wiki/concepts/todo-page.md' && sj[0].snippet.length > 0, (sr.stdout || sr.stderr || '').slice(0, 200));
+  sr = srch(['immutable source index log', '--json']);
+  sj = []; try { sj = JSON.parse(sr.stdout); } catch {}
+  check('search skips raw-sources and the index/log hubs', sr.status === 0 && !sj.some((h) => /^raw-sources\/|^wiki\/(index|log)\.md$/.test(h.path)), JSON.stringify(sj.map((h) => h.path)));
+  sr = srch(['--brief', 'orphan page links']);
+  check('brief cites pages as [[slug]]', sr.status === 0 && /\[\[orphan-page\]\]/.test(sr.stdout), (sr.stdout || '').slice(0, 200));
+  write('.brain/wiki/concepts/big-page.md', '---\ntitle: "Big"\ntype: concept\n---\n\n' + Array.from({ length: 40 }, () => 'banana split recipe '.repeat(60)).join('\n\n') + '\n');
+  sr = srch(['--brief', 'banana recipe']);
+  check('brief stays within ~2k tokens on huge pages', sr.status === 0 && /\[\[big-page\]\]/.test(sr.stdout) && Math.ceil(sr.stdout.length / 4) <= 2000, `${Math.ceil((sr.stdout || '').length / 4)} tokens`);
+  fs.rmSync(path.join(BRAIN, 'wiki', 'concepts', 'big-page.md'), { force: true });
+  sr = srch(['anything'], os.tmpdir());
+  check('search is a friendly no-op without a brain', sr.status === 0 && /No Monkey Brain/.test(sr.stdout), `status=${sr.status}`);
+
+  const recalled = (prompt, sid, env, cwd) => {
+    const rr = run('recall.js', { cwd: cwd || PROJ, hook_event_name: 'UserPromptSubmit', session_id: `st${process.pid}-${sid}`, prompt }, env);
+    let o = {}; try { o = JSON.parse(rr.stdout || '{}'); } catch {}
+    return { r: rr, ctx: (o.hookSpecificOutput || {}).additionalContext || '' };
+  };
+  let rc = recalled('how does the escaped pipe in a table cell work', 'a');
+  check('first prompt gets brain recall (matching page, small)', rc.ctx.includes('Brain recall') && rc.ctx.includes('todo-page.md') && Math.ceil(rc.ctx.length / 4) <= 600, rc.ctx.slice(0, 200) || rc.r.stdout);
+  rc = recalled('and the escaped pipe in a table cell again', 'a');
+  check('recall fires on the first prompt only', rc.r.status === 0 && rc.r.stdout === '');
+  rc = recalled('/brain:lint', 'b');
+  check('recall ignores slash commands', rc.r.status === 0 && rc.r.stdout === '');
+  rc = recalled('quantum chromodynamics lattice gauge', 'c');
+  check('recall stays silent when nothing matches', rc.r.status === 0 && rc.r.stdout === '');
+  rc = recalled('how does the escaped pipe in a table cell work', 'd', { MONKEY_BRAIN_RECALL: '0' });
+  check('MONKEY_BRAIN_RECALL=0 turns recall off', rc.r.status === 0 && rc.r.stdout === '');
+  rc = recalled('how does the escaped pipe in a table cell work', 'e', undefined, os.tmpdir());
+  check('recall is silent without a brain', rc.r.status === 0 && rc.r.stdout === '');
+
   // ---------- no-brain /brain:init offer (activation fallback) ----------
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');
@@ -669,7 +720,7 @@ try {
   fs.rmSync(ROOT, { recursive: true, force: true });
   try {
     for (const f of fs.readdirSync(os.tmpdir())) {
-      if (f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`)) {
+      if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`)) {
         fs.rmSync(path.join(os.tmpdir(), f), { force: true });
       }
     }

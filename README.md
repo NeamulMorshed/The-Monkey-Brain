@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.14.0](https://img.shields.io/badge/plugin-v0.14.0-blue)
+![Plugin v0.15.0](https://img.shields.io/badge/plugin-v0.15.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -78,11 +78,13 @@ The engine stands on three pillars:
 - Ships with a browsable **Obsidian** vault: graph view, Dataview dashboard, Marp deck.
 
 **🛡️ Enforcement, not just advice**
-- **8 lifecycle hook events (10 scripts)** enforce rules the model can't "forget."
+- **8 lifecycle hook events (11 scripts)** enforce rules the model can't "forget."
 - Hard gates: **secrets** blocking, **raw-sources immutability**, **append-only log**, a
   **plan gate** (architecture tier) and a **TDD gate** (feature+ tiers).
 - **Self-healing wiki checks** repair broken links / orphans in the same turn.
 - A budgeted **session-start context injection** (≤3k tokens) — no "did the manual load?"
+- **Always-on recall** — built-in search over the brain (`brain_search`, `/brain:brief`), and each
+  session's first prompt is matched against it. No database, no embeddings, nothing to install.
 
 **⚡ Token discipline with receipts**
 - **Terse output on by default** (Caveman-style, ~65% shorter; `/brain:terse off` for a
@@ -107,7 +109,7 @@ The engine stands on three pillars:
 - `/brain:doctor` runs **15 deterministic checks** (links, orphans, staleness, budget, WIP,
   open P0s, schema drift…). Failures inject a health report into the *next* session.
 
-**14 `/brain:*` skills · 8 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
+**15 `/brain:*` skills · 8 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
 
 ---
 
@@ -215,7 +217,7 @@ gates; **(5)** depth on demand (packs and semantic search stay deferred until a 
 ```mermaid
 flowchart TB
     subgraph Engine["The Monkey Brain — the engine (this repo)"]
-        P["brain plugin: 14 skills, hooks, agents, MCP"]
+        P["brain plugin: 15 skills, hooks, agents, MCP"]
         BT["schema + brain-template (the method)"]
     end
     P -->|/brain:init scaffolds| I1[".brain/ in Project A"]
@@ -241,13 +243,14 @@ v2 adds **record layers** for the development lifecycle: `specs/`, `projects/`, 
 
 ### Inside the plugin
 
-- **14 skills** (`/brain:*`) — the knowledge SDLC, the develop lifecycle, token discipline, the
+- **15 skills** (`/brain:*`) — the knowledge SDLC, the develop lifecycle, token discipline, the
   product-design pack, the game pipeline, and doctor.
-- **8 lifecycle hook events (10 scripts)** — the enforcement + automation layer (Node, stdlib-only,
+- **8 lifecycle hook events (11 scripts)** — the enforcement + automation layer (Node, stdlib-only,
   one runtime on Windows/macOS/Linux).
 - **2 Sonnet subagents** — `brain-librarian` (batch ingest) and `brain-researcher` (read-only
   research fan-out) run routine/parallel work in isolated context windows.
-- **1 opt-in MCP** — `brain-search`, a dormant qmd semantic-search server enabled per brain.
+- **1 MCP** — `brain-search`: built-in recall (`brain_search`, `brain_brief`) in every brain; it
+  hands off to qmd when a brain opts into meaning-based search.
 
 ---
 
@@ -258,12 +261,12 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 ├── README.md                   ← you are here
 ├── .claude-plugin/             ← marketplace manifest (this repo is its own marketplace)
 ├── plugin/                     ← the `brain` plugin — see plugin/README.md
-│   ├── skills/                 ←   14 /brain:* skills (init, ingest, query, lint, wrap,
+│   ├── skills/                 ←   15 /brain:* skills (init, ingest, query, brief, lint, wrap,
 │   │                           ←     research, plan, build, review, terse, compress,
 │   │                           ←     product-design, game, doctor)
 │   ├── hooks/                  ←   hooks.json + Node scripts (status, router, guards, …)
 │   ├── agents/                 ←   brain-librarian, brain-researcher (Sonnet)
-│   └── .mcp.json               ←   brain-search (opt-in qmd)
+│   └── .mcp.json               ←   brain-search (built-in recall; qmd opt-in)
 ├── bootstrap/                  ← original scaffold path (new-brain.ps1/.sh, lint-brain.ps1)
 ├── schema/
 │   ├── CLAUDE.md               ←   canonical operating manual (the method)

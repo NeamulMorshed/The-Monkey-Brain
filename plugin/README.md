@@ -37,7 +37,7 @@ plugin/
 │                                #     + instinct-track, #5 snapshot,
 │                                #   #6 wrap (+ decision nudge + qmd
 │                                #     re-index), #7 agent-track,
-│                                #   #8 resume+resume-log; qmd-mcp;
+│                                #   #8 resume+resume-log; search-mcp;
 │                                #   selftest (158 checks)             ✅
 ├── skills/                      # /brain:* skills                     ✅ Phase 3 complete
 │   ├── init/                    #   + bundled brain-template + scaffold script
@@ -58,7 +58,7 @@ plugin/
 | # | Event | Script | Does |
 | --- | --- | --- | --- |
 | 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, **health report**, semantic-search state); **terse-mode rules, on by default** in every project (`.no-terse` / `MONKEY_BRAIN_TERSE=0` opt out); `/brain:init` offer in brainless projects; writes an **injection-size receipt** to `sessions/injection-stats.json` |
-| 2 | UserPromptSubmit | `trigger-router` | natural phrases → `/brain:*` routing hints (never blocks) |
+| 2 | UserPromptSubmit | `trigger-router` + `recall` | natural phrases → `/brain:*` routing hints (never blocks); **first-prompt recall** — the session's first prompt is searched against the brain and the top 3 matching pages are injected (`MONKEY_BRAIN_RECALL=0` off) |
 | 3 | PreToolUse Write\|Edit | `guards` | secrets everywhere · raw-sources add-only · log append-only · plan gate (architecture tier) · TDD gate (feature+ tiers, new code files need a test) |
 | 4 | PostToolUse Write\|Edit | `wiki-check` + `instinct-track` | self-healing wiki (frontmatter/orphan block, TODO advisory); **instinct advisory** when a file is revised across 3+ sessions |
 | 5 | PreCompact | `snapshot` | working-state snapshot (next steps, **active specs/projects**, log heads) → `.brain/sessions/` |
@@ -66,14 +66,19 @@ plugin/
 | 7 | PreToolUse Agent | `agent-track` | dispatch log → `sessions/agents.md`; heavy spawns need an explicit model (once-per-session gate) |
 | 8 | SessionStart + Task events | `resume` / `resume-log` | resume.md injection + ask-to-continue; auto task log |
 
-Plus **`qmd-mcp`** — the opt-in `brain-search` MCP server registered in `.mcp.json`,
-dormant unless the brain enables qmd (`.qmd` marker / `MONKEY_BRAIN_QMD=1` + qmd on PATH).
+Plus **`search-mcp`** — the `brain-search` MCP server registered in `.mcp.json`. In any
+project with a brain it serves built-in recall: `brain_search` (ranked pages + snippets) and
+`brain_brief` (a cited ≤ ~2k-token pack), BM25 over the compiled layers via
+`hooks/scripts/search.js`, read fresh on every call. When the brain opts into qmd (`.qmd`
+marker / `MONKEY_BRAIN_QMD=1` + qmd on PATH) it hands off to qmd for vector search. Without a
+brain it exposes zero tools.
 
 ### The skills (Phase 3, complete)
 
 **Knowledge SDLC:** `/brain:init` (self-contained scaffold — bundled template +
 Node script, works from a marketplace install) · `/brain:ingest` (8-step
-compile) · `/brain:query` (index-first + file-back) · `/brain:lint` (mechanical
+compile) · `/brain:query` (index-first + file-back) · `/brain:brief`
+(cited ≤ ~2k-token pack from built-in recall) · `/brain:lint` (mechanical
 scan injected, reasoning follows) · `/brain:wrap` (definition-of-done) ·
 `/brain:doctor` (15-check health monitor, `doctor.js` injected; writes
 `sessions/health.json` for hook #1 to surface next session).

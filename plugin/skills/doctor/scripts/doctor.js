@@ -131,7 +131,7 @@ else {
 
 // ---- 8. hook registration ---------------------------------------------------
 const hooksJson = path.join(__dirname, '..', '..', '..', 'hooks', 'hooks.json');
-const EXPECTED_HOOKS = ['brain-status', 'resume', 'trigger-router', 'guards', 'agent-track', 'wiki-check', 'instinct-track', 'resume-log', 'wrap', 'snapshot'];
+const EXPECTED_HOOKS = ['brain-status', 'resume', 'trigger-router', 'recall', 'guards', 'agent-track', 'wiki-check', 'instinct-track', 'resume-log', 'wrap', 'snapshot'];
 let hooksText = '';
 try { hooksText = fs.readFileSync(hooksJson, 'utf8'); } catch {}
 const missingHooks = EXPECTED_HOOKS.filter((h) => !hooksText.includes(`${h}.js`));
@@ -148,12 +148,12 @@ else {
   add(9, 'injection-budget', over ? 'warn' : 'ok', `avg ${avg}/${BUDGET} tokens over last ${recent.length}${dropped ? ` · sections dropped in ${dropped} (budget pressure)` : ''}`);
 }
 
-// ---- 10. semantic index freshness -------------------------------------------
+// ---- 10. search -------------------------------------------------------------
 const qmdOn = fs.existsSync(path.join(brain, '.qmd')) || process.env.MONKEY_BRAIN_QMD === '1';
 const pageCount = wikiFiles.length;
-if (qmdOn) add(10, 'semantic-index', 'ok', 'qmd enabled — SessionEnd re-indexes; verify `qmd update` ran if results feel stale');
-else if (pageCount >= 100) add(10, 'semantic-index', 'warn', `${pageCount} pages past the ~100 index ceiling — enable semantic search (manual §8)`);
-else add(10, 'semantic-index', 'ok', `index-only search fine at ${pageCount} pages (< ~100 ceiling)`);
+if (qmdOn) add(10, 'semantic-index', 'ok', 'qmd semantic search enabled — SessionEnd re-indexes; verify `qmd update` ran if results feel stale');
+else if (pageCount >= 100) add(10, 'semantic-index', 'info', `built-in recall covers ${pageCount} wiki pages — qmd would add meaning-based matches (manual §8)`);
+else add(10, 'semantic-index', 'ok', `built-in recall covers ${pageCount} wiki pages (always fresh)`);
 
 // ---- 11. WIP limits ---------------------------------------------------------
 const projects = listActive('projects').filter((p) => !['done', 'paused'].includes(String(p.fm.status)));

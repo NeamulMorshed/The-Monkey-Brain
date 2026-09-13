@@ -54,6 +54,12 @@ const RULES = [
     what: 'brain lint',
   },
   {
+    re: /\bbrief me\b|\bcatch me up\b|\bbrief (on|about)\b|^\s*brief\s+\S/i,
+    skill: 'brief',
+    needsBrain: true,
+    what: 'brain brief',
+  },
+  {
     re: /\bresearch\b/i,
     skill: 'research',
     needsBrain: true,

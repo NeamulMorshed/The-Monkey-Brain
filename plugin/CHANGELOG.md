@@ -1,5 +1,27 @@
 # Changelog — brain plugin
 
+## 0.15.0 — 2026-09-13 (v3 P10: always-on recall)
+
+MewVault's always-on memory, without its database, embedding server, or install steps.
+
+- **Built-in recall** (`hooks/scripts/search.js`) — pure-Node BM25 over the compiled layers
+  (`wiki/`, `decisions/`, `specs/`, `projects/`, `memory/`; never `raw-sources/` or the
+  index/log hubs), read fresh from the files on every call, so it can't go stale. About
+  100 ms on the 69-page example brain.
+- **The `brain-search` MCP serves it by default** (`search-mcp.js`, replacing `qmd-mcp.js`):
+  `brain_search` (ranked pages + snippets) and `brain_brief` (a cited pack of at most ~2k
+  tokens). Opting into qmd still hands off to vector search; without a brain the server
+  exposes zero tools and no instructions.
+- **`/brain:brief <topic>`** — the command form of the pack (`model: sonnet`, `effort: low`);
+  the router sends "brief me on X" / "catch me up on X" to it.
+- **First-prompt recall** (`recall.js`, UserPromptSubmit) — a session's first natural-language
+  prompt is searched against the brain, and up to 3 pages matching at least 2 of its words
+  are injected (~300 tokens). `MONKEY_BRAIN_RECALL=0` turns it off.
+- `brain-status` names the search tools every session; doctor check 10 reports built-in
+  coverage (qmd is now an `info`-level upgrade past ~100 pages, not a warning); hook
+  registration expects `recall`. Instance manual §8 rewritten.
+- Selftest 168 → **184 checks**.
+
 ## 0.14.0 — 2026-09-13 (capability plugins ship with brain + brain-all bundle)
 
 Installing `brain` now installs the core craft layer too — no separate step.

@@ -163,16 +163,21 @@ Scaffolded by **The Monkey Brain** engine (schema v2.0). To refresh conventions 
 the engine's update path (`new-brain.ps1 -Update` or `/brain:init --update`) — it updates
 this file, `templates/`, and missing folders, never your knowledge.
 
-**Semantic search (optional, deferred).** `wiki/index.md` *is* the search engine until this
-wiki outgrows it (~100 sources). Past that, enable on-device semantic search:
+**Search (built in, always on).** The **`brain-search`** MCP serves `brain_search` (ranked
+pages + snippets) and `brain_brief` (a cited pack of at most ~2k tokens) over `wiki/`,
+`decisions/`, `specs/`, `projects/` and `memory/`, read fresh from the files on every call —
+nothing to install or re-index. `/brain:brief <topic>` is the command form, and each session's
+first prompt is matched against the brain automatically (`MONKEY_BRAIN_RECALL=0` turns that
+off). `wiki/index.md` stays the map. Search before re-deriving anything.
+
+**Semantic search (optional upgrade).** Past ~100 sources, add meaning-based matches with qmd:
 
 1. Install qmd — `npm i -g @tobilu/qmd` (needs Node ≥ 22).
 2. Index this wiki — `qmd collection add ./wiki` then `qmd update && qmd embed`.
 3. Turn it on — create an empty **`.qmd`** marker in this brain (or set `MONKEY_BRAIN_QMD=1`).
 
-The engine then activates the **`brain-search`** MCP (qmd's `query` / `get` tools, deferred
-by Tool Search) — query it before substantive work, and the session-end hook keeps the index
-fresh. Until enabled it stays fully dormant (zero token cost).
+`brain-search` then hands off to qmd (its `query` / `get` tools, deferred by Tool Search), and
+the session-end hook keeps that index fresh.
 
 ---
 
