@@ -1,5 +1,34 @@
 # Changelog — brain plugin
 
+## 0.19.0 — 2026-09-13 (v3 P14: daily-driver workflows)
+
+The everyday rituals, each reading the compiled brain and filing its result back.
+
+- **`/brain:digest`** (`hooks/scripts/digest.js`) — standup (24 h) or weekly review (`week`):
+  **Blocked** first (open P0s, specs the plan gate keeps blocking, the last doctor report,
+  workstreams idle 21+ days), then **Done** (log entries + git commits in the window), then
+  **In flight** (running loops, open specs with AC progress, each workstream's next step). The
+  weekly adds decisions made, specs closed, the instinct queue and real token usage. Filed to
+  `sessions/standup-<date>.md` / `weekly-<date>.md`.
+- **`/brain:dump`** — classify a loose note and file each part where the brain will find it:
+  decision → `decisions/` ADR · fact → `memory/` · next step → the workstream's `## Next` · idea
+  → `wiki/research/ideas.md` · link → `Clippings/` · correction → `instincts/pending/`.
+- **`/brain:dashboard`** (`dashboard.js`) — one self-contained, offline HTML page
+  (`sessions/dashboard.html`): index stats, open specs with AC progress bars, loops,
+  workstreams, health, recent log and decisions, 7-day tokens by model. All brain text is
+  HTML-escaped; `--open` opens it in the default browser.
+- **`/brain:ci`** (`ci.js`) — GitHub Actions from the detected stack: Node (npm / pnpm / yarn,
+  running whichever of lint, typecheck, test and build exist), Python, Go, .NET and Rust.
+  Previews with `--dry-run`; never overwrites without `--force`. **Doctor check 19** warns on a
+  code project with no CI.
+- **Modes, not more skills** — to keep the always-on skill list small, idea validation (pursue /
+  park / kill) lives in `/brain:research`, URL critiques (P0–P3, heuristics + WCAG) in
+  `/brain:product-design`, and meeting prep in `/brain:brief`.
+- Router: standup, weekly review, dump / "we decided", dashboard, set up CI, validate this idea,
+  critique <url>, meeting prep — with a guard so an app's "analytics dashboard" feature doesn't
+  route to the brain dashboard.
+- Selftest 230 → **253 checks**.
+
 ## 0.18.0 — 2026-09-13 (v3 P13: blast-radius routing)
 
 Size a change from the code it actually touches, before choosing the gate.

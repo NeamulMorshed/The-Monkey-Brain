@@ -54,6 +54,48 @@ const RULES = [
     what: 'brain lint',
   },
   {
+    re: /\bstand-?up\b|\bdaily brief\b|\bweekly review\b|\bweek in review\b|\bwhat did (we|i) (do|ship|get done)\b/i,
+    skill: 'digest',
+    needsBrain: true,
+    what: 'standup / weekly review',
+  },
+  {
+    re: /^\s*dump\b|\bdump\s*[:—–-]|\bjot (this|that|it) down\b|\bwe (just )?decided\b/i,
+    skill: 'dump',
+    needsBrain: true,
+    what: 'note capture',
+  },
+  {
+    re: /\b(brain|vault|project) dashboard\b|\bdashboard (of|for) (the |my |this )?(brain|vault|project)\b|^\s*(open |show )?(me )?(the )?dashboard\s*[.!?]?\s*$|\bshow (me )?the dashboard\b/i,
+    skill: 'dashboard',
+    needsBrain: true,
+    what: 'brain dashboard',
+  },
+  {
+    re: /\b(install|set ?up|add|create)\b[^.!?]{0,20}\bci\b|\bci (pipeline|workflow)\b/i,
+    skill: 'ci',
+    needsBrain: false,
+    what: 'CI setup',
+  },
+  {
+    re: /\bvalidate (this |the |an |my )?idea\b|\bis (this|it) worth building\b|\bpursue,? park,? or kill\b/i,
+    skill: 'research',
+    needsBrain: true,
+    what: 'idea validation (research — validation mode)',
+  },
+  {
+    re: /\bcritique\b[^.!?]{0,60}(https?:\/\/|\bsite\b|\bpage\b|\bdesign\b|\bui\b|\bux\b|\blanding\b|\bscreen\b|\bapp\b)/i,
+    skill: 'product-design',
+    needsBrain: true,
+    what: 'design critique (product-design — critique mode)',
+  },
+  {
+    re: /\bmeeting prep\b|\bprep(are)? (me )?for (the |my |a |our )?(meeting|call|sync|1:1)\b/i,
+    skill: 'brief',
+    needsBrain: true,
+    what: 'meeting prep (brief — meeting mode)',
+  },
+  {
     re: /\bloop (until|on|over|through)\b|\bkeep (going|iterating) until\b|\biterate\b[^.!?]{0,40}\buntil\b|\bstart an? (build |research |design )?loop\b/i,
     skill: 'loop',
     needsBrain: true,

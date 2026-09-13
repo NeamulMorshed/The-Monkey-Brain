@@ -130,6 +130,11 @@ met — every AC ✅, a stable recommendation, or no open P0 — and halts on li
 tick cap; running loops show at session start. A spec the plan gate blocks twice lands in
 `sessions/review-required.md` for the curator.
 
+**Daily:** `/brain:digest` (standup; `week` for the weekly review) · `/brain:dump` (file a loose
+note where it belongs) · `/brain:dashboard` (one-page HTML overview) · `/brain:ci` (CI from the
+detected stack). Idea validation, URL critiques and meeting prep are modes of `/brain:research`,
+`/brain:product-design` and `/brain:brief`.
+
 **Log prefixes** (`wiki/log.md`, append-only):
 `ingest | query | lint | schema | feat | session | research | plan | build | review`.
 

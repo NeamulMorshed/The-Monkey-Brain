@@ -48,7 +48,7 @@ plugin/
 │   ├── terse/  compress/        #   token discipline (Caveman-inspired)
 │   ├── product-design/          #   domain-expertise pack (data+templates+gate) ✅ Phase 6.5
 │   ├── game/                    #   game pipeline (GDD → prototype → playtest)   ✅ Phase 7
-│   └── doctor/                  #   18-check health monitor (doctor.js)          ✅ Phase 8
+│   └── doctor/                  #   19-check health monitor (doctor.js)          ✅ Phase 8
 ├── agents/                      # brain-librarian, brain-researcher   ✅ Phase 5.5
 └── .mcp.json                    # brain-search (opt-in qmd)           ✅ Phase 5
 ```
@@ -80,14 +80,18 @@ Node script, works from a marketplace install) · `/brain:ingest` (8-step
 compile) · `/brain:query` (index-first + file-back) · `/brain:brief`
 (cited ≤ ~2k-token pack from built-in recall) · `/brain:lint` (mechanical
 scan injected, reasoning follows) · `/brain:wrap` (definition-of-done) ·
-`/brain:doctor` (18-check health monitor, `doctor.js` injected; writes
+`/brain:doctor` (19-check health monitor, `doctor.js` injected; writes
 `sessions/health.json` for hook #1 to surface next session).
 **Develop lifecycle:** `/brain:research` (filed to `wiki/research/`) ·
 `/brain:plan` (numbered ACs + a tier sized by the `graph.js` import-graph blast radius,
 curator-owned approval) · `/brain:build`
 (test-first against the ACs) · `/brain:review` (verification + findings filed
 back, feeding `decisions/` and `instincts/`) · `/brain:loop` (bounded build, research
-and design loops that stop on the brain's own criteria). **Token discipline:**
+and design loops that stop on the brain's own criteria). **Daily drivers:**
+`/brain:digest` (standup · weekly review, filed to `sessions/`) · `/brain:dump` (classify
+and file a loose note) · `/brain:dashboard` (one-page offline HTML) · `/brain:ci` (GitHub
+Actions from the detected stack); idea validation, URL critiques and meeting prep are modes of
+research, product-design and brief. **Token discipline:**
 `/brain:terse` (output compression — on by default via hook #1; the skill
 toggles it off/on per session) · `/brain:compress` (permanent
 instruction-file compression with receipts) · `/brain:usage` (real token receipts

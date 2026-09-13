@@ -61,13 +61,18 @@ function section(text, heading) {
   return m ? m[1] : '';
 }
 
+/** ACs in a spec's "## Acceptance criteria" section, and how many are marked ✅. */
+function acProgress(text) {
+  const acs = section(text, 'Acceptance criteria').split('\n').filter((l) => /\bAC-\d+\b/.test(l));
+  return { done: acs.filter((l) => /✅|\[x\]/i.test(l)).length, total: acs.length };
+}
+
 /** The loop's progress metric and stop condition, measured from the brain now. */
 function measure(brain, loop) {
   const text = lib.readTextSafe(target(brain, loop));
   if (loop.type === 'spec') {
-    const acs = section(text, 'Acceptance criteria').split('\n').filter((l) => /\bAC-\d+\b/.test(l));
-    const done = acs.filter((l) => /✅|\[x\]/i.test(l)).length;
-    return { metric: done, label: `ACs ${done}/${acs.length}`, met: acs.length > 0 && done === acs.length };
+    const { done, total } = acProgress(text);
+    return { metric: done, label: `ACs ${done}/${total}`, met: total > 0 && done === total };
   }
   if (loop.type === 'research') {
     const pageHash = text ? hash(text) : '';
@@ -252,4 +257,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { activeLoops, family, describe };
+module.exports = { activeLoops, family, describe, acProgress, openP0 };

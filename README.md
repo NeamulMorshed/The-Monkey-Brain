@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.18.0](https://img.shields.io/badge/plugin-v0.18.0-blue)
+![Plugin v0.19.0](https://img.shields.io/badge/plugin-v0.19.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -104,6 +104,9 @@ The engine stands on three pillars:
   a tick cap. Verification must run on a different model family than the work.
 - **Blast-radius sizing** — `/brain:plan` scans the import graph (JS/TS, Python, Go, C#; no
   dependencies) and suggests the spec's tier and model from what the change actually touches.
+- **Daily drivers** — standup and weekly-review digests, `dump` for loose notes, a one-page HTML
+  dashboard, one-step CI, plus idea validation, URL critiques and meeting prep. Each one files its
+  result back into the brain.
 
 **📦 Domain expertise, on tap**
 - A **product-design pack** (Nielsen heuristics + WCAG 2.2 AA + method catalog) with a validation
@@ -114,10 +117,10 @@ The engine stands on three pillars:
   *plugins do the craft; the brain records the knowledge.*
 
 **🩺 Health monitoring**
-- `/brain:doctor` runs **18 deterministic checks** (links, orphans, staleness, budget, WIP, cache safety,
+- `/brain:doctor` runs **19 deterministic checks** (links, orphans, staleness, budget, WIP, cache safety, CI,
   open P0s, schema drift…). Failures inject a health report into the *next* session.
 
-**17 `/brain:*` skills · 9 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
+**21 `/brain:*` skills · 9 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
 
 ---
 
@@ -225,7 +228,7 @@ gates; **(5)** depth on demand (packs and semantic search stay deferred until a 
 ```mermaid
 flowchart TB
     subgraph Engine["The Monkey Brain — the engine (this repo)"]
-        P["brain plugin: 17 skills, hooks, agents, MCP"]
+        P["brain plugin: 21 skills, hooks, agents, MCP"]
         BT["schema + brain-template (the method)"]
     end
     P -->|/brain:init scaffolds| I1[".brain/ in Project A"]
@@ -251,7 +254,7 @@ v2 adds **record layers** for the development lifecycle: `specs/`, `projects/`, 
 
 ### Inside the plugin
 
-- **17 skills** (`/brain:*`) — the knowledge SDLC, the develop lifecycle, token discipline, the
+- **21 skills** (`/brain:*`) — the knowledge SDLC, the develop lifecycle, token discipline, the
   product-design pack, the game pipeline, and doctor.
 - **9 lifecycle hook events (11 scripts)** — the enforcement + automation layer (Node, stdlib-only,
   one runtime on Windows/macOS/Linux).
@@ -269,9 +272,10 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 ├── README.md                   ← you are here
 ├── .claude-plugin/             ← marketplace manifest (this repo is its own marketplace)
 ├── plugin/                     ← the `brain` plugin — see plugin/README.md
-│   ├── skills/                 ←   17 /brain:* skills (init, ingest, query, brief, lint, wrap,
+│   ├── skills/                 ←   21 /brain:* skills (init, ingest, query, brief, lint, wrap,
 │   │                           ←     research, plan, build, review, terse, compress,
-│   │                           ←     product-design, game, doctor, usage, loop)
+│   │                           ←     product-design, game, doctor, usage, loop, digest,
+│   │                           ←     dump, dashboard, ci)
 │   ├── hooks/                  ←   hooks.json + Node scripts (status, router, guards, …)
 │   ├── agents/                 ←   brain-librarian, brain-researcher (Sonnet)
 │   └── .mcp.json               ←   brain-search (built-in recall; qmd opt-in)
@@ -331,7 +335,7 @@ good novel answers are filed back to `syntheses/` so the knowledge compounds.
 ### 5. Keep it healthy
 
 - **"lint the brain"** (`/brain:lint`) — catch broken links, orphans, and stale claims.
-- **"brain doctor"** (`/brain:doctor`) — 18-check health report; failures surface next session.
+- **"brain doctor"** (`/brain:doctor`) — 19-check health report; failures surface next session.
 - **"wrap up"** (`/brain:wrap`) — end-of-session: verify, log, refresh the index, commit.
 - **Terse output is on by default** — `/brain:terse off` (or "be more verbose") for a session;
   an empty `.no-terse` at the project root or `MONKEY_BRAIN_TERSE=0` turns it off for good.

@@ -1,12 +1,12 @@
 ---
-description: Run an 18-check health report on the project's Monkey Brain — broken links, orphans, stale flags, index freshness, Clippings backlog, log gaps, uncommitted changes, hook registration, injection budget, search coverage, WIP limits, instinct-queue overflow, specs without tests, open P0 findings, schema version, cache safety, cache-hit ratio, and subagent outcomes — then triage the fixes. Use when the user says "brain doctor", "check brain health", "is the brain healthy", or before a release/handoff.
+description: Run a 19-check health report on the project's Monkey Brain — broken links, orphans, stale flags, index freshness, Clippings backlog, log gaps, uncommitted changes, hook registration, injection budget, search coverage, WIP limits, instinct-queue overflow, specs without tests, open P0 findings, schema version, cache safety, cache-hit ratio, subagent outcomes, and CI presence — then triage the fixes. Use when the user says "brain doctor", "check brain health", "is the brain healthy", or before a release/handoff.
 argument-hint: "[--strict]"
 effort: high
 ---
 
 # /brain:doctor — full health report
 
-The health monitor of the brain (ROADMAP Phase 8, receipts added in v3 P11). The 18-check mechanical scan below ran
+The health monitor of the brain (ROADMAP Phase 8, receipts added in v3 P11). The 19-check mechanical scan below ran
 before you read this — its report is already in context (zero model tokens), and it also wrote
 `sessions/health.json` so the **next session's** brain-status surfaces any open failures.
 
@@ -36,6 +36,7 @@ info is context.
    - low cache-hit ratio (#17) → `/brain:usage` for the breakdown and the likely cause.
    - subagents returning nothing (#18) → review those dispatches' prompts and models in
      `sessions/agents.md`.
+   - a code project with no CI (#19) → `/brain:ci`.
 3. **Report** the health line and the model-mix, then do (or offer) the top 1–3 fixes. Don't
    silently auto-fix structural things — surface them and let the curator steer.
 

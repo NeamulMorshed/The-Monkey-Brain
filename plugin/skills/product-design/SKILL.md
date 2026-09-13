@@ -50,3 +50,17 @@ assets: `data/` (methods, heuristics, accessibility), `templates/` (deliverable 
 **Done when:** the phases the curator asked for are complete, each produced a linked+indexed
 artifact in the right `.brain/` folder, the workstream records `pack: product-design`, and the
 validation checklist has no open P0s (or the curator has accepted them explicitly).
+
+## Critique mode — "critique <url>"
+
+A severity-ranked design review of a live page — ours or a competitor's:
+
+1. **Look at it:** use browser tools when available (screenshot at desktop and ~400px), else
+   fetch the page. Note what you actually saw; don't critique from memory.
+2. **Evaluate** against `data/heuristics.md` (Nielsen's 10) and `data/accessibility.md` (WCAG
+   2.2 AA): contrast, focus, target size, hierarchy, copy, empty and error states.
+3. **Rank findings P0–P3** with the element and the evidence (what, where, why it fails, the
+   fix). P0 = blocks a task or fails accessibility.
+4. **File it:** `wiki/syntheses/critique-<site>.md`, linked from the index. A P0 pattern seen
+   before becomes an `instincts/pending/` rule; on our own product, open P0s go to the
+   workstream so they gate `/brain:wrap`.

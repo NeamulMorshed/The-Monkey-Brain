@@ -38,3 +38,17 @@ lifecycle (instance manual §4) and always ends with a `wiki/research/` page.
 
 **Done when:** the research page exists, is linked and indexed, every finding has a
 source, and the log entry + commit round it off.
+
+## Validation mode — "validate <idea>"
+
+A feasibility scan with a verdict, filed as `wiki/research/validate-<idea>.md`:
+
+- **Problem & who has it** — is the pain real and frequent? Evidence, not enthusiasm.
+- **Competitors & substitutes** — who solves it today, how well, at what price (fan out
+  `brain-researcher` for the teardowns).
+- **Market signal** — searches, communities, pricing pages, reviews; say when it's thin.
+- **Effort** — if it touches this codebase, size it with
+  `node "${CLAUDE_SKILL_DIR}/../../hooks/scripts/graph.js" radius <files or keywords>`.
+- **Risks** — technical, legal, distribution.
+- **Recommendation: pursue, park, or kill** — one word, then the single reason that decides it,
+  and what evidence would change the call.

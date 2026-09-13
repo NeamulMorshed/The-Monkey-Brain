@@ -20,3 +20,13 @@ Built-in recall (v3 P10): full-text search over the compiled layers — `wiki/`,
    which files novel answers back.
 
 A brief is a read: it files nothing and needs no log entry.
+
+## Meeting prep — "prep for <meeting> with <people>"
+
+1. Brief on the meeting's topic as above.
+2. For each attendee or organization, read their `wiki/entities/` page and the log entries that
+   mention them (`brain_search <name>`): role, last interaction, what they care about.
+3. Pull the open threads they're part of: workstreams' `## Next` and `## Blockers`, specs in
+   review, anything in `sessions/review-required.md`.
+4. Draft a short agenda (decisions needed first) and file it to
+   `sessions/meeting-<date>-<slug>.md`. After the meeting, `/brain:dump` the outcomes.

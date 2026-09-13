@@ -58,8 +58,8 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P11** Real receipts — transcript usage + cache-hit ratio, cache-safety check, ledger outcomes, 3-OS CI | ✅ 2026-09-13 | v0.16.0 — `usage.js` + `/brain:usage` (per day/model/branch, cache-hit ratio, subagent share; deduped per API response; case-insensitive folder match on Windows); `agent-track` on `SubagentStop` logs outcome + real tokens; doctor 16 cache safety · 17 cache-hit · 18 dispatch outcomes; CI matrix Win/mac/Linux × Node 18/22 (first run on push); selftest **197** |
 | **P12** Loops that stop — AC-terminated loops, livelock detection, verifier ≠ generator family | ✅ 2026-09-13 | v0.17.0 — `loop.js` + `/brain:loop` (spec / research / design loops; stop conditions read from the brain; livelock · stall · tick-cap halts; state in `sessions/loops/`, spec `## Loop log`); running loops in `brain-status`; `agent-track` blocks same-family verifiers; plan gate escalates its 2nd block to `sessions/review-required.md`; selftest **218** |
 | **P13** Blast-radius routing — import-graph scanner → model + tier suggestion | ✅ 2026-09-13 | v0.18.0 — `graph.js` (JS/TS incl. `require(path.join(__dirname,…))`, Python, Go via `go.mod`, C# namespaces; mtime cache in `sessions/graph.json`; 1k files < 2 s); `radius` → files × dirs × types → tier + model; `/brain:plan` uses it; manual §5; selftest **230** |
-| **P14** Daily-driver workflows — standup, weekly review, dump, meeting prep, validate, critique, dashboard, CI | ⏳ next | |
-| **P15** Learned bans — instincts with `ban:` patterns enforced by hook; confidence scores | ⏳ | |
+| **P14** Daily-driver workflows — standup, weekly review, dump, meeting prep, validate, critique, dashboard, CI | ✅ 2026-09-13 | v0.19.0 — `digest.js` + `/brain:digest` (standup / weekly, filed to `sessions/`), `/brain:dump`, `dashboard.js` + `/brain:dashboard` (offline HTML, escaped), `ci.js` + `/brain:ci` (Node/Python/Go/.NET/Rust) + doctor check 19; validate / critique / meeting prep as modes of research / product-design / brief; router phrases with a false-positive guard; selftest **253** |
+| **P15** Learned bans — instincts with `ban:` patterns enforced by hook; confidence scores | ⏳ next | |
 | **P16** Team mode — git-native lock, union-merged log, per-author sessions | ⏳ | |
 | **P17** Life packs (optional) — learning (SM-2), career, ideas | ⏳ | |
 
@@ -102,6 +102,11 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   signal: a wide radius means architecture, which arms the plan gate. The first smoke run on
   this repo found 0 imports (the `require(path.join(__dirname, …))` idiom) — fixed and tested.
   Selftest 218 → 230.
+- **P14 daily drivers (v0.19.0):** standup / weekly digests, dump, dashboard and CI setup (+
+  doctor check 19) as four new skills; idea validation, URL critique and meeting prep went in as
+  *modes* of existing skills, because every skill description costs context in every session.
+  Smoke-tested on a copy of the 69-page example brain and a multi-stack scratch project; the
+  router got a guard so "build an analytics dashboard" stays app work. Selftest 230 → 253.
 
 **[2026-07-18] Session 4 — Phases 6 + 6.5 + 7 + 8 + 9 (v0.9.0 → v0.12.0)**
 

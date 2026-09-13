@@ -303,6 +303,21 @@ try {
   check('"token usage report" routes to brain:usage (no brain needed)', t.ctx.includes('brain:usage'), t.ctx);
   t = routed('keep going until the tests pass');
   check('"keep going until…" routes to brain:loop', t.ctx.includes('brain:loop'), t.ctx);
+  for (const [phrase, skill, cwd] of [
+    ['standup', 'digest'],
+    ["let's do the weekly review", 'digest'],
+    ['dump — we decided to use Postgres for billing', 'dump'],
+    ['show me the dashboard', 'dashboard'],
+    ['set up CI for this repo', 'ci', PLAIN_R],
+    ['validate this idea: a CLI for invoices', 'research'],
+    ['critique https://example.com', 'product-design'],
+    ['prep me for the meeting with Acme', 'brief'],
+  ]) {
+    t = routed(phrase, cwd);
+    check(`"${phrase}" routes to brain:${skill}`, t.ctx.includes(`brain:${skill}`), t.ctx);
+  }
+  t = routed('build an analytics dashboard page for sales');
+  check('an app "dashboard" feature does not route to the brain dashboard', !t.ctx.includes('brain:dashboard'), t.ctx);
   t = routed('compress the CLAUDE.md file');
   check('"compress CLAUDE.md" routes to brain:compress', t.ctx.includes('brain:compress'), t.ctx);
   t = routed('design a product for our new users');
@@ -490,6 +505,10 @@ try {
     brief: { model: 'sonnet', effort: 'low' },
     usage: { model: 'sonnet', effort: 'low' },
     loop: { effort: 'high' },
+    digest: { model: 'sonnet', effort: 'low' },
+    dump: { model: 'sonnet', effort: 'medium' },
+    dashboard: { model: 'haiku', effort: 'low' },
+    ci: { model: 'sonnet', effort: 'low' },
     plan: { effort: 'high' },
     review: { effort: 'high' },
     wrap: { effort: 'high' },
@@ -646,12 +665,12 @@ try {
   console.log('doctor.js (skill /brain:doctor — 15 health checks + health.json surfacing)');
   const DOCTOR = path.join(SKILLS, 'doctor', 'scripts', 'doctor.js');
   let dr = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
-  check('doctor runs all 18 checks, exit 0 by default', dr.status === 0 && /18-check health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout) && /18\. dispatch-outcomes/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
+  check('doctor runs all 19 checks, exit 0 by default', dr.status === 0 && /19-check health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout) && /19\. ci-presence/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
   const HEALTHP = path.join(BRAIN, 'sessions', 'health.json');
   check('doctor writes sessions/health.json', fs.existsSync(HEALTHP), 'no health.json');
   let dj = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN, '--json'], { encoding: 'utf8', timeout: 20000 });
   let hrep = {}; try { hrep = JSON.parse(dj.stdout); } catch {}
-  check('doctor --json reports exactly 18 findings + numeric counts', Array.isArray(hrep.findings) && hrep.findings.length === 18 && typeof hrep.ok === 'number' && typeof hrep.crit === 'number', `findings=${(hrep.findings || []).length}`);
+  check('doctor --json reports exactly 19 findings + numeric counts', Array.isArray(hrep.findings) && hrep.findings.length === 19 && typeof hrep.ok === 'number' && typeof hrep.crit === 'number', `findings=${(hrep.findings || []).length}`);
   check('doctor flags the fixture orphan (check 2)', (hrep.findings || []).some((f) => f.check === 'orphans' && f.level === 'warn' && /orphan-page/.test(f.detail)), JSON.stringify((hrep.findings || []).find((f) => f.check === 'orphans')));
   check('doctor flags a feature+ spec with no test plan (check 13)', (hrep.findings || []).some((f) => f.check === 'specs-without-tests' && f.level === 'warn'), 'no specs-without-tests warn');
   check('doctor reports model-mix from agents.md', typeof hrep.model_mix === 'string' && /sonnet/.test(hrep.model_mix), hrep.model_mix);
@@ -667,6 +686,61 @@ try {
   check('doctor --strict exits 1 when warnings/criticals exist', dr.status === 1, `status=${dr.status}`);
   dr = spawnSync(process.execPath, [DOCTOR, '--brain', os.tmpdir()], { encoding: 'utf8', timeout: 20000 });
   check('doctor is a silent no-op without a brain', dr.status === 0 && /No Monkey Brain/.test(dr.stdout), `status=${dr.status}`);
+
+  // ---------- v3 P14: daily-driver workflows (digest · dashboard · ci · doctor 19) ----------
+  console.log('digest.js + dashboard.js + ci.js + doctor 19 (v3 P14 — daily workflows)');
+  const hookRun = (script, args, cwd) => spawnSync(process.execPath, [path.join(HERE, script), ...args], { cwd: cwd || PROJ, encoding: 'utf8', timeout: 30000 });
+  const localDay = (() => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; })();
+  write('.brain/specs/daily.md', '---\ntitle: "Daily"\ntype: spec\nstatus: active\ntier: quick\nphase: build\n---\n\n## Acceptance criteria\n- **AC-1** — a ✅ t\n- **AC-2** — b\n');
+  fs.appendFileSync(path.join(BRAIN, 'wiki', 'log.md'), `\n## [${localDay}] build | daily digest test\n`, 'utf8');
+  let dg = hookRun('digest.js', []);
+  const iBlocked = dg.stdout.indexOf('## Blocked'), iDone = dg.stdout.indexOf('## Done since'), iFlight = dg.stdout.indexOf('## In flight');
+  check('standup: blocked first, then done, then in flight', dg.status === 0 && iBlocked >= 0 && iBlocked < iDone && iDone < iFlight, dg.stdout.slice(0, 300) || dg.stderr);
+  check('standup shows today\'s log work and open specs with AC progress', /build \| daily digest test/.test(dg.stdout) && /`daily` — quick · phase build · ACs 1\/2/.test(dg.stdout), dg.stdout.slice(0, 600));
+  check('standup lists open P0s as blockers', /security: P0: SQL injection/.test(dg.stdout), dg.stdout.slice(0, 400));
+  const standupFile = path.join(BRAIN, 'sessions', `standup-${localDay}.md`);
+  check('standup files itself to sessions/', fs.existsSync(standupFile) && /type: standup/.test(fs.readFileSync(standupFile, 'utf8')), standupFile);
+  dg = hookRun('digest.js', ['--week', '--no-file']);
+  check('weekly review adds decisions, closed specs and housekeeping (no file with --no-file)', /## Decisions this week/.test(dg.stdout) && /## Specs closed/.test(dg.stdout) && /instinct queue/.test(dg.stdout) && !fs.existsSync(path.join(BRAIN, 'sessions', `weekly-${localDay}.md`)), dg.stdout.slice(-400));
+
+  write('.brain/projects/xss.md', '---\ntitle: "<script>alert(1)</script>"\ntype: project\nstatus: paused\n---\n');
+  const db = hookRun('dashboard.js', []);
+  const dashFile = path.join(BRAIN, 'sessions', 'dashboard.html');
+  const html = fs.existsSync(dashFile) ? fs.readFileSync(dashFile, 'utf8') : '';
+  check('dashboard writes one self-contained HTML page', db.status === 0 && /Dashboard written/.test(db.stdout) && /<title>/.test(html) && !/(src|href)="https?:/.test(html), db.stdout || db.stderr);
+  check('dashboard escapes brain text (no script injection)', html.includes('&lt;script&gt;alert(1)&lt;/script&gt;') && !html.includes('<script>alert(1)'), 'unescaped content');
+  check('dashboard shows open specs with AC progress', /daily<\/code> · quick · build · ACs 1\/2/.test(html), 'no spec row');
+
+  const CIP = path.join(ROOT, 'cip');
+  fs.mkdirSync(path.join(CIP, 'tests'), { recursive: true });
+  fs.writeFileSync(path.join(CIP, 'package.json'), JSON.stringify({ scripts: { test: 'node t.js', lint: 'eslint .', build: 'tsc' } }));
+  fs.writeFileSync(path.join(CIP, 'package-lock.json'), '{}');
+  fs.writeFileSync(path.join(CIP, 'requirements.txt'), '');
+  fs.writeFileSync(path.join(CIP, 'go.mod'), 'module example.com/x\n');
+  fs.writeFileSync(path.join(CIP, 'App.csproj'), '<Project />');
+  fs.writeFileSync(path.join(CIP, 'Cargo.toml'), '[package]\nname = "x"\n');
+  let cr = hookRun('ci.js', ['--dry-run', '--root', CIP]);
+  check('ci detects Node, Python, Go, .NET and Rust with the right steps', /Node \(install, lint, test, build\)/.test(cr.stdout) && /Python \(install, test\)/.test(cr.stdout) && /Go \(vet, test, build\)/.test(cr.stdout) && /\.NET \(restore, build, test\)/.test(cr.stdout) && /Rust \(build, test\)/.test(cr.stdout) && /npm ci/.test(cr.stdout), cr.stdout.slice(0, 300));
+  check('ci --dry-run writes nothing', !fs.existsSync(path.join(CIP, '.github')), 'wrote on dry run');
+  cr = hookRun('ci.js', ['--root', CIP]);
+  const ciYml = path.join(CIP, '.github', 'workflows', 'ci.yml');
+  check('ci writes .github/workflows/ci.yml', fs.existsSync(ciYml) && /actions\/setup-node@v4/.test(fs.readFileSync(ciYml, 'utf8')) && /go-version-file: "go\.mod"/.test(fs.readFileSync(ciYml, 'utf8')), cr.stdout);
+  cr = hookRun('ci.js', ['--root', CIP]);
+  check('ci never overwrites an existing workflow without --force', /already exists — left untouched/.test(cr.stdout), cr.stdout);
+
+  const ciFinding = () => {
+    const d = spawnSync(process.execPath, [path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), '--brain', BRAIN, '--json'], { encoding: 'utf8', timeout: 30000 });
+    let o = {}; try { o = JSON.parse(d.stdout); } catch {}
+    return (o.findings || []).find((f) => f.check === 'ci-presence') || {};
+  };
+  fs.writeFileSync(path.join(PROJ, 'package.json'), JSON.stringify({ scripts: { test: 'node t.js' } }));
+  check('doctor 19: a code project without CI warns', ciFinding().level === 'warn', JSON.stringify(ciFinding()));
+  fs.mkdirSync(path.join(PROJ, '.github', 'workflows'), { recursive: true });
+  fs.writeFileSync(path.join(PROJ, '.github', 'workflows', 'ci.yml'), 'name: CI\n');
+  check('doctor 19: CI present → ok', ciFinding().level === 'ok', JSON.stringify(ciFinding()));
+  for (const f of ['.brain/specs/daily.md', '.brain/projects/xss.md', `.brain/sessions/standup-${localDay}.md`, '.brain/sessions/dashboard.html', 'package.json']) fs.rmSync(path.join(PROJ, f), { force: true });
+  fs.rmSync(path.join(PROJ, '.github'), { recursive: true, force: true });
+  fs.rmSync(CIP, { recursive: true, force: true });
 
   // ---------- v3 P13: blast-radius routing (graph.js) ----------
   console.log('graph.js (v3 P13 — blast-radius routing)');

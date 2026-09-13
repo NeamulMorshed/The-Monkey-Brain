@@ -2,7 +2,7 @@
 /**
  * doctor.js — the mechanical layer of /brain:doctor (ROADMAP Phase 8).
  *
- * 18 deterministic health checks over a brain (MewVault-parity + v3 P11 receipts), zero model
+ * 19 deterministic health checks over a brain (MewVault-parity + v3 receipts and CI), zero model
  * tokens. The SKILL.md injects this output via !` ` preprocessing; the model
  * then reasons over the findings (what to fix first, what to file). It also
  * writes sessions/health.json so hook #1 (brain-status) can surface open
@@ -24,6 +24,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const lib = require(path.join(__dirname, '..', '..', '..', 'hooks', 'scripts', 'lib.js'));
 const usage = require(path.join(__dirname, '..', '..', '..', 'hooks', 'scripts', 'usage.js'));
+const ci = require(path.join(__dirname, '..', '..', '..', 'hooks', 'scripts', 'ci.js'));
 
 const args = process.argv.slice(2);
 const strict = args.includes('--strict');
@@ -223,6 +224,13 @@ const empties = outcomes.filter((o) => o === 'empty').length;
 if (!outcomes.length) add(18, 'dispatch-outcomes', 'info', 'no subagent outcomes recorded yet');
 else add(18, 'dispatch-outcomes', outcomes.length >= 4 && empties / outcomes.length >= 0.25 ? 'warn' : 'ok', `last ${outcomes.length} dispatch(es): ${outcomes.length - empties} done · ${empties} returned nothing${empties ? ' — check those agents\' prompts and models in sessions/agents.md' : ''}`);
 
+// ---- 19. CI presence (code projects need a safety net) ---------------------
+const stacks = ci.detect(projectRoot).map((j) => j.name);
+let workflows = [];
+try { workflows = fs.readdirSync(path.join(projectRoot, '.github', 'workflows')).filter((f) => /\.ya?ml$/i.test(f)); } catch {}
+if (!stacks.length) add(19, 'ci-presence', 'info', 'no code project detected (package.json, pyproject / requirements, go.mod, .sln / .csproj, Cargo.toml)');
+else add(19, 'ci-presence', workflows.length ? 'ok' : 'warn', workflows.length ? `${stacks.join(', ')} project with CI (${workflows.join(', ')})` : `${stacks.join(', ')} project with no CI workflow — /brain:ci installs one`);
+
 // ---- verdict + report -------------------------------------------------------
 const counts = { ok: 0, info: 0, warn: 0, crit: 0 };
 for (const f of findings) counts[f.level]++;
@@ -240,7 +248,7 @@ if (asJson) {
   process.exit(strict && counts.warn + counts.crit > 0 ? 1 : 0);
 }
 
-const out = [`🩺 brain doctor — 18-check health of ${brain}`];
+const out = [`🩺 brain doctor — 19-check health of ${brain}`];
 for (const f of findings.sort((a, b) => a.n - b.n)) out.push(`  ${SYM[f.level]} ${f.n}. ${f.check}: ${f.detail}`);
 out.push(`  · model-mix (agents.md): ${mixStr}`);
 const verdict = counts.crit ? `${counts.crit} CRITICAL · ${counts.warn} warning(s) — fix criticals first (they gate wrap)` : counts.warn ? `${counts.warn} warning(s) · ${counts.ok} ok — triage below` : `all clear (${counts.ok} ok, ${counts.info} info)`;
