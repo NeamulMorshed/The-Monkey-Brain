@@ -278,7 +278,7 @@ try {
   check('"is the brain healthy" routes to brain:doctor', t.ctx.includes('brain:doctor'), t.ctx);
   t = routed('what does the brain know about hooks?');
   check('"what does the brain know" routes to brain:query', t.ctx.includes('brain:query'), t.ctx);
-  t = routed('refactor the parser and add tests');
+  t = routed('thanks, that looks great');
   check('unrelated prompt is silent', t.r.status === 0 && t.r.stdout === '', t.r.stdout);
   t = routed('/brain:lint');
   check('explicit slash command is silent', t.r.status === 0 && t.r.stdout === '');
@@ -326,6 +326,36 @@ try {
   }
   t = routed('build an analytics dashboard page for sales');
   check('an app "dashboard" feature does not route to the brain dashboard', !t.ctx.includes('brain:dashboard'), t.ctx);
+
+  // plan-before-build: development intent phrased without "spec" still goes through brain:plan.
+  const BIG = path.join(BRAIN, 'specs', 'big-feature.md');
+  const bigText = fs.readFileSync(BIG, 'utf8');
+  fs.rmSync(BIG);
+  for (const phrase of ['add a login feature', 'fix the crash on upload', 'refactor the parser and add tests', 'can you build the settings page?']) {
+    t = routed(phrase);
+    check(`"${phrase}" routes to brain:plan (plan before build)`, t.ctx.includes('brain:plan') && /plan before build/i.test(t.ctx) && /Open specs: none/.test(t.ctx), t.ctx);
+  }
+  for (const phrase of ['why does the build fail on upload?', 'how do I add a feature flag here?', 'explain the parser module']) {
+    t = routed(phrase);
+    check(`question "${phrase}" is silent`, t.r.status === 0 && t.r.stdout === '', t.r.stdout);
+  }
+  t = routed('add a login feature', PLAIN_R);
+  check('development intent without a brain stays silent (.no-brain)', t.r.status === 0 && t.r.stdout === '', t.r.stdout);
+  fs.rmSync(path.join(PLAIN_R, '.no-brain'));
+  t = routed('add a login feature', PLAIN_R);
+  check('development intent without a brain suggests init first', t.ctx.includes('brain:init') && t.ctx.includes('brain:plan'), t.ctx);
+  fs.writeFileSync(path.join(PLAIN_R, '.no-brain'), '');
+  write('.brain/specs/login-expiry.md', '---\ntitle: "Login expiry"\ntype: spec\nstatus: active\ntier: feature\nphase: build\n---\n\n- AC-1 …\n');
+  write('.brain/specs/old-thing.md', '---\ntitle: "Old"\ntype: spec\nstatus: done\ntier: quick\n---\n\n- AC-1 …\n');
+  t = routed('add a login feature');
+  check('with open specs the hint lists them and offers brain:build', t.ctx.includes('login-expiry') && t.ctx.includes('feature') && t.ctx.includes('brain:build') && t.ctx.includes('brain:plan') && !t.ctx.includes('old-thing'), t.ctx);
+  fs.rmSync(path.join(BRAIN, 'specs', 'login-expiry.md'));
+  fs.rmSync(path.join(BRAIN, 'specs', 'old-thing.md'));
+  fs.writeFileSync(BIG, bigText, 'utf8');
+  t = routed('write a spec for user billing');
+  check('"write a spec" still wins over the generic dev rule', t.ctx.includes('brain:plan') && !/plan before build/i.test(t.ctx), t.ctx);
+  t = routed('implement the spec now');
+  check('"implement the spec" still wins over the generic dev rule', t.ctx.includes('brain:build') && !/plan before build/i.test(t.ctx), t.ctx);
   for (const phrase of ['lock the billing spec', 'who has the lock', 'release the lock']) {
     t = routed(phrase);
     check(`"${phrase}" routes to brain:lock`, t.ctx.includes('brain:lock'), t.ctx);

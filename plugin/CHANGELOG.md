@@ -1,5 +1,22 @@
 # Changelog — brain plugin
 
+## 0.24.0 — 2026-09-14 (plan before build)
+
+The router only sent work through `/brain:plan` when the prompt literally said "spec", and the
+plan gate in `guards.js` only fires against a spec that already exists — so "add a login
+feature" went straight to code with no spec ever written.
+
+- **`hooks/scripts/trigger-router.js`** — a last-position rule catches generic development
+  intent (a dev verb — build/implement/add/fix/refactor/… — within ~60 chars of a dev noun —
+  feature/endpoint/page/bug/module/…). It reads the open specs (status not
+  done/closed/superseded) and injects: *plan before build — no source change without a spec*;
+  with no open specs → invoke `brain:plan` now; with open specs → the list with tier/phase, and
+  `brain:build <slug>` if one covers the request, else `brain:plan` first. The curator can waive
+  it explicitly in the message. Question-shaped prompts (why/what/how/explain…) stay silent;
+  every specific workflow above it ("write a spec", "implement the spec", game, product-design…)
+  still wins first. Still advisory — the router never blocks.
+- Selftest 319 → 331.
+
 ## 0.23.0 — 2026-09-13 (Monkey Brain Home: a per-user dashboard)
 
 `/brain:dashboard` shows one project. Nothing showed all of them — until now.

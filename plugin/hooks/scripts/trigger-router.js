@@ -8,8 +8,14 @@
  * hint telling Claude which skill owns the workflow. Model-driven and
  * path-driven routing (L3b/c) still work when this misses.
  *
+ * Plan before build: generic development intent ("add a login feature", "fix the
+ * crash on upload") — anything a specific workflow above didn't claim — routes to
+ * brain:plan, listing the open specs so an already-planned feature goes to
+ * brain:build instead. Advisory like everything else here.
+ *
  * Silence rules (this fires on EVERY prompt — the common case must be free):
  *   - no phrase match → silent;
+ *   - development intent phrased as a question (why/what/how…) → silent;
  *   - prompt is already a slash command or names /brain: → silent;
  *   - matched a brain-needing phrase but no .brain/ → suggest /brain:init
  *     instead (unless a `.no-brain` marker declines the engine);
@@ -191,7 +197,42 @@ const RULES = [
     needsBrain: false,
     what: 'file compression',
   },
+  // Last on purpose: generic development intent phrased without "spec". Every specific
+  // workflow above wins first; this one enforces plan-before-build for the rest.
+  {
+    re: /\b(build|implement|add|create|make|write|develop|code|refactor|migrate|integrate|wire( up)?|fix|patch|debug|rewrite|extend|ship)\b[^.!?]{0,60}\b(features?|functions?|functionality|endpoints?|apis?|routes?|components?|pages?|screens?|modules?|services?|classes|methods?|hooks?|handlers?|scripts?|commands?|flags?|buttons?|forms?|modals?|schemas?|models?|migrations?|tests?|bugs?|issues?|errors?|crash(es)?|apps?|sites?|websites?|backend|frontend|ui|database|db|auth\w*|login|signup|integrations?|plugins?|skills?|parsers?|pipelines?|dashboards?|validation|configs?|settings)\b/i,
+    skill: 'plan',
+    needsBrain: true,
+    what: 'development work',
+    dev: true,
+  },
 ];
+
+const QUESTION_RE = /^\s*(why|what|how|explain|describe|where|when|who)\b/i;
+
+/** Open specs (status not done/closed/superseded) as "slug (tier, phase)" labels. */
+function openSpecs(brain) {
+  const dir = path.join(brain, 'specs');
+  if (!fs.existsSync(dir)) return [];
+  return lib
+    .listFilesRecursive(dir, '.md')
+    .map((f) => ({ slug: path.basename(f, '.md'), fm: lib.parseFrontmatter(lib.readTextSafe(f)) }))
+    .filter((s) => !['done', 'closed', 'superseded'].includes(String(s.fm.status)))
+    .map((s) => `\`${s.slug}\`${s.fm.tier ? ` (${s.fm.tier}${s.fm.phase ? `, phase: ${s.fm.phase}` : ''})` : ''}`);
+}
+
+function devHint(brain) {
+  const specs = openSpecs(brain);
+  const head = '🐵 trigger-router: this looks like development work. Rule: plan before build — no source change without a spec. ';
+  if (!specs.length) {
+    return head + 'Open specs: none → invoke the brain:plan skill now (Skill tool) to write the spec (tier + numbered ACs), then brain:build. Skip the spec only if the curator explicitly says so in this message.';
+  }
+  return (
+    head +
+    `Open specs: ${specs.join(', ')}. If one covers this request → invoke brain:build <slug>. ` +
+    'Otherwise → invoke brain:plan first (tier + numbered ACs), then brain:build. Skip the spec only if the curator explicitly says so in this message.'
+  );
+}
 
 async function main() {
   const input = await lib.readStdinJson();
@@ -200,6 +241,7 @@ async function main() {
 
   const rule = RULES.find((r) => r.re.test(prompt));
   if (!rule) return;
+  if (rule.dev && QUESTION_RE.test(prompt)) return; // a question, not a work order
 
   const brain = lib.findBrainDir(input.cwd);
   let hint;
@@ -209,6 +251,8 @@ async function main() {
     hint =
       `🐵 trigger-router: that sounds like ${rule.what}, but this project has no .brain/ yet — ` +
       `offer /brain:init first, then continue with /brain:${rule.skill}.`;
+  } else if (rule.dev) {
+    hint = devHint(brain);
   } else {
     hint =
       `🐵 trigger-router: matched "${rule.what}" → invoke the brain:${rule.skill} skill now ` +
