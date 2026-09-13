@@ -28,11 +28,12 @@ function write(rel, content) {
   return p;
 }
 
-function run(script, evt) {
+function run(script, evt, env) {
   return spawnSync(process.execPath, [path.join(HERE, script)], {
     input: JSON.stringify(evt),
     encoding: 'utf8',
     timeout: 20000,
+    env: env ? { ...process.env, ...env } : undefined,
   });
 }
 
@@ -91,9 +92,19 @@ try {
   check('includes recent log heads', ctx.includes('ingest | one'));
   check('lists active projects with tier/phase', ctx.includes('Active projects') && ctx.includes('site') && ctx.includes('feature'), ctx.slice(0, 400));
   check('within budget', (ctx.length / 4) <= 3000, `${Math.ceil(ctx.length / 4)} tokens`);
+  check('injects terse-mode rules by default (from the terse skill)', ctx.includes('Terse mode — on by default') && ctx.includes('The compression guard'), ctx.slice(0, 300));
+
+  fs.writeFileSync(path.join(PROJ, '.no-terse'), '');
+  r = run('brain-status.js', evt({ hook_event_name: 'SessionStart', source: 'startup' }));
+  check('.no-terse at the project root turns terse off', r.status === 0 && r.stdout.includes('brain status') && !r.stdout.includes('Terse mode'), (r.stdout || '').slice(0, 200));
+  fs.rmSync(path.join(PROJ, '.no-terse'), { force: true });
 
   r = run('brain-status.js', evt({ cwd: os.tmpdir(), hook_event_name: 'SessionStart' }));
-  check('silent no-op without a brain', r.status === 0 && r.stdout === '', `status=${r.status} stdout=${JSON.stringify(r.stdout)}`);
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  const nctx = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('no brain, non-startup: terse rules only (no status, no offer)', r.status === 0 && nctx.includes('Terse mode') && !nctx.includes('brain status') && !nctx.includes('/brain:init'), `status=${r.status} ${nctx.slice(0, 150)}`);
+  r = run('brain-status.js', evt({ cwd: os.tmpdir(), hook_event_name: 'SessionStart' }), { MONKEY_BRAIN_TERSE: '0' });
+  check('MONKEY_BRAIN_TERSE=0 turns terse off (silent without a brain)', r.status === 0 && r.stdout === '', `status=${r.status} stdout=${JSON.stringify(r.stdout)}`);
 
   // Budget-receipt groundwork (P5.5): the startup injection above left a receipt.
   const ISTATS = path.join(BRAIN, 'sessions', 'injection-stats.json');
@@ -284,6 +295,8 @@ try {
   check('"be terse" routes to brain:terse', t.ctx.includes('brain:terse'), t.ctx);
   t = routed('be terse from now on', PLAIN_R);
   check('terse routes even without a brain', t.ctx.includes('brain:terse'), t.ctx);
+  t = routed('ok, be more verbose again');
+  check('"more verbose" routes to brain:terse (the off switch)', t.ctx.includes('brain:terse'), t.ctx);
   t = routed('compress the CLAUDE.md file');
   check('"compress CLAUDE.md" routes to brain:compress', t.ctx.includes('brain:compress'), t.ctx);
   t = routed('design a product for our new users');
@@ -626,12 +639,17 @@ try {
   fs.mkdirSync(PLAIN_E, { recursive: true });
   r = run('brain-status.js', { cwd: PLAIN_E, hook_event_name: 'SessionStart', source: 'startup' });
   out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
-  check('startup without a brain offers /brain:init', ((out.hookSpecificOutput || {}).additionalContext || '').includes('/brain:init'), (r.stdout || '').slice(0, 150));
+  const ectx = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('startup without a brain offers /brain:init', ectx.includes('/brain:init'), (r.stdout || '').slice(0, 150));
+  check('startup without a brain also injects terse rules', ectx.includes('Terse mode'), ectx.slice(0, 150));
   r = run('brain-status.js', { cwd: PLAIN_E, hook_event_name: 'SessionStart', source: 'resume' });
-  check('offer only on startup source', r.status === 0 && r.stdout === '');
+  check('offer only on startup source (terse still on)', r.status === 0 && !r.stdout.includes('/brain:init') && r.stdout.includes('Terse mode'));
   fs.writeFileSync(path.join(PLAIN_E, '.no-brain'), '');
   r = run('brain-status.js', { cwd: PLAIN_E, hook_event_name: 'SessionStart', source: 'startup' });
-  check('.no-brain silences the offer', r.status === 0 && r.stdout === '');
+  check('.no-brain silences the offer (terse stays on)', r.status === 0 && !r.stdout.includes('/brain:init') && r.stdout.includes('Terse mode'));
+  fs.writeFileSync(path.join(PLAIN_E, '.no-terse'), '');
+  r = run('brain-status.js', { cwd: PLAIN_E, hook_event_name: 'SessionStart', source: 'startup' });
+  check('.no-brain + .no-terse → fully silent', r.status === 0 && r.stdout === '');
 } finally {
   fs.rmSync(ROOT, { recursive: true, force: true });
   try {

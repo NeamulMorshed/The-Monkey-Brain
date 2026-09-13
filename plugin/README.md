@@ -51,7 +51,7 @@ plugin/
 
 | # | Event | Script | Does |
 | --- | --- | --- | --- |
-| 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, **health report**, semantic-search state); `/brain:init` offer in brainless projects; writes an **injection-size receipt** to `sessions/injection-stats.json` |
+| 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, **health report**, semantic-search state); **terse-mode rules, on by default** in every project (`.no-terse` / `MONKEY_BRAIN_TERSE=0` opt out); `/brain:init` offer in brainless projects; writes an **injection-size receipt** to `sessions/injection-stats.json` |
 | 2 | UserPromptSubmit | `trigger-router` | natural phrases → `/brain:*` routing hints (never blocks) |
 | 3 | PreToolUse Write\|Edit | `guards` | secrets everywhere · raw-sources add-only · log append-only · plan gate (architecture tier) · TDD gate (feature+ tiers, new code files need a test) |
 | 4 | PostToolUse Write\|Edit | `wiki-check` + `instinct-track` | self-healing wiki (frontmatter/orphan block, TODO advisory); **instinct advisory** when a file is revised across 3+ sessions |
@@ -75,7 +75,8 @@ scan injected, reasoning follows) · `/brain:wrap` (definition-of-done) ·
 `/brain:plan` (numbered ACs + tier, curator-owned approval) · `/brain:build`
 (test-first against the ACs) · `/brain:review` (verification + findings filed
 back, feeding `decisions/` and `instincts/`). **Token discipline:**
-`/brain:terse` (session output compression) · `/brain:compress` (permanent
+`/brain:terse` (output compression — on by default via hook #1; the skill
+toggles it off/on per session) · `/brain:compress` (permanent
 instruction-file compression with receipts).
 
 ### Capability plugins (Phase 6)

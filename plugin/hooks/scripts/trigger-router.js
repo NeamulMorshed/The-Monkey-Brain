@@ -96,7 +96,7 @@ const RULES = [
     what: 'brain query',
   },
   {
-    re: /\bterse( mode)?\b|\bshorter (answers|responses|output)\b|\bless verbose\b/i,
+    re: /\bterse( mode)?\b|\bshorter (answers|responses|output)\b|\b(less|more) verbose\b|\bnormal verbosity\b/i,
     skill: 'terse',
     needsBrain: false,
     what: 'terse output mode',

@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.12.1](https://img.shields.io/badge/plugin-v0.12.1-blue)
+![Plugin v0.13.0](https://img.shields.io/badge/plugin-v0.13.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -85,7 +85,8 @@ The engine stands on three pillars:
 - A budgeted **session-start context injection** (≤3k tokens) — no "did the manual load?"
 
 **⚡ Token discipline with receipts**
-- `/brain:terse` (output compression) and `/brain:compress` (permanent instruction-file
+- **Terse output on by default** (Caveman-style, ~65% shorter; `/brain:terse off` for a
+  session, a `.no-terse` file to disable) and `/brain:compress` (permanent instruction-file
   compression, ~46% input savings) — never touching code, specs, or acceptance criteria.
 - **Model routing** by default: scripts do deterministic work at 0 tokens; Sonnet does routine
   execution; the main model does judgment. Two Sonnet fan-out subagents for parallel work.
@@ -313,7 +314,9 @@ good novel answers are filed back to `syntheses/` so the knowledge compounds.
 - **"lint the brain"** (`/brain:lint`) — catch broken links, orphans, and stale claims.
 - **"brain doctor"** (`/brain:doctor`) — 15-check health report; failures surface next session.
 - **"wrap up"** (`/brain:wrap`) — end-of-session: verify, log, refresh the index, commit.
-- **"be terse"** / `/brain:compress <file>` — token discipline when you want it.
+- **Terse output is on by default** — `/brain:terse off` (or "be more verbose") for a session;
+  an empty `.no-terse` at the project root or `MONKEY_BRAIN_TERSE=0` turns it off for good.
+- `/brain:compress <file>` — permanently shrink a bloated instruction file.
 
 ### 6. Browse it (optional)
 

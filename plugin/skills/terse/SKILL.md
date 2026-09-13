@@ -1,5 +1,5 @@
 ---
-description: Switch this session's output to terse mode (Caveman-style, roughly 65% shorter) — or back off. Prose compresses; code, commands, file paths, error messages, and acceptance criteria never do. Use when the user says "be terse", "terse mode", "shorter answers", or complains about verbosity.
+description: Terse output mode (Caveman-style, roughly 65% shorter) — ON by default in every session via the SessionStart hook; this skill turns it off or back on. Prose compresses; code, commands, file paths, error messages, and acceptance criteria never do. Use when the user says "terse off", "be more verbose", "normal verbosity", "be terse", "terse mode", "shorter answers", or complains about verbosity.
 argument-hint: "[off]"
 model: haiku
 effort: low
@@ -7,8 +7,17 @@ effort: low
 
 # /brain:terse — output compression mode
 
-`$ARGUMENTS` = `off` → announce that normal verbosity is back and drop the rules below.
-Otherwise terse mode is **ON** for the rest of the session:
+Terse mode is **on by default**: hook #1 (`brain-status`) injects the `## Rules` below at
+every session start, with or without a `.brain/`. This skill only toggles it mid-session.
+
+- `$ARGUMENTS` = `off` → normal verbosity for the rest of the session; drop the rules.
+- Otherwise → terse is on (again) for the rest of the session; follow the rules.
+- Permanently off: an empty `.no-terse` file at the project root, or `MONKEY_BRAIN_TERSE=0`
+  in the environment (e.g. `settings.json` → `env`).
+
+Confirm the new state in one line.
+
+## Rules
 
 - Lead with the outcome; one line of status per action; no narrating tool calls.
 - At most ~3 sentences of prose per point; headers/tables only when data demands them.
@@ -17,6 +26,3 @@ Otherwise terse mode is **ON** for the rest of the session:
 - **The compression guard — never compress:** code, commands, file paths, identifiers,
   error messages, acceptance criteria, and anything quoted for the record. Byte-for-byte.
 - Correctness beats brevity: a needed caveat survives; terseness never drops a warning.
-
-Confirm in one line that terse mode is on; it persists until `/brain:terse off` or the
-session ends.

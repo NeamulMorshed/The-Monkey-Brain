@@ -1,5 +1,20 @@
 # Changelog — brain plugin
 
+## 0.13.0 — 2026-09-13 (terse mode on by default)
+
+Terse output no longer needs activating — installing the plugin turns it on.
+
+- **Hook #1 `brain-status` injects the terse rules at every session start**, in
+  every project (brain or no brain) and on every source (startup/resume/clear/
+  compact, so it survives compaction). The rules are read at runtime from the
+  `## Rules` section of `skills/terse/SKILL.md` — one source, no drift. In a
+  brain, the block is priority 0 (never dropped by the injection budget).
+- **Opt out:** `/brain:terse off` for the session; an empty `.no-terse` file at the
+  project root, or `MONKEY_BRAIN_TERSE=0`, turns it off permanently.
+- `/brain:terse` is now the toggle (off / back on); the trigger-router also routes
+  "more verbose" / "normal verbosity" to it.
+- Selftest 158 → **164 checks**.
+
 ## 0.12.1 — 2026-07-18 (Phase 9: dogfood — escaped-pipe wikilink fix)
 
 Dogfooding the engine on a fresh brain (scaffold → lint-clean + doctor-clean;

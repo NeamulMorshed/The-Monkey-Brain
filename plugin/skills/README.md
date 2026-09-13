@@ -15,7 +15,7 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `plan` | Spec with numbered acceptance criteria + tier; approval stays curator-owned | ✅ |
 | `build` | Test-first loop against a spec's ACs (works with the TDD/plan gates) | ✅ |
 | `review` | AC verification + code review filed back (synthesis page, ADRs, instinct candidates) | ✅ |
-| `terse` | Caveman-style session output compression (code/commands never compressed) | ✅ |
+| `terse` | Caveman-style output compression, **on by default** (hook #1 injects the rules); the skill toggles it off/on (code/commands never compressed) | ✅ |
 | `compress` | Permanent instruction-file compression with before/after receipts | ✅ |
 | `product-design` | First domain-expertise **pack** — 5-phase process + `data/` (methods, Nielsen heuristics, WCAG) + `templates/` + `checklist.md` (the `/brain:wrap` gate) | ✅ |
 | `game` | Game pipeline — concept → GDD (`templates/gdd.md`) → prototype spec → build → playtest (ingested) → balance ADRs | ✅ |

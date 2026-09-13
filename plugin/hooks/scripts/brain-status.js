@@ -15,6 +15,9 @@
  *   - no .brain/ → a ONE-LINE /brain:init offer on startup only (Phase 3 —
  *     the no-brain fallback of the activation architecture), permanently
  *     silenced by a `.no-brain` marker at the project root;
+ *   - terse mode is ON by default: every session (brain or not) gets the
+ *     `## Rules` of skills/terse/SKILL.md, unless a `.no-terse` marker sits at
+ *     the project root or MONKEY_BRAIN_TERSE=0;
  *   - a status hook must never break a session: any error → silent exit 0.
  */
 'use strict';
@@ -24,6 +27,20 @@ const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
 
 const BUDGET = Number(process.env.MONKEY_BRAIN_BUDGET || 3000);
+const TERSE_SKILL = path.join(__dirname, '..', '..', 'skills', 'terse', 'SKILL.md');
+
+// The rules live once, in the terse skill — read at runtime so they can't drift.
+function terseBlock(root) {
+  if (process.env.MONKEY_BRAIN_TERSE === '0' || fs.existsSync(path.join(root, '.no-terse'))) return '';
+  const m = /(?:^|\n)## Rules[ \t]*\r?\n([\s\S]*?)(?=\r?\n## |$)/.exec(lib.readTextSafe(TERSE_SKILL));
+  if (!m) return '';
+  return [
+    '## 🐵 Terse mode — on by default',
+    'Answer tersely unless the user turned it off earlier this session (`/brain:terse off`):',
+    m[1].trim(),
+    'Permanently off: an empty `.no-terse` file at the project root, or `MONKEY_BRAIN_TERSE=0`.',
+  ].join('\n');
+}
 
 function countMd(dir) {
   try {
@@ -38,15 +55,19 @@ async function main() {
   const brain = lib.findBrainDir(input.cwd);
   if (!brain) {
     const root = path.resolve(input.cwd || process.cwd());
+    const parts = [];
     if (input.source === 'startup' && !fs.existsSync(path.join(root, '.no-brain'))) {
+      parts.push(
+        '🐵 No Monkey Brain in this project. If knowledge work comes up this session (docs to keep, ' +
+        'decisions worth remembering), offer /brain:init once — a per-project wiki+memory that ' +
+        'compounds across sessions. To silence this permanently: create an empty `.no-brain` file at the project root.'
+      );
+    }
+    const terse = terseBlock(root);
+    if (terse) parts.push(terse);
+    if (parts.length) {
       lib.succeed({
-        hookSpecificOutput: {
-          hookEventName: 'SessionStart',
-          additionalContext:
-            '🐵 No Monkey Brain in this project. If knowledge work comes up this session (docs to keep, ' +
-            'decisions worth remembering), offer /brain:init once — a per-project wiki+memory that ' +
-            'compounds across sessions. To silence this permanently: create an empty `.no-brain` file at the project root.',
-        },
+        hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: parts.join('\n\n') },
       });
     }
     return;
@@ -62,6 +83,9 @@ async function main() {
     `follow its Knowledge SDLC (ingest → query → lint). The wiki is LLM-owned;`,
     `\`raw-sources/\` is immutable; every action updates index + log.`,
   ].join('\n')]);
+
+  const terse = terseBlock(path.dirname(brain));
+  if (terse) sections.push([0, terse]);
 
   const idxFm = lib.parseFrontmatter(lib.readTextSafe(path.join(brain, 'wiki', 'index.md')));
   if (idxFm.source_count !== undefined || idxFm.page_count !== undefined) {
