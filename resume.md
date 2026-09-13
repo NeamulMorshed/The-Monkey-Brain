@@ -1,17 +1,34 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-07-18
+updated: 2026-09-14 00:57
 ---
 
 ## Where we left off
-v2 build, session 4 (2026-07-18): **Phases 6 → 9 done; only the PR to `main` remains** (plugin
-v0.12.0). **P9** dogfooded the engine on a fresh scratch brain (scaffold → **lint-clean +
+**2026-09-14 — plugin v0.24.0 on `main`, pushed (b0f7500), CI green.** Everything from v2
+(Phases 1–9), v3 (P10–P17: recall, receipts, loops, blast radius, daily drivers, learned bans,
+team mode, life packs) and v0.23.0 Home is merged on `main`. This session fixed the curator's
+complaint *"the brain starts developing automatically without creating any plan"*: the
+trigger-router only reached `/brain:plan` when a prompt literally said "spec", and the plan gate
+in `guards.js` only fires against a spec that already exists — so "add a login feature" went
+straight to code. Now the router's **last rule catches generic development intent** (dev verb
+within ~60 chars of a dev noun), reads the open specs, and injects *plan before build*: no open
+specs → `brain:plan` now; open specs listed with tier/phase → `brain:build <slug>` if one covers
+the request, else `brain:plan` first. Questions (why/what/how…) stay silent; still advisory.
+The competitor vault was re-checked for this and has the same gap (its dev triggers go straight
+to coding; only its top tier hard-gates). The **hard-gate variant** (block new code files when
+no open spec exists) was offered and **not adopted** — revisit only if the advisory hint gets
+ignored in practice. Selftest **331 GREEN**; both manifests validate `--strict`.
+
+- [ ] Watch whether the plan-before-build hint is actually followed in dogfood sessions; if not, add the `guards.js` hard gate (new code file + zero open specs → block).
+- [ ] `examples/claude-code-brain/sessions/health.json` is an untracked doctor artifact — decide: gitignore `sessions/` in the example brain, or commit it.
+
+### Earlier history (v2 build, 2026-07)
+**P9** dogfooded the engine on a fresh scratch brain (scaffold → **lint-clean +
 doctor-clean**; **7/7 enforcement gates fire**) and, in doing so, **found + fixed a real parser
 bug** — escaped-pipe wikilinks in markdown tables (`[[page\|Label]]`) were false-positive
 "broken" in `lint.js`/`doctor.js`/`wiki-check.js`; fixed all three, so the example brain now
-lints CLEAN. Root README + `schema/CLAUDE.md` got the v2.0 pass. Selftest **158 GREEN**; both
-manifests validate `--strict`. **Next: open the PR** `monkey-brain-enhancement` → `main`.
+lints CLEAN. Root README + `schema/CLAUDE.md` got the v2.0 pass.
 **P8** shipped `/brain:doctor` — `doctor.js` runs 15 deterministic health checks (links,
 orphans, stale flags, index freshness, clippings, log gaps, uncommitted, hook registration,
 injection budget, semantic index, WIP, instinct queue, specs-without-tests, **open P0s**, schema
@@ -44,9 +61,6 @@ two Sonnet subagents (`brain-researcher` read-only slice + `brain-librarian` bat
 and fan-out patterns documented in the skills. Selftest **120/120 GREEN**; `claude plugin
 validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Session log.
 
-- [ ] **Open the PR** `monkey-brain-enhancement` → `main` (all engine work for Phases 1–9 is committed and green; branch is ahead of `origin`). Dogfood, docs v2.0, and the example-brain lint are done.
-- [ ] Optional dogfood now: `/plugin marketplace add "F:\The Monkey Brain\The-Monkey-Brain"` → `/plugin install brain@monkey-brain`
-
 ## Task log (auto)
 - [2026-07-17] ✔ P9.2 benchmark ingests + syntheses (4 commits)
 - [2026-07-17] ✔ P1 plugin skeleton + MIT license
@@ -63,3 +77,5 @@ validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Ses
 - [2026-07-18] ✔ P7 complete — product & game pipelines (/brain:game concept→GDD→prototype→playtest→balance; gdd.md template; §10 manual; router game phrases) (v0.11.0, selftest 144/144)
 - [2026-07-18] ✔ P8 complete — /brain:doctor 15-check health monitor (doctor.js injected; sessions/health.json surfaced by hook #1; open P0s gate wrap; model-mix; router doctor phrases) (v0.12.0, selftest 156/156)
 - [2026-07-18] ✔ P9 dogfood + docs — fresh scaffold lint+doctor clean, 7/7 gates fire; fixed escaped-pipe wikilink false-positives in lint/doctor/wiki-check (example brain now clean); README + schema v2.0 pass (selftest 158/158); PR to main pending
+- [2026-09-13] ✔ v3 P10–P17 + v0.23.0 Home merged and pushed to main (selftest 319)
+- [2026-09-14] ✔ plan-before-build — router's last rule sends generic dev intent through /brain:plan (or /brain:build when an open spec covers it); competitor vault re-checked, same gap there (v0.24.0, b0f7500, pushed, CI green, selftest 331)
