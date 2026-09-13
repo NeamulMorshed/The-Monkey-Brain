@@ -1,5 +1,27 @@
 # Changelog — brain plugin
 
+## 0.22.0 — 2026-09-13 (v3 P17: life packs — v3 complete)
+
+Two optional packs for the work around the work.
+
+- **`/brain:learn`** — spaced repetition with SM-2 (`skills/learn/scripts/srs.js`): decks in
+  `.brain/learning/<deck>.json`; `due` prints only due cards (capped, default 20), so a drill costs
+  the same however large the deck grows; grades below 3 restart a card with its ease kept, 3–5
+  grow the interval (1 → 6 → interval × ease). Each session also compiles one new concept into
+  the wiki, and reference facts must come from a cited source, never invented.
+- **`/brain:career`** — case studies built from the brain's own specs, reviews and ADRs
+  (assembled → drafted → publishable), a master CV with role variants, an evidence-backed skill
+  matrix, and mock interviews grounded in real decisions. Everything lives in `.brain/private/`,
+  which new brains gitignore and search never indexes. **Guards:** a case study can't be
+  `publishable` without `confidentiality: cleared`, and an uncleared one can't be written outside
+  `private/` — Edits are checked against the file's resulting text.
+- The idea hub needs no new skill: `/brain:dump` captures ideas, and `/brain:research` validation
+  mode decides pursue / park / kill.
+- Router: "practice <language> flashcards", "spaced repetition", "case study", "mock interview",
+  "update my CV" — with a guard so "best practice" stays out of the learn pack.
+- Selftest 286 → **304 checks**. **v3 is complete:** P10–P17 close all seven gaps from the
+  MewVault re-benchmark.
+
 ## 0.21.0 — 2026-09-13 (v3 P16: team mode)
 
 One brain, several people, no merge fights.

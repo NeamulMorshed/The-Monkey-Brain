@@ -135,6 +135,10 @@ note where it belongs) · `/brain:dashboard` (one-page HTML overview) · `/brain
 detected stack). Idea validation, URL critiques and meeting prep are modes of `/brain:research`,
 `/brain:product-design` and `/brain:brief`.
 
+**Life packs (optional):** `/brain:learn` (spaced repetition — only due cards enter context) ·
+`/brain:career` (case studies, CV, skill matrix, mock interviews) in `private/`, which is never
+committed with the project or indexed; an uncleared case study can't leave it.
+
 **Log prefixes** (`wiki/log.md`, append-only):
 `ingest | query | lint | schema | feat | session | research | plan | build | review`.
 

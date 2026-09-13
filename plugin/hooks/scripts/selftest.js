@@ -324,6 +324,12 @@ try {
   }
   t = routed('fix the lock screen bug');
   check('app "lock screen" work does not route to the team lock', !t.ctx.includes('brain:lock'), t.ctx);
+  for (const [phrase, skill] of [['practice japanese flashcards', 'learn'], ['write a case study about the billing launch', 'career'], ['run a mock interview', 'career']]) {
+    t = routed(phrase);
+    check(`"${phrase}" routes to brain:${skill}`, t.ctx.includes(`brain:${skill}`), t.ctx);
+  }
+  t = routed('what is the best practice for caching');
+  check('"best practice" does not route to the learn pack', !t.ctx.includes('brain:learn'), t.ctx);
   t = routed('compress the CLAUDE.md file');
   check('"compress CLAUDE.md" routes to brain:compress', t.ctx.includes('brain:compress'), t.ctx);
   t = routed('design a product for our new users');
@@ -516,6 +522,8 @@ try {
     dashboard: { model: 'haiku', effort: 'low' },
     ci: { model: 'sonnet', effort: 'low' },
     lock: { model: 'haiku', effort: 'low' },
+    learn: { model: 'sonnet', effort: 'medium' },
+    career: { effort: 'high' },
     plan: { effort: 'high' },
     review: { effort: 'high' },
     wrap: { effort: 'high' },
@@ -693,6 +701,52 @@ try {
   check('doctor --strict exits 1 when warnings/criticals exist', dr.status === 1, `status=${dr.status}`);
   dr = spawnSync(process.execPath, [DOCTOR, '--brain', os.tmpdir()], { encoding: 'utf8', timeout: 20000 });
   check('doctor is a silent no-op without a brain', dr.status === 0 && /No Monkey Brain/.test(dr.stdout), `status=${dr.status}`);
+
+  // ---------- v3 P17: life packs (learn · career) ----------
+  console.log('learn (srs.js) + career privacy (v3 P17 — life packs)');
+  const SRS = path.join(SKILLS, 'learn', 'scripts', 'srs.js');
+  const srs = (day, ...a) => spawnSync(process.execPath, [SRS, ...a], { cwd: PROJ, encoding: 'utf8', timeout: 15000, env: { ...process.env, MONKEY_BRAIN_TODAY: day } });
+  srs('2026-03-01', 'add', 'jp', '食べる', 'to eat');
+  srs('2026-03-01', 'add', 'jp', '飲む', 'to drink');
+  let sr2 = srs('2026-03-01', 'due', 'jp');
+  check('new cards are due the day they are added', /2 due in jp/.test(sr2.stdout) && /#1 · front: 食べる · back: to eat/.test(sr2.stdout), sr2.stdout + sr2.stderr);
+  sr2 = srs('2026-03-01', 'grade', 'jp', '1', '5');
+  check('SM-2: a first correct answer → due tomorrow, ease up', /next due 2026-03-02 \(interval 1d · ease 2\.6\)/.test(sr2.stdout), sr2.stdout + sr2.stderr);
+  sr2 = srs('2026-03-02', 'grade', 'jp', '1', '5');
+  check('SM-2: the second correct answer → 6 days', /next due 2026-03-08 \(interval 6d · ease 2\.7\)/.test(sr2.stdout), sr2.stdout);
+  sr2 = srs('2026-03-08', 'grade', 'jp', '1', '4');
+  check('SM-2: then interval × ease (6 × 2.7 → 16 days)', /next due 2026-03-24 \(interval 16d · ease 2\.7\)/.test(sr2.stdout), sr2.stdout);
+  sr2 = srs('2026-03-24', 'grade', 'jp', '1', '2');
+  check('SM-2: a failed recall restarts the card and keeps its ease', /next due 2026-03-25 \(interval 1d · ease 2\.7 · 1 lapse\(s\)\)/.test(sr2.stdout), sr2.stdout);
+  for (let i = 0; i < 30; i++) srs('2026-03-01', 'add', 'big', `word ${i}`, `meaning ${i}`);
+  sr2 = srs('2026-03-01', 'due', 'big', '--limit', '5');
+  check('only due cards enter context, capped by --limit', /30 due in big \(showing 5\)/.test(sr2.stdout) && (sr2.stdout.match(/^#\d+ ·/gm) || []).length === 5, sr2.stdout.slice(0, 200));
+  sr2 = srs('2026-03-01', 'stats');
+  check('stats summarise every deck', /jp: 2 card\(s\)/.test(sr2.stdout) && /big: 30 card\(s\)/.test(sr2.stdout), sr2.stdout);
+
+  const caseText = (status, conf) => `---\ntitle: "Case study — billing"\ntype: case-study\nstatus: ${status}         # assembled | drafted | publishable\nconfidentiality: ${conf}  # pending | cleared\n---\n\n# Billing\n`;
+  const caseWrite = (rel, content) => run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, rel), content } }));
+  let cw = caseWrite('.brain/private/cases/billing.md', caseText('drafted', 'pending'));
+  check('a drafted case study writes freely inside private/', cw.status === 0, `status=${cw.status} ${cw.stderr}`);
+  cw = caseWrite('.brain/private/cases/billing.md', caseText('publishable', 'pending'));
+  check('publishable without confidentiality: cleared is refused', cw.status === 2 && /guard\[career\]/.test(cw.stderr) && /publishable/.test(cw.stderr), `status=${cw.status} ${cw.stderr}`);
+  cw = caseWrite('.brain/private/cases/billing.md', caseText('publishable', 'cleared'));
+  check('a cleared case study can be publishable', cw.status === 0, `status=${cw.status} ${cw.stderr}`);
+  cw = caseWrite('site/billing.md', caseText('drafted', 'pending'));
+  check('an uncleared case study cannot leave private/', cw.status === 2 && /stays in `\.brain\/private\/`/.test(cw.stderr), `status=${cw.status} ${cw.stderr}`);
+  write('.brain/private/cases/billing.md', caseText('drafted', 'pending'));
+  cw = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: path.join(BRAIN, 'private', 'cases', 'billing.md'), old_string: 'status: drafted', new_string: 'status: publishable' } }));
+  check('an Edit that flips a case study to publishable is caught too', cw.status === 2 && /guard\[career\]/.test(cw.stderr), `status=${cw.status} ${cw.stderr}`);
+  write('.brain/private/cases/secret.md', '---\ntitle: "Secret"\ntype: case-study\nconfidentiality: pending\n---\n\nzanzibarquux client revenue numbers\n');
+  const privSearch = spawnSync(process.execPath, [path.join(HERE, 'search.js'), 'zanzibarquux', '--json'], { cwd: PROJ, encoding: 'utf8', timeout: 15000 });
+  let privHits = null; try { privHits = JSON.parse(privSearch.stdout); } catch {}
+  check('private/ is never indexed by search', Array.isArray(privHits) && privHits.length === 0, privSearch.stdout);
+  const NB17 = path.join(ROOT, 'nb17');
+  fs.mkdirSync(NB17, { recursive: true });
+  spawnSync(process.execPath, [path.join(SKILLS, 'init', 'scripts', 'new-brain.js'), '--project', NB17], { encoding: 'utf8', timeout: 30000 });
+  let privIgnore = ''; try { privIgnore = fs.readFileSync(path.join(NB17, '.brain', 'private', '.gitignore'), 'utf8'); } catch {}
+  check('new brains keep private/ out of git', /^\*$/m.test(privIgnore), privIgnore || 'no private/.gitignore');
+  for (const d of [path.join(BRAIN, 'private'), path.join(BRAIN, 'learning'), NB17, path.join(PROJ, 'site')]) fs.rmSync(d, { recursive: true, force: true });
 
   // ---------- v3 P16: team mode (lock.js · union merges · per-machine ignores) ----------
   console.log('lock.js + union merges + per-author digests (v3 P16 — team mode)');

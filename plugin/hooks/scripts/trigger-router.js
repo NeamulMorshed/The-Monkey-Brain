@@ -54,6 +54,18 @@ const RULES = [
     what: 'brain lint',
   },
   {
+    re: /\b(practice|drill|study)\b[^.!?]{0,30}\b(cards?|decks?|flash ?cards?|vocab\w*|kanji|words|japanese|spanish|french|german|korean|chinese|italian)\b|\bflash ?cards?\b|\bspaced repetition\b/i,
+    skill: 'learn',
+    needsBrain: true,
+    what: 'learning session (spaced repetition)',
+  },
+  {
+    re: /\bcase stud(y|ies)\b|\bmock interview\b|\b(update|refresh|tailor)\b[^.!?]{0,20}\b(cv|résumé)\b|\bskill matrix\b/i,
+    skill: 'career',
+    needsBrain: true,
+    what: 'career pack',
+  },
+  {
     re: /\b(lock|unlock)\s+(the\s+)?(brain|[\w-]+\s+spec)\b|\brelease (the |my )?lock\b|\bwho (has|holds) the lock\b|\btake (over )?the lock\b/i,
     skill: 'lock',
     needsBrain: true,

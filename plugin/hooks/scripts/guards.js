@@ -27,6 +27,9 @@
  *   7. TEAM LOCK  — while a teammate's LOCK.md is active, writes inside its
  *                   scope (a spec, or the brain's knowledge layers) are
  *                   refused for everyone else (v3 P16).
+ *   8. CAREER PRIVACY — a case study (`type: case-study`) whose
+ *                   `confidentiality` isn't `cleared` can't be marked
+ *                   publishable, and can't be written outside .brain/private/ (v3 P17).
  *
  * Gates degrade gracefully: no .brain/ (or no specs/) → the rule is skipped.
  * Blocking = exit 2 with the reason on stderr (shown to Claude).
@@ -72,6 +75,19 @@ function isTestPath(abs) {
     /^test_/i.test(base) ||
     /^(test|spec)s?\.[^.]+$/i.test(base)
   );
+}
+
+/** The file's full text after this call: Write content, or Edit/MultiEdit applied to the current file. */
+function textAfter(abs, ti) {
+  if (typeof ti.content === 'string') return ti.content;
+  let text = lib.readTextSafe(abs);
+  const edits = Array.isArray(ti.edits) ? ti.edits : [ti];
+  for (const e of edits) {
+    if (typeof e.old_string !== 'string') continue;
+    const next = String(e.new_string || '');
+    text = e.replace_all ? text.split(e.old_string).join(next) : text.replace(e.old_string, () => next);
+  }
+  return text;
 }
 
 /** Count a plan-gate block; the 2nd on one spec is written to review-required.md. */
@@ -136,6 +152,27 @@ async function main() {
         `🐵 guard[secrets]: write to ${fp} blocked — the content matches ${label}. ` +
           `Never write secrets into files: use an environment variable or a secret manager and reference it instead.`
       );
+    }
+  }
+
+  // 8) CAREER PRIVACY — case studies stay private until the owner clears them.
+  const cbrain = lib.findBrainDir(path.dirname(abs)) || lib.findBrainDir(input.cwd);
+  if (cbrain) {
+    const privateDir = path.join(cbrain, 'private') + path.sep;
+    if (newText.includes('case-study') || abs.startsWith(privateDir)) {
+      const fm = lib.parseFrontmatter(textAfter(abs, ti));
+      if (String(fm.type) === 'case-study' && String(fm.confidentiality) !== 'cleared') {
+        const level = fm.confidentiality || 'pending';
+        if (!abs.startsWith(privateDir)) {
+          lib.block(
+            `🐵 guard[career]: this is an uncleared case study (\`confidentiality: ${level}\`) — it stays in \`.brain/private/\` ` +
+              `until the owner has cleared every name, number and client detail. Set \`confidentiality: cleared\` in the private copy first.`
+          );
+        }
+        if (String(fm.status) === 'publishable') {
+          lib.block(`🐵 guard[career]: a case study can't be \`publishable\` while \`confidentiality\` is \`${level}\` — the owner clears it first.`);
+        }
+      }
     }
   }
 
