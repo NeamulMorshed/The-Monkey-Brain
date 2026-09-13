@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-09-14",
-  "contract": "Plugins do the craft; the brain records the knowledge. Every plugin output that is a decision, a finding, or a durable artifact gets filed into this project's .brain/ by the brain's skills and hooks — so the capability is transient but its knowledge compounds. Token management: Caveman compresses output and memory files; the brain's session-injection system controls input context size. Together: speak less, know more.",
+  "updated": "2026-09-13",
+  "contract": "Plugins do the craft; the brain records the knowledge. Every plugin output that is a decision, a finding, or a durable artifact gets filed into this project's .brain/ by the brain's skills and hooks — so the capability is transient but its knowledge compounds.",
   "install": {
     "how": "Plugins marked auto_install ship as dependencies of the brain plugin: Claude Code installs and enables them from claude-plugins-official together with brain — no extra step. The rest install with /plugin (`/plugin marketplace add <source>` then `/plugin install <name>@<marketplace>`); /brain:init offers the relevant ones but never installs silently — it confirms the exact current command with the curator, because marketplace names and sources evolve. Browse everything at https://claude.com/plugins.",
     "scope": "Install these at user scope so they are present in every project; the per-project .brain/ decides which knowledge each produces gets filed."
@@ -9,7 +9,7 @@
   "bundle": {
     "name": "brain-all",
     "install": "/plugin install brain-all@monkey-brain",
-    "what": "Opt-in: brain plus every plugin in claude-plugins-official (minus the output styles that contradict terse mode). Heavy on context — offer only when the curator asks for everything. Caveman is always recommended alongside, not bundled with, to manage the token load: talk less, know more."
+    "what": "Opt-in: brain plus every plugin in claude-plugins-official (minus the output styles that contradict terse mode). Heavy on context — offer only when the curator asks for everything."
   },
   "categories": ["dev", "design", "security", "product", "workflow"],
   "plugins": [
@@ -123,19 +123,6 @@
         { "what": "anti-patterns", "to": "instincts/pending/" }
       ],
       "precedence": "Decides the design system that frontend-design then builds."
-    },
-    {
-      "name": "caveman",
-      "category": "workflow",
-      "source": "github",
-      "homepage": "https://github.com/JuliusBrussee/caveman",
-      "fires_on": "Every session (compression + token accounting)",
-      "brain_integration": "Compresses output tokens (65% average savings) and memory/instruction files via /caveman-compress (46% input savings, permanent). Session token savings tracked by /caveman-stats and accumulated in statusline. The brain's session-injection system controls input context budget; Caveman controls output and compressed-memory size. Together: speak less, know more. No telemetry, local-only.",
-      "records": [
-        { "what": "token savings receipt", "to": "sessions/" },
-        { "what": "lifetime token count", "to": "statusline [CAVEMAN] ⛏ <tokens>" }
-      ],
-      "precedence": "Works alongside brain terse-mode (both on = best compression). Caveman /caveman-compress rewrites CLAUDE.md + memory files once; brain /brain:compress does similar (mutual redundancy is fine — both offer same benefit)."
     }
   ]
 }
