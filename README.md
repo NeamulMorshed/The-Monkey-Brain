@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.17.0](https://img.shields.io/badge/plugin-v0.17.0-blue)
+![Plugin v0.18.0](https://img.shields.io/badge/plugin-v0.18.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -102,6 +102,8 @@ The engine stands on three pillars:
 - **Loops that stop** — `/brain:loop` iterates a build, research or design cycle until the brain
   says it's done (every AC ✅, a stable recommendation, no open P0), halting on livelock, stalls or
   a tick cap. Verification must run on a different model family than the work.
+- **Blast-radius sizing** — `/brain:plan` scans the import graph (JS/TS, Python, Go, C#; no
+  dependencies) and suggests the spec's tier and model from what the change actually touches.
 
 **📦 Domain expertise, on tap**
 - A **product-design pack** (Nielsen heuristics + WCAG 2.2 AA + method catalog) with a validation

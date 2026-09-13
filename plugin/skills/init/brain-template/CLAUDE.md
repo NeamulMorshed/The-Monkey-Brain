@@ -146,6 +146,11 @@ tick cap; running loops show at session start. A spec the plan gate blocks twice
 The tier lives in the spec (and the workstream default in `projects/`). Gates degrade
 gracefully: no active spec → no gate.
 
+**Sizing a change:** `/brain:plan` runs the engine's import-graph scanner
+(`graph.js radius <files|dirs|keywords>`): files touched × directories spanned × file types
+gives a suggested tier and model. A wide blast radius means `architecture`, which arms the
+plan gate.
+
 ---
 
 ## 6. Conventions

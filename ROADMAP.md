@@ -57,8 +57,8 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P10** Always-on recall — built-in BM25 search MCP, `/brain:brief`, first-prompt recall | ✅ 2026-09-13 | v0.15.0 — `search.js` BM25 over wiki/decisions/specs/projects/memory, fresh per call (~100 ms on 69 pages); `search-mcp.js` (replaces `qmd-mcp.js`) serves `brain_search` + `brain_brief` by default, qmd handoff kept; `/brain:brief` skill + router phrases; `recall.js` injects the first prompt's top-3 matches (`MONKEY_BRAIN_RECALL=0` off); doctor expects `recall`; selftest **184** |
 | **P11** Real receipts — transcript usage + cache-hit ratio, cache-safety check, ledger outcomes, 3-OS CI | ✅ 2026-09-13 | v0.16.0 — `usage.js` + `/brain:usage` (per day/model/branch, cache-hit ratio, subagent share; deduped per API response; case-insensitive folder match on Windows); `agent-track` on `SubagentStop` logs outcome + real tokens; doctor 16 cache safety · 17 cache-hit · 18 dispatch outcomes; CI matrix Win/mac/Linux × Node 18/22 (first run on push); selftest **197** |
 | **P12** Loops that stop — AC-terminated loops, livelock detection, verifier ≠ generator family | ✅ 2026-09-13 | v0.17.0 — `loop.js` + `/brain:loop` (spec / research / design loops; stop conditions read from the brain; livelock · stall · tick-cap halts; state in `sessions/loops/`, spec `## Loop log`); running loops in `brain-status`; `agent-track` blocks same-family verifiers; plan gate escalates its 2nd block to `sessions/review-required.md`; selftest **218** |
-| **P13** Blast-radius routing — import-graph scanner → model + tier suggestion | ⏳ next | |
-| **P14** Daily-driver workflows — standup, weekly review, dump, meeting prep, validate, critique, dashboard, CI | ⏳ | |
+| **P13** Blast-radius routing — import-graph scanner → model + tier suggestion | ✅ 2026-09-13 | v0.18.0 — `graph.js` (JS/TS incl. `require(path.join(__dirname,…))`, Python, Go via `go.mod`, C# namespaces; mtime cache in `sessions/graph.json`; 1k files < 2 s); `radius` → files × dirs × types → tier + model; `/brain:plan` uses it; manual §5; selftest **230** |
+| **P14** Daily-driver workflows — standup, weekly review, dump, meeting prep, validate, critique, dashboard, CI | ⏳ next | |
 | **P15** Learned bans — instincts with `ban:` patterns enforced by hook; confidence scores | ⏳ | |
 | **P16** Team mode — git-native lock, union-merged log, per-author sessions | ⏳ | |
 | **P17** Life packs (optional) — learning (SM-2), career, ideas | ⏳ | |
@@ -96,6 +96,12 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
   generator family (agent-track) and plan-gate escalation to `review-required.md` (guards).
   Smoke-tested on a scratch brain first; the selftest's first run crashed on a redeclared
   variable, fixed. Selftest 197 → 218.
+- **P13 blast-radius routing (v0.18.0):** `graph.js` scans JS/TS, Python, Go and C# imports with
+  no dependencies (MewVault needs graphify + ChromaDB), caches by mtime, and turns a change's
+  radius into a tier + model that `/brain:plan` records. Routing and enforcement now read one
+  signal: a wide radius means architecture, which arms the plan gate. The first smoke run on
+  this repo found 0 imports (the `require(path.join(__dirname, …))` idiom) — fixed and tested.
+  Selftest 218 → 230.
 
 **[2026-07-18] Session 4 — Phases 6 + 6.5 + 7 + 8 + 9 (v0.9.0 → v0.12.0)**
 

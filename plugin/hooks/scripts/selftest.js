@@ -668,6 +668,64 @@ try {
   dr = spawnSync(process.execPath, [DOCTOR, '--brain', os.tmpdir()], { encoding: 'utf8', timeout: 20000 });
   check('doctor is a silent no-op without a brain', dr.status === 0 && /No Monkey Brain/.test(dr.stdout), `status=${dr.status}`);
 
+  // ---------- v3 P13: blast-radius routing (graph.js) ----------
+  console.log('graph.js (v3 P13 — blast-radius routing)');
+  const GRAPHJS = path.join(HERE, 'graph.js');
+  const gr = (...args) => spawnSync(process.execPath, [GRAPHJS, ...args], { cwd: PROJ, encoding: 'utf8', timeout: 30000 });
+  const codeFiles = {
+    'src/a.js': "const b = require('./b');\n",
+    'src/b.js': "import c from './c.js';\nexport default c;\n",
+    'src/c.js': 'export default 1;\n',
+    'lib/d.ts': "import c from '../src/c';\n",
+    'pkg/__init__.py': '',
+    'pkg/m.py': 'from . import n\n',
+    'pkg/n.py': 'X = 1\n',
+    'go.mod': 'module example.com/app\n',
+    'svc/s.go': 'package svc\n\nimport (\n\t"fmt"\n\t"example.com/app/util"\n)\n',
+    'util/u.go': 'package util\n',
+    'cs/A.cs': 'namespace App.Core { class A {} }\n',
+    'cs/B.cs': 'using App.Core;\nnamespace App.Web { class B {} }\n',
+    'scripts/run.js': "const h = require(path.join(__dirname, '..', 'shared', 'h.js'));\n",
+    'shared/h.js': 'module.exports = 1;\n',
+    'node_modules/x/index.js': "require('../../src/a');\n",
+  };
+  for (const [rel, body] of Object.entries(codeFiles)) write(rel, body);
+  const radiusOf = (...anchors) => { const r = gr('radius', ...anchors, '--json'); try { return JSON.parse(r.stdout); } catch { return { err: r.stderr || r.stdout }; } };
+  let gj = radiusOf('src/c.js');
+  check('JS/TS: dependents within 2 hops (require, import, ../ paths)', JSON.stringify(gj.dependents) === JSON.stringify(['lib/d.ts', 'src/b.js', 'src/a.js']), JSON.stringify(gj.dependents || gj.err));
+  check('score = files × modules × types → tier', gj.score === 16 && gj.tier === 'feature', `score=${gj.score} tier=${gj.tier}`);
+  check('node_modules is never scanned', !JSON.stringify(gj).includes('node_modules'), 'node_modules leaked into the graph');
+  gj = radiusOf('pkg/n.py');
+  check('Python: "from . import n" resolves', (gj.dependents || []).includes('pkg/m.py'), JSON.stringify(gj.dependents || gj.err));
+  gj = radiusOf('util');
+  check('Go: module-path imports resolve via go.mod (directory anchor)', (gj.anchors || []).includes('util/u.go') && (gj.dependents || []).includes('svc/s.go'), JSON.stringify(gj.anchors || gj.err));
+  gj = radiusOf('cs/A.cs');
+  check('C#: using → namespace resolves', (gj.dependents || []).includes('cs/B.cs'), JSON.stringify(gj.dependents || gj.err));
+  gj = radiusOf('shared/h.js');
+  check('CommonJS: require(path.join(__dirname, …)) resolves', (gj.dependents || []).includes('scripts/run.js'), JSON.stringify(gj.dependents || gj.err));
+  gj = radiusOf('src/a.js');
+  check('a leaf nobody imports is quick tier', gj.tier === 'quick' && gj.dependents.length === 0, `tier=${gj.tier}`);
+  let gb = gr('radius', 'src/c.js');
+  check('radius prints the tier and model line', /suggested tier: feature · model: sonnet to build/.test(gb.stdout), gb.stdout);
+  gb = gr('build');
+  const reusedN = Number((/(\d+) reused from cache/.exec(gb.stdout) || [])[1] || 0);
+  check('the graph is cached in sessions/graph.json and reused', fs.existsSync(path.join(BRAIN, 'sessions', 'graph.json')) && reusedN >= 10, gb.stdout);
+  const PERF = path.join(ROOT, 'perf');
+  for (let i = 0; i < 1000; i++) {
+    const d = path.join(PERF, `m${i % 20}`);
+    fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(d, `f${i}.js`), i ? `import x from '../m${(i - 1) % 20}/f${i - 1}.js';\n` : 'export default 0;\n');
+  }
+  const tPerf = Date.now();
+  gb = spawnSync(process.execPath, [GRAPHJS, 'build', '--root', PERF], { encoding: 'utf8', timeout: 30000 });
+  const perfMs = Date.now() - tPerf;
+  check('scanning 1,000 files takes under 2 s', gb.status === 0 && /1000 files · 999 internal imports/.test(gb.stdout) && perfMs < 2000, `${perfMs} ms · ${(gb.stdout || gb.stderr).trim()}`);
+  check('/brain:plan sizes specs with graph.js', /graph\.js" radius/.test(fs.readFileSync(path.join(SKILLS, 'plan', 'SKILL.md'), 'utf8')));
+  for (const d of ['src', 'lib', 'pkg', 'svc', 'util', 'cs', 'scripts', 'shared', 'node_modules']) fs.rmSync(path.join(PROJ, d), { recursive: true, force: true });
+  fs.rmSync(path.join(PROJ, 'go.mod'), { force: true });
+  fs.rmSync(path.join(BRAIN, 'sessions', 'graph.json'), { force: true });
+  fs.rmSync(PERF, { recursive: true, force: true });
+
   // ---------- v3 P12: loops that stop (loop.js · verifier family · plan-gate escalation) ----------
   console.log('loop.js + verifier family + plan-gate escalation (v3 P12 — loops that stop)');
   const LOOPJS = path.join(HERE, 'loop.js');

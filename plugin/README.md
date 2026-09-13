@@ -83,7 +83,8 @@ scan injected, reasoning follows) · `/brain:wrap` (definition-of-done) ·
 `/brain:doctor` (18-check health monitor, `doctor.js` injected; writes
 `sessions/health.json` for hook #1 to surface next session).
 **Develop lifecycle:** `/brain:research` (filed to `wiki/research/`) ·
-`/brain:plan` (numbered ACs + tier, curator-owned approval) · `/brain:build`
+`/brain:plan` (numbered ACs + a tier sized by the `graph.js` import-graph blast radius,
+curator-owned approval) · `/brain:build`
 (test-first against the ACs) · `/brain:review` (verification + findings filed
 back, feeding `decisions/` and `instincts/`) · `/brain:loop` (bounded build, research
 and design loops that stop on the brain's own criteria). **Token discipline:**

@@ -21,6 +21,12 @@ Numbered acceptance criteria, a tier, and a truthful approval field — that is 
    - **Test plan** — how each AC will be proven.
    - **Tier** (manual §5) with one line of rationale: `quick` (<2h, advisory only) ·
      `feature` (TDD gate on) · `architecture` (hard plan gate + TDD gate).
+   - **Size it with the code graph** before settling the tier:
+     `node "${CLAUDE_SKILL_DIR}/../../hooks/scripts/graph.js" radius <files, dirs or keywords the feature touches>`.
+     It walks everything that imports those files (2 hops) and suggests a tier and model.
+     Use its suggestion unless you have a reason not to, and paste its "touches … score"
+     line into the spec's Notes as the rationale. A wide radius means `architecture`, which
+     arms the plan gate.
 3. **Review with the curator.** Walk the ACs and the tier together; adjust until they
    agree this is the feature they meant.
 4. **Approval — curator-owned, never self-set:**

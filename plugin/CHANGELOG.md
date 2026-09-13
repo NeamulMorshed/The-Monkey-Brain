@@ -1,5 +1,25 @@
 # Changelog — brain plugin
 
+## 0.18.0 — 2026-09-13 (v3 P13: blast-radius routing)
+
+Size a change from the code it actually touches, before choosing the gate.
+
+- **`hooks/scripts/graph.js`** — a zero-dependency import-graph scanner for JS/TS (ES imports,
+  `require`, dynamic `import()`, and the CommonJS `require(path.join(__dirname, …))` idiom),
+  Python (absolute and relative imports), Go (module paths via `go.mod`) and C# (`using` →
+  `namespace`). It skips `node_modules`, build output and dot-folders, and caches the graph in
+  `sessions/graph.json` keyed by file mtime, so a rebuild re-reads only what changed. 1,000 files
+  scan in well under 2 s.
+- **`radius`** walks everything that imports the anchors (2 hops) and scores files × directories
+  × file types into a suggested tier — `quick` ≤ 3 · `feature` ≤ 45 · `architecture` above, which
+  arms the plan gate — and a model.
+- **`/brain:plan`** runs it before settling a spec's tier and records the radius line as the
+  rationale; instance manual §5 explains the sizing.
+- The smoke test on this repo first reported 0 internal imports — every hook loads its helpers
+  with `require(path.join(__dirname, …))` — so the scanner learned that idiom; `lib.js` now shows
+  18 dependents (architecture) and `search.js` 2 (quick).
+- Selftest 218 → **230 checks**.
+
 ## 0.17.0 — 2026-09-13 (v3 P12: loops that stop)
 
 Autonomous iteration with a stop condition the brain supplies, not the token budget.
