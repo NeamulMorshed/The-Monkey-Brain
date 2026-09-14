@@ -4,8 +4,8 @@ type: schema
 status: draft
 tags: [roadmap, plugin, hooks, skills, mcp, context-engineering]
 created: 2026-07-17
-updated: 2026-09-13
-version: 0.4
+updated: 2026-09-15
+version: 0.5
 ---
 
 # 🐵 Monkey Brain v2 — Enhancement Roadmap
@@ -721,3 +721,57 @@ required a real fix first: the whole run had to isolate `CLAUDE_CONFIG_DIR` glob
 scratch brain the suite scaffolds would have registered itself in the real user's registry.
 Verified end to end for real on this machine (scaffold → register → generate → self-prune),
 then the demo entry was removed. Selftest 304 → 319.
+
+## Post-v3 — MCP capability registry (planned, v0.25.0)
+
+**Problem.** The brain already has a capability-plugin registry (P6, `recommended-plugins.json`)
+— "plugins do the craft; the brain records the knowledge." Curators are increasingly reaching
+for MCP servers for the same kind of work (Supabase for the database, Figma/Framer for design,
+Firebase for backend, Vercel for deploys), but the brain has no equivalent story for them: it
+can't tell a curator which are worth connecting, and doesn't know where their output belongs.
+Notion (a content-source-shaped MCP, not dev-infra-shaped) is explicitly deferred — its filing
+story is different enough (raw-source ingestion, not ADRs) to design separately later.
+
+**Design — capability-awareness only, detect-never-install, zero touch to core hooks:**
+
+- The brain never calls an MCP server itself, never configures one, and never handles a
+  credential. It only recognizes servers the curator already connected (or is offered and
+  chooses to connect themselves) and knows which `.brain/` folder their output belongs in —
+  exactly the plugin contract, extended to MCP servers.
+- **New file** `plugin/skills/init/recommended-mcp-servers.json` — a curated registry, same
+  shape as `recommended-plugins.json` (`name · category · homepage · fires_on ·
+  brain_integration · records[] · setup_hint`), covering five entries at launch:
+  | Server | fires_on | records to |
+  | --- | --- | --- |
+  | **supabase** | schema, migrations, RLS, edge functions | `decisions/` (schema/migration ADRs) + `wiki/entities/` (current DB design) |
+  | **firebase** | auth, Firestore schema, functions, hosting config | `decisions/` + `wiki/entities/` |
+  | **figma** | UI/design-system work referencing a Figma file | `decisions/` (design-system ADRs) — same folder `frontend-design`/`ui-ux-pro-max` already write to; Figma MCP reads the design, those plugins still own implementation decisions (same precedence note as P6.5) |
+  | **framer** | design/prototype/publish work in Framer | `decisions/` (design decisions) + `wiki/entities/` (current design system) |
+  | **vercel** | deploy config, env vars, domains, build/runtime status | `decisions/` (deploy config ADRs) + `projects/` (live deployment status on the workstream page) |
+  `setup_hint` is an instructions-only `claude mcp add …` template with an env-var placeholder
+  (`${SUPABASE_ACCESS_TOKEN}` etc.) — never a literal secret, never auto-run.
+- **New script** `plugin/skills/init/scripts/mcp-servers.js` (mirrors `plugins.js`): renders the
+  curated list; reads the project's `.mcp.json` `mcpServers` keys (excluding the brain's own
+  `brain-search`) to mark which curated servers are already configured (✓); any configured
+  server *not* in the curated registry surfaces under a generic "detected, no filing rules yet"
+  fallback line so nothing connected is silently invisible. Fails open on a missing/malformed
+  `.mcp.json` — never crashes `/brain:init` (same defensive pattern as every other hooks script).
+- **`/brain:init` step 6b** (new, immediately after the existing capability-plugin offer step 6):
+  run `mcp-servers.js`, show the list, offer the ones relevant to *this* project. Selection is
+  the curator's; the skill only ever hands over the `setup_hint` command — it does not run it,
+  install anything, or touch `.mcp.json`.
+- **`schema/brain-template/CLAUDE.md` §9** gains an "MCP servers (the connected-data layer)"
+  subsection stating the same recording contract, alongside the existing capability-plugins
+  paragraph.
+- **Out of scope (explicitly not touched):** `brain-status.js`, `guards.js`, `wiki-check.js`,
+  `trigger-router`, `doctor.js` — no existing hook or check changes; this whole feature is two
+  new files plus one new `/brain:init` step plus one manual subsection. No hook watches MCP
+  tool calls; filing stays advisory, picked up by the brain's own skills the same way plugin
+  output already is today — the hard-gate variant (a hook that intercepts MCP calls and
+  auto-files) is a possible future escalation only if advisory filing gets ignored, same posture
+  already adopted for the plan-before-build hint.
+
+**Testing.** `selftest.js` gains: the registry JSON validates against its shape; `mcp-servers.js
+--json` returns the five curated entries; a fixture `.mcp.json` with one curated (supabase) and
+one unrecognized server name correctly marks one ✓-configured and the other under the generic
+fallback.
