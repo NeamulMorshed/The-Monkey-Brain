@@ -1,7 +1,7 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-14 00:57
+updated: 2026-09-14 03:27
 ---
 
 ## Where we left off
@@ -21,7 +21,7 @@ no open spec exists) was offered and **not adopted** — revisit only if the adv
 ignored in practice. Selftest **331 GREEN**; both manifests validate `--strict`.
 
 - [ ] Watch whether the plan-before-build hint is actually followed in dogfood sessions; if not, add the `guards.js` hard gate (new code file + zero open specs → block).
-- [ ] `examples/claude-code-brain/sessions/health.json` is an untracked doctor artifact — decide: gitignore `sessions/` in the example brain, or commit it.
+- [x] `examples/claude-code-brain/sessions/health.json` — added `sessions/.gitignore` to the example brain (it was missing the one every scaffolded instance ships via `schema/brain-template`), matching `plugin/skills/init/brain-template` and `schema/brain-template` (a530223).
 
 ### Earlier history (v2 build, 2026-07)
 **P9** dogfooded the engine on a fresh scratch brain (scaffold → **lint-clean +
@@ -79,3 +79,7 @@ validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Ses
 - [2026-07-18] ✔ P9 dogfood + docs — fresh scaffold lint+doctor clean, 7/7 gates fire; fixed escaped-pipe wikilink false-positives in lint/doctor/wiki-check (example brain now clean); README + schema v2.0 pass (selftest 158/158); PR to main pending
 - [2026-09-13] ✔ v3 P10–P17 + v0.23.0 Home merged and pushed to main (selftest 319)
 - [2026-09-14] ✔ plan-before-build — router's last rule sends generic dev intent through /brain:plan (or /brain:build when an open spec covers it); competitor vault re-checked, same gap there (v0.24.0, b0f7500, pushed, CI green, selftest 331)
+- [2026-09-14 03:06] ■ session ended (clear)
+- [2026-09-14 03:08] ■ session ended (other)
+- [2026-09-14 03:19] ■ session ended (other)
+- [2026-09-14 03:27] ■ session ended (other)
