@@ -1,6 +1,6 @@
 ---
-description: Verify a built spec and review its code — AC-by-AC verification with evidence, findings filed back into the Monkey Brain (review synthesis page, ADRs, instinct candidates), and the spec closed out honestly. Use when the user says "review the changes/spec/branch", after /brain:build finishes, or before merging feature work.
-argument-hint: "[spec-slug | branch | scope]"
+description: Verify a built spec and review its code — AC-by-AC verification with evidence, findings filed back into the Monkey Brain (review synthesis page, ADRs, instinct candidates), and the spec closed out honestly. Use when the user says "review the changes/spec/branch/PR", after /brain:build finishes, or before merging feature work.
+argument-hint: "[spec-slug | branch | PR#/URL | scope]"
 effort: high
 ---
 
@@ -16,6 +16,14 @@ A review that only lives in chat is lost. This one ends in the brain.
 
 1. **Scope.** The spec's diff (branch or working tree) when a spec is named or active;
    otherwise the scope the user gave. Read the spec's ACs and test plan first.
+   - **PR mode** — a PR number, URL, or "review the PR": run
+     `node "${CLAUDE_SKILL_DIR}/../../hooks/scripts/pr.js" <ref>` (no ref = current
+     branch's PR) for the PR's metadata, live CI check status and diff in one read-only
+     call. `pr.js` never posts anything back to GitHub — it only fetches (`gh` missing or
+     unauthenticated → it says so; hand that to the curator rather than treating it as
+     a review finding). Treat the CI check summary as the "green CI" evidence step 2
+     below asks for, instead of running the suite yourself when it's already green
+     upstream; still run it yourself if any check is failing, pending, or missing.
 2. **Verify AC-by-AC.** For each criterion: met / not met, with evidence — a test name
    and its result, or a demonstrated behavior. Run the suite yourself; never take the
    spec's own tick-marks on faith.
@@ -28,7 +36,9 @@ A review that only lives in chat is lost. This one ends in the brain.
    Report findings concretely: `file:line`, what breaks, how to fix.
 4. **File it back:**
    - Review page → `wiki/syntheses/<feature>-review.md` (verdict, AC table, findings),
-     linked from the index and the spec.
+     linked from the index and the spec. In PR mode, include the PR URL and its CI check
+     summary; the brain never posts the review to GitHub itself — hand the curator the
+     filed page (or a short excerpt) to paste into the PR themselves if they want it there.
    - Durable choices the review surfaced → `decisions/` ADRs.
    - A correction made for the 3rd+ time → draft `instincts/pending/<rule>.md`
      (template `instinct.md`) for the curator to promote. If the correction is a *pattern*

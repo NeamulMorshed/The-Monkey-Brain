@@ -1070,6 +1070,26 @@ try {
   fs.rmSync(path.join(PROJ, '.github'), { recursive: true, force: true });
   fs.rmSync(CIP, { recursive: true, force: true });
 
+  // ---------- Post-v3: gh-based PR review (pr.js) ----------
+  console.log('pr.js (Post-v3 — read-only gh PR fetch for /brain:review)');
+  const prLib = require(path.join(HERE, 'pr.js'));
+  check('summarize() renders an error result verbatim', prLib.summarize({ ok: false, error: 'gh is not authenticated — run `gh auth login` first.' }) === 'gh is not authenticated — run `gh auth login` first.', 'mismatch');
+  const okResult = {
+    ok: true,
+    pr: { number: 42, title: 'Add widget', url: 'https://github.com/x/y/pull/42', state: 'OPEN', isDraft: false, headRefName: 'feat/widget', baseRefName: 'main', author: { login: 'octocat' } },
+    checks: [{ name: 'build', bucket: 'pass' }, { name: 'lint', bucket: 'fail' }],
+    diff: '--- a/x.js\n+++ b/x.js\n',
+  };
+  const okSummary = prLib.summarize(okResult);
+  check('summarize() reports PR metadata, CI check counts and the diff', /PR #42: Add widget/.test(okSummary) && /feat\/widget -> main/.test(okSummary) && /1 pass, 1 fail/.test(okSummary) && /✓ build \(pass\)/.test(okSummary) && /✗ lint \(fail\)/.test(okSummary) && okSummary.includes(okResult.diff), okSummary);
+  check('summarize() marks a draft PR', /\(draft\)/.test(prLib.summarize({ ...okResult, pr: { ...okResult.pr, isDraft: true } })), 'draft marker missing');
+  check('summarize() handles no reported checks', /CI checks: none reported\./.test(prLib.summarize({ ...okResult, checks: [] })), 'missing none-reported line');
+  let pr = spawnSync(process.execPath, [path.join(HERE, 'pr.js'), '123'], { encoding: 'utf8', timeout: 15000, env: { ...process.env, MONKEY_BRAIN_GH_CMD: 'mb-no-such-gh-xyz' } });
+  check('pr.js reports gh missing rather than crashing', pr.status === 0 && /gh CLI not found/.test(pr.stdout), pr.stdout + pr.stderr);
+  pr = spawnSync(process.execPath, [path.join(HERE, 'pr.js'), '123', '--json'], { encoding: 'utf8', timeout: 15000, env: { ...process.env, MONKEY_BRAIN_GH_CMD: 'mb-no-such-gh-xyz' } });
+  let prJson = {}; try { prJson = JSON.parse(pr.stdout); } catch {}
+  check('pr.js --json returns { ok:false, error } instead of throwing', prJson.ok === false && /gh CLI not found/.test(prJson.error || ''), pr.stdout);
+
   // ---------- v3 P13: blast-radius routing (graph.js) ----------
   console.log('graph.js (v3 P13 — blast-radius routing)');
   const GRAPHJS = path.join(HERE, 'graph.js');

@@ -349,7 +349,7 @@ these are the explicit form. Full detail (model routing, fan-out) lives in
 | `/brain:research <topic>` | Web + codebase research, filed to `wiki/research/` with sources |
 | `/brain:plan <feature>` | Writes `specs/` with numbered ACs + a tier (sized by the import-graph blast radius); approval is curator-owned |
 | `/brain:build <spec>` | Test-first implementation against a spec's ACs, gates armed |
-| `/brain:review` | AC-by-AC verification; files ADRs + instinct candidates |
+| `/brain:review [spec\|branch\|PR#/URL]` | AC-by-AC verification; files ADRs + instinct candidates; a PR reads its diff + CI checks via `gh` (read-only) |
 | `/brain:loop <spec\|research\|design>` | Bounded loop that stops on the brain's own criteria (every AC ✅, a stable recommendation, no open P0) |
 
 **Daily drivers**

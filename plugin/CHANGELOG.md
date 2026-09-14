@@ -1,5 +1,22 @@
 # Changelog — brain plugin
 
+## 0.26.0 — 2026-09-15 (gh-based PR review)
+
+Read-only GitHub PR support for `/brain:review`: fetch a live PR's diff and CI check status
+via `gh`, review it exactly like any other scope, and file the same synthesis page — the
+brain never posts anything back to GitHub.
+
+- **`hooks/scripts/pr.js`** — wraps `gh pr view/checks/diff` (`node pr.js <ref> [--json]
+  [--no-diff]`; no ref = current branch's PR). Fails open with a plain-text message when `gh`
+  is missing or unauthenticated; the binary name is overridable via `MONKEY_BRAIN_GH_CMD` for
+  deterministic selftest coverage. No write calls anywhere — no `gh pr comment` / `gh pr
+  review` / `gh pr merge`; posting to GitHub stays a manual curator action.
+- **`skills/review/SKILL.md`** — step 1 (Scope) gains a PR-mode branch: a PR number, URL, or
+  "review the PR" runs `pr.js` for metadata + CI checks + diff in one call; a green CI summary
+  counts as the "green CI" evidence step 2 already asks for. Step 4's review-page bullet notes
+  the PR URL + CI summary get filed the same as any other scope.
+- Selftest 344 → 350.
+
 ## 0.25.0 — 2026-09-15 (MCP capability registry)
 
 Capability-awareness for MCP servers, mirroring the P6 capability-plugin registry: "MCP

@@ -15,7 +15,7 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `research` | Web + codebase research filed to `wiki/research/` with sources + recommendation | ✅ |
 | `plan` | Spec with numbered acceptance criteria + tier (suggested by the `hooks/scripts/graph.js` blast radius); approval stays curator-owned | ✅ |
 | `build` | Test-first loop against a spec's ACs (works with the TDD/plan gates) | ✅ |
-| `review` | AC verification + code review filed back (synthesis page, ADRs, instinct candidates — with a `ban:` pattern when the correction is one); works the instinct queue (`hooks/scripts/instincts.js`: rank, promote, prune) | ✅ |
+| `review` | AC verification + code review filed back (synthesis page, ADRs, instinct candidates — with a `ban:` pattern when the correction is one); works the instinct queue (`hooks/scripts/instincts.js`: rank, promote, prune); PR mode reads a live GitHub PR's diff + CI checks via `hooks/scripts/pr.js` (read-only — never posts back) | ✅ |
 | `loop` | Bounded build / research / design loops (`hooks/scripts/loop.js`) that stop on the brain's own criteria — every AC ✅, a stable recommendation, no open P0 — with livelock, stall and tick-cap halts | ✅ |
 | `terse` | Caveman-style output compression, **on by default** (hook #1 injects the rules); the skill toggles it off/on (code/commands never compressed) | ✅ |
 | `compress` | Permanent instruction-file compression with before/after receipts | ✅ |

@@ -62,6 +62,7 @@ knowledge. Monkey Brain v2 does all three in one plugin, portable to any project
 | **P15** Learned bans — instincts with `ban:` patterns enforced by hook; confidence scores | ✅ 2026-09-13 | v0.20.0 — `bans.js` (active instincts' `ban:` / `ban_paths:` / `enforce:` + declared packs' `bans.json`); guards refuses `block`, instinct-track reports `warn`; product-design `bans.json`; `instincts.js` status / promote / prune / test with confidence; **fixed**: frontmatter comments hid spec tiers from the gates (`lib.parseFrontmatter`); selftest **267** |
 | **P16** Team mode — git-native lock, union-merged log, per-author sessions | ✅ 2026-09-13 | v0.21.0 — template `.gitattributes` (union merge: log, agents, review-required) + `sessions/.gitignore` (per-machine caches); `lock.js` + `/brain:lock` (committed, expiring `LOCK.md`; brain-status shows it; guards enforce its scope); per-author digests; `--update` migrates; real bare-repo + two-clone merge test; selftest **286** |
 | **P17** Life packs (optional) — learning (SM-2), career, ideas | ✅ 2026-09-13 | v0.22.0 — `/brain:learn` + `srs.js` (SM-2; only due cards enter context); `/brain:career` (case studies / CV / skill matrix / mock interviews in never-committed `private/`; guards gate `publishable` on `confidentiality: cleared` and keep uncleared cases in `private/`); ideas = dump + research validation mode; selftest **304** |
+| **Post-v3** gh-based PR review — `/brain:review` PR mode via `pr.js` | ✅ 2026-09-15 | v0.26.0 — read-only `gh pr view/checks/diff` wrapper; `/brain:review` reviews a live PR (metadata + CI status + diff) and files the same synthesis page as any other scope; never posts back to GitHub. Selftest **344 → 350** |
 
 ### Session log (engine work, newest first — instances get `sessions/` in P4)
 
@@ -778,3 +779,47 @@ story is different enough (raw-source ingestion, not ADRs) to design separately 
 --json` returns the five curated entries; a fixture `.mcp.json` with one curated (supabase) and
 one unrecognized server name correctly marks one ✓-configured and the other under the generic
 fallback.
+
+## Post-v3 — gh-based PR review integration (v0.26.0)
+
+**Status (2026-09-15): shipped.** Design below was implemented as written — no deviations.
+Curator chose **read-only** over "read + confirmed post" when asked: fetch only, never write
+to GitHub.
+
+**Problem.** `/brain:review` only ever reviewed a local branch/spec diff; a curator reviewing
+a GitHub PR had to paste the diff in by hand and had no way to pull CI check status into the
+review. The `github` capability plugin (P6, auto-installed) already does PR *craft* — opening,
+merging, commenting — but the brain's own contract is "plugins do the craft; the brain records
+the knowledge," and this ask was specifically about *reading* a PR as review evidence, not
+about duplicating plugin-owned write flows.
+
+**Design — read-only fetch, one new script, one skill extended, zero new hooks:**
+
+- **New file** `plugin/hooks/scripts/pr.js` — wraps `gh pr view/checks/diff` (`node pr.js
+  <ref> [--json] [--no-diff]`; no ref = current branch's PR, same resolution `gh` itself uses).
+  Fails open with a plain-text message when `gh` is missing or unauthenticated — same
+  defensive posture as every other hooks script (`ci.js` et al.). The `gh` binary name is
+  overridable via `MONKEY_BRAIN_GH_CMD` so selftest can exercise the "not found" path
+  deterministically without touching a real `gh`. Exports `fetchPR()` / `summarize()` for
+  direct unit testing.
+- **No write calls, anywhere.** `pr.js` never shells out to `gh pr comment`, `gh pr review`,
+  or `gh pr merge` — posting a review to GitHub stays a manual curator action outside the
+  brain, exactly like the MCP registry never runs a `setup_hint` command itself.
+- **`/brain:review` step 1 (Scope)** gains a PR-mode branch: given a PR number, URL, or "review
+  the PR", run `pr.js` for metadata + CI checks + diff in one call. A green CI summary from
+  `pr.js` counts as the step-2 "green CI" evidence instead of re-running the suite locally;
+  any failing/pending/missing check still gets a local run. Step 4's review-page bullet notes
+  the PR URL + CI summary get filed into the same `wiki/syntheses/<feature>-review.md` as any
+  other scope — the brain records what it found, the curator decides whether to paste it into
+  the PR themselves.
+- **Out of scope (explicitly not touched):** `brain-status.js`, `guards.js`, `wiki-check.js`,
+  `trigger-router`, `doctor.js`, `ci.js` — no hook watches PRs or GitHub Actions; this is one
+  new script plus a scope option on an existing skill. A future escalation (posting, or a hook
+  that polls PR status) is possible but not adopted here, same posture as the MCP registry and
+  the plan-before-build hint.
+
+**Testing.** `selftest.js` requires `pr.js` directly (no spawn) and exercises `summarize()`
+against crafted ok/error results, plus the CLI's "gh not found" path via `MONKEY_BRAIN_GH_CMD`
+pointed at a nonexistent command — deterministic, no network or real `gh` auth required.
+Selftest 344 → 350. The authenticated fetch path against a real PR is exercised by hand, not
+in CI (same "skip when the real tool isn't verifiable" posture as the git/qmd selftest checks).

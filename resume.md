@@ -1,10 +1,28 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-15
+updated: 2026-09-15 03:37
 ---
 
 ## Where we left off
+**2026-09-15 — plugin v0.26.0, built on `main`, NOT yet committed.** Curator asked for
+**gh-based PR review integration**. Extended `/brain:review` rather than adding a new skill:
+its Scope step now takes a PR number/URL and runs the new `hooks/scripts/pr.js` (wraps `gh pr
+view/checks/diff`) for the PR's metadata, live CI check status and diff in one read-only call
+— a green CI summary counts as the "green CI" evidence step 2 already asks for. Asked the
+curator up front whether PR mode should be able to post back to GitHub (`gh pr comment`/
+`review`) or stay fetch-only; chose **read-only** — `pr.js` has no write call anywhere, posting
+stays a manual curator action, same posture as the MCP registry never running a `setup_hint`
+itself. `pr.js` fails open with a plain-text message when `gh` is missing/unauthenticated (the
+binary name is overridable via `MONKEY_BRAIN_GH_CMD`, which selftest uses to hit that path
+deterministically without touching a real `gh`). **Zero changes to any core hook.** Design
+written to `ROADMAP.md` first (this repo's convention), then built. Selftest **344 → 350**;
+both manifests validate `--strict`. `gh` 2.96.0 is installed and authenticated on this machine.
+
+- [ ] Commit + push v0.26.0 (holding for the curator's go-ahead — not committed automatically).
+- [ ] Dogfood PR mode against a real open PR once one exists (the authenticated fetch path
+  isn't exercised in selftest, same posture as git/qmd).
+
 **2026-09-15 — plugin v0.25.0 on `main`, pushed (8450044), CI green.** Built the **MCP
 capability registry**: extends the P6 capability-plugin contract ("plugins do the craft; the
 brain records the knowledge") to MCP servers. `skills/init/recommended-mcp-servers.json`
@@ -104,3 +122,4 @@ validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Ses
 - [2026-09-14 03:08] ■ session ended (other)
 - [2026-09-14 03:19] ■ session ended (other)
 - [2026-09-14 03:27] ■ session ended (other)
+- [2026-09-15 03:37] ■ session ended (clear)
