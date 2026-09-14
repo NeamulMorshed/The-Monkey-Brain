@@ -441,6 +441,32 @@ try {
   const dctx = (out.hookSpecificOutput || {}).additionalContext || '';
   check('brain-status surfaces recent decisions/ ADRs', dctx.includes('Decisions (the why)') && dctx.includes('use widgets'), dctx.slice(0, 400));
 
+  // uncommitted-.brain/-changes nudge (wrap.js gitCheck, mirrors doctor.js #7)
+  w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}g0` }));
+  check('a brain outside any git repo stays silent', w.status === 0 && w.stdout === '', (w.stdout || '').slice(0, 200));
+  if (spawnSync('git', ['--version'], { encoding: 'utf8' }).status === 0) {
+    const GB = path.join(ROOT, 'gitbrain');
+    fs.mkdirSync(GB, { recursive: true });
+    const gitb = (...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@x', '-c', 'init.defaultBranch=main', ...a], { cwd: GB, encoding: 'utf8', timeout: 15000 });
+    gitb('init', '-q');
+    fs.writeFileSync(path.join(GB, 'CLAUDE.md'), '# scratch\n');
+    gitb('add', '-A');
+    gitb('commit', '-q', '-m', 'init');
+    fs.writeFileSync(path.join(GB, 'wiki-note.md'), 'dirty change\n');
+    w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}g1` }), { MONKEY_BRAIN_DIR: GB });
+    out = {}; try { out = JSON.parse(w.stdout || '{}'); } catch {}
+    check('uncommitted .brain/ changes block stop once', out.decision === 'block' && /uncommitted/.test(out.reason || '') && /brain:wrap/.test(out.reason || ''), (w.stdout || '').slice(0, 200));
+    w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}g1` }), { MONKEY_BRAIN_DIR: GB });
+    check('git nudge fires once per session (marker)', w.status === 0 && w.stdout === '', (w.stdout || '').slice(0, 200));
+    gitb('add', '-A');
+    gitb('commit', '-q', '-m', 'commit the change');
+    w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}g2` }), { MONKEY_BRAIN_DIR: GB });
+    check('a clean git tree stays silent', w.status === 0 && w.stdout === '', (w.stdout || '').slice(0, 200));
+    fs.rmSync(GB, { recursive: true, force: true });
+  } else {
+    check('git not installed — git-uncommitted nudge test skipped', true);
+  }
+
   // ---------- hook #5: snapshot ----------
   console.log('snapshot.js (#5 PreCompact)');
   let s = run('snapshot.js', evt({ hook_event_name: 'PreCompact', trigger: 'auto', session_id: 'snap1' }));

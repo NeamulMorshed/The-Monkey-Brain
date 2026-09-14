@@ -1,5 +1,19 @@
 # Changelog — brain plugin
 
+## 0.27.0 — 2026-09-15 (automatic uncommitted-changes nudge)
+
+The automatic Stop hook now also reminds you when `.brain/` has uncommitted git changes,
+instead of that check only existing inside an on-demand `/brain:doctor` run.
+
+- **`hooks/scripts/wrap.js`** — new `gitCheck()`, a third Stop-time reminder alongside the
+  existing "wiki changed but not logged" and "build/review with no ADR" nudges. Runs `git
+  status --porcelain -- .` scoped to the brain dir (mirrors `doctor.js` check #7), blocks
+  ONCE per session pointing at `/brain:wrap` or a manual commit, and stays silent when
+  `.brain/` isn't inside a git repo or git isn't installed. Advisory only — it never runs
+  `git commit`/`git push` itself; the brain still never touches git on its own, it just tells
+  you sooner. Zero changes to `/brain:doctor` or any other hook.
+- Selftest 350 → 354.
+
 ## 0.26.0 — 2026-09-15 (gh-based PR review)
 
 Read-only GitHub PR support for `/brain:review`: fetch a live PR's diff and CI check status

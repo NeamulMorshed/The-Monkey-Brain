@@ -1,12 +1,25 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-15 03:37
+updated: 2026-09-15 05:30
 ---
 
 ## Where we left off
-**2026-09-15 — plugin v0.26.0, built on `main`, NOT yet committed.** Curator asked for
-**gh-based PR review integration**. Extended `/brain:review` rather than adding a new skill:
+**2026-09-15 — plugin v0.27.0, built on `main`, not yet committed.** Curator asked "when will
+the brain ask for a commit/push?" — answer was: only on-demand (`/brain:doctor` check 7) or
+inside `/brain:wrap` itself; the automatic Stop hook never checked git at all. Curator agreed
+the gap was worth closing: extended `hooks/scripts/wrap.js`'s existing Stop-time reminder
+pattern (unlogged-wiki-work nudge, decision-distillation nudge) with a third nudge, `gitCheck()`
+— runs `git status --porcelain -- .` scoped to the brain dir (same check as `doctor.js` #7),
+blocks ONCE per session pointing at `/brain:wrap` or a manual commit, and stays silent when
+`.brain/` isn't in a git repo or git isn't installed. Still **advisory only** — it never runs
+`git commit`/`git push` itself, same "brain records, curator acts" boundary as `pr.js` and the
+MCP registry. Zero changes to `doctor.js` or any other hook. Selftest **350 → 354**.
+
+- [ ] Commit + push v0.27.0 (holding for the curator's go-ahead — not committed automatically).
+
+**2026-09-15 — plugin v0.26.0, built on `main`, committed (`05a1c58`), pushed to `origin/main`.**
+Curator asked for **gh-based PR review integration**. Extended `/brain:review` rather than adding a new skill:
 its Scope step now takes a PR number/URL and runs the new `hooks/scripts/pr.js` (wraps `gh pr
 view/checks/diff`) for the PR's metadata, live CI check status and diff in one read-only call
 — a green CI summary counts as the "green CI" evidence step 2 already asks for. Asked the
@@ -19,7 +32,6 @@ deterministically without touching a real `gh`). **Zero changes to any core hook
 written to `ROADMAP.md` first (this repo's convention), then built. Selftest **344 → 350**;
 both manifests validate `--strict`. `gh` 2.96.0 is installed and authenticated on this machine.
 
-- [ ] Commit + push v0.26.0 (holding for the curator's go-ahead — not committed automatically).
 - [ ] Dogfood PR mode against a real open PR once one exists (the authenticated fetch path
   isn't exercised in selftest, same posture as git/qmd).
 
@@ -123,3 +135,6 @@ validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Ses
 - [2026-09-14 03:19] ■ session ended (other)
 - [2026-09-14 03:27] ■ session ended (other)
 - [2026-09-15 03:37] ■ session ended (clear)
+- [2026-09-15 03:50] ■ session ended (prompt_input_exit)
+- [2026-09-15 03:55] ■ session ended (other)
+- [2026-09-15 04:13] ■ session ended (other)

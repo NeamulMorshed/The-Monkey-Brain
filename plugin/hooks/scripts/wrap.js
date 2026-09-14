@@ -9,8 +9,11 @@
  *   the stop ONCE per session with instructions to append the log entry (or
  *   run /brain:wrap). Then, if the last logged step was build/review but no ADR
  *   was distilled to decisions/, block ONCE to prompt capturing the "why"
- *   (Phase 5 auto-distillation). The narrative itself belongs to the model — a
- *   script only notices it is missing.
+ *   (Phase 5 auto-distillation). Then, if .brain/ has uncommitted changes in
+ *   git, block ONCE to prompt /brain:wrap or a manual commit — same check as
+ *   doctor.js #7, just automatic instead of on-demand. The narrative itself
+ *   belongs to the model, and the commit itself belongs to the curator — a
+ *   script only notices either is missing, never writes or commits itself.
  *
  *   SessionEnd (the MECHANIC): self-heal wiki/index.md frontmatter stats
  *   (source_count / page_count / updated) from the filesystem — deterministic
@@ -26,6 +29,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const lib = require(path.join(__dirname, 'lib.js'));
 
 /** Wiki work is "unlogged" when a page changed this much after the last log write. */
@@ -116,6 +120,38 @@ function decisionCheck(input, brain) {
   });
 }
 
+/**
+ * Uncommitted .brain/ changes nudge. Mirrors doctor.js check #7 ("uncommitted"),
+ * but fires automatically on Stop instead of waiting for a manual /brain:doctor
+ * run — the audit trail can otherwise sit unsaved for sessions at a time.
+ * Advisory only: it never runs git commit/push itself (brain records, curator
+ * acts — same boundary as pr.js and the MCP registry). Silent when .brain/
+ * isn't inside a git repo, or git isn't installed.
+ */
+function gitCheck(input, brain) {
+  if (input.stop_hook_active) return;
+  const marker = path.join(os.tmpdir(), `mb-gitcheck-${String(input.session_id || 'nosession').replace(/[^\w-]/g, '')}`);
+  if (fs.existsSync(marker)) return;
+
+  let git;
+  try {
+    git = spawnSync('git', ['-C', brain, 'status', '--porcelain', '--', '.'], { encoding: 'utf8', timeout: 8000 });
+  } catch { git = null; }
+  if (!git || git.status !== 0) return; // not a git repo, or git unavailable — silent
+
+  const dirty = git.stdout.split('\n').filter((l) => l.trim()).length;
+  if (!dirty) return;
+
+  fs.writeFileSync(marker, '');
+  lib.succeed({
+    decision: 'block',
+    reason:
+      `🐵 wrap[git]: ${dirty} uncommitted change(s) in .brain/ — the trail is written but not saved. ` +
+      `Run /brain:wrap to commit with the vault's conventions (or commit it yourself). ` +
+      `(This reminder fires once per session.)`,
+  });
+}
+
 function refreshIndex(brain) {
   const idxPath = path.join(brain, 'wiki', 'index.md');
   let text = lib.readTextSafe(idxPath);
@@ -169,6 +205,7 @@ async function main() {
   if (evt === 'Stop') {
     stopCheck(input, brain);   // may block+exit; otherwise fall through
     decisionCheck(input, brain);
+    gitCheck(input, brain);
   } else if (evt === 'SessionEnd') {
     refreshIndex(brain);
     reindex(brain);
