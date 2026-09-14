@@ -722,7 +722,10 @@ scratch brain the suite scaffolds would have registered itself in the real user'
 Verified end to end for real on this machine (scaffold → register → generate → self-prune),
 then the demo entry was removed. Selftest 304 → 319.
 
-## Post-v3 — MCP capability registry (planned, v0.25.0)
+## Post-v3 — MCP capability registry (v0.25.0)
+
+**Status (2026-09-15): shipped.** Design below was implemented as written — no deviations.
+Selftest 331 → 344, both manifests validate `--strict`.
 
 **Problem.** The brain already has a capability-plugin registry (P6, `recommended-plugins.json`)
 — "plugins do the craft; the brain records the knowledge." Curators are increasingly reaching

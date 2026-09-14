@@ -1,10 +1,29 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-14 03:27
+updated: 2026-09-15
 ---
 
 ## Where we left off
+**2026-09-15 — plugin v0.25.0 on `main`, pushed (8450044), CI green.** Built the **MCP
+capability registry**: extends the P6 capability-plugin contract ("plugins do the craft; the
+brain records the knowledge") to MCP servers. `skills/init/recommended-mcp-servers.json`
+curates five launch entries — Supabase + Firebase (schema/migration/auth decisions →
+`decisions/` ADRs, live shape → `wiki/entities/`), Figma + Framer (design-system decisions →
+`decisions/`, same precedence as ui-ux-pro-max/frontend-design), Vercel (deploy config →
+`decisions/`, live status → `projects/`) — Notion deferred (content-source shape needs a
+different filing story: raw-source ingestion, not ADRs). `scripts/mcp-servers.js` renders the
+curated list and detects which are already configured in a project's `.mcp.json` (excluding
+the brain's own `brain-search`), with a generic "no filing rules yet" fallback for any
+connected server outside the curated set — fails open on a missing/malformed `.mcp.json`.
+`/brain:init` step 6b offers the set exactly like it offers plugins: never installs, never
+touches a credential, just hands over `setup_hint` for the curator to run and confirm
+themselves. Instance manual §9 states the same contract for both. **Zero changes to any core
+hook** (`brain-status`/`guards`/`wiki-check`/`trigger-router`/`doctor`) — filing stays
+advisory, picked up the same way plugin output already is. Design written to `ROADMAP.md`
+first (this repo's convention — no separate spec doc), approved, then built directly.
+Selftest **331 → 344**; both manifests validate `--strict`.
+
 **2026-09-14 — plugin v0.24.0 on `main`, pushed (b0f7500), CI green.** Everything from v2
 (Phases 1–9), v3 (P10–P17: recall, receipts, loops, blast radius, daily drivers, learned bans,
 team mode, life packs) and v0.23.0 Home is merged on `main`. This session fixed the curator's
@@ -22,6 +41,8 @@ ignored in practice. Selftest **331 GREEN**; both manifests validate `--strict`.
 
 - [ ] Watch whether the plan-before-build hint is actually followed in dogfood sessions; if not, add the `guards.js` hard gate (new code file + zero open specs → block).
 - [x] `examples/claude-code-brain/sessions/health.json` — added `sessions/.gitignore` to the example brain (it was missing the one every scaffolded instance ships via `schema/brain-template`), matching `plugin/skills/init/brain-template` and `schema/brain-template` (a530223).
+- [ ] MCP capability registry (v0.25.0) is built and tested but not yet dogfooded on a real project's `.mcp.json` with a real Supabase/Figma/etc. connection — verify the `/brain:init` step 6b offer reads well in practice.
+- [ ] Notion MCP integration — deferred; needs its own design (content-source filing: raw-source ingestion via `/brain:ingest`, not `decisions/` ADRs).
 
 ### Earlier history (v2 build, 2026-07)
 **P9** dogfooded the engine on a fresh scratch brain (scaffold → **lint-clean +
