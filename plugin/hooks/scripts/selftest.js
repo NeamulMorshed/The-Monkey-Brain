@@ -751,6 +751,40 @@ try {
     check('brain-all bundle = brain + official plugins (incl. the core five, no output styles, no dupes)', (mkt.plugins || []).some((p) => p.name === 'brain-all') && bdeps[0] === 'brain' && bdeps.slice(1).every((d) => d.marketplace === 'claude-plugins-official') && autoNames.every((n) => bnames.includes(n)) && !bnames.some((n) => /output-style/.test(n)) && new Set(bnames).size === bnames.length, `deps=${bdeps.length}`);
   }
 
+  // ---------- recommended-mcp-servers manifest + offer (MCP capability registry, v0.25.0) ----------
+  console.log('recommended-mcp-servers.json + mcp-servers.js (/brain:init MCP-server offer)');
+  const MMANIFEST = path.join(SKILLS, 'init', 'recommended-mcp-servers.json');
+  const MCPJS = path.join(SKILLS, 'init', 'scripts', 'mcp-servers.js');
+  let mmanifest = {};
+  try { mmanifest = JSON.parse(fs.readFileSync(MMANIFEST, 'utf8')); } catch {}
+  const slist = Array.isArray(mmanifest.servers) ? mmanifest.servers : [];
+  const expectedServers = ['supabase', 'firebase', 'figma', 'framer', 'vercel'];
+  check('manifest lists all 5 recommended MCP servers', slist.length === 5 && expectedServers.every((n) => slist.some((s) => s.name === n)), slist.map((s) => s.name).join(','));
+  check('every server declares category/fires_on/brain_integration/records/setup_hint', slist.length > 0 && slist.every((s) => s.category && s.fires_on && s.brain_integration && s.setup_hint && Array.isArray(s.records) && s.records.length && s.records.every((r) => r.what && r.to)), 'missing fields');
+  check('every record target is a real .brain/ folder', slist.length > 0 && slist.every((s) => s.records.every((r) => /^(wiki\/|raw-sources\/|specs\/|projects\/|sessions\/|decisions\/|instincts\/)/.test(r.to))), 'bad record target');
+  check('manifest states the "brain records the knowledge" contract', /records the knowledge/i.test(mmanifest.contract || ''));
+  check('no setup_hint contains a literal secret (env-var placeholders only)', slist.every((s) => !/=\s*['"]?(sk-|sbp_|glpat-|ghp_)/i.test(s.setup_hint) ), 'a setup_hint looks like it embeds a real token');
+  let mj = spawnSync(process.execPath, [MCPJS], { encoding: 'utf8', timeout: 15000 });
+  check('mcp-servers.js lists every server + contract, exit 0', mj.status === 0 && expectedServers.every((n) => mj.stdout.includes(n)) && /records the knowledge/i.test(mj.stdout), `status=${mj.status} ${(mj.stderr || '').slice(0, 120)}`);
+  mj = spawnSync(process.execPath, [MCPJS, '--json'], { encoding: 'utf8', timeout: 15000 });
+  let mjJson = {}; try { mjJson = JSON.parse(mj.stdout); } catch {}
+  check('mcp-servers.js --json emits the parseable manifest', mj.status === 0 && Array.isArray(mjJson.servers) && mjJson.servers.length === 5, `status=${mj.status}`);
+  check('instance manual §9 states the MCP recording contract', /MCP servers \(the connected-data layer\)/.test(tmplManual) && /Supabase, Firebase, Figma, Framer,?\s*\n?\s*Vercel/.test(tmplManual), 'no MCP subsection in §9');
+
+  // Detection: a fixture .mcp.json with one curated + one unrecognized + the brain's own server.
+  writeRel(PA, '.mcp.json', JSON.stringify({ mcpServers: { supabase: { command: 'npx' }, 'brain-search': { command: 'node' }, 'some-random-server': { command: 'npx' } } }, null, 2));
+  mj = spawnSync(process.execPath, [MCPJS, '--project', PA], { encoding: 'utf8', timeout: 15000 });
+  check('mcp-servers.js marks a configured curated server with ✓', mj.status === 0 && mj.stdout.split('\n').some((l) => l.startsWith('✓') && l.includes('supabase')), mj.stdout.slice(0, 300));
+  check('mcp-servers.js excludes brain-search (the brain\'s own server) from detection', !mj.stdout.includes('brain-search'), mj.stdout.slice(0, 300));
+  check('mcp-servers.js surfaces an uncurated configured server under the generic fallback', mj.status === 0 && /no filing rules yet/i.test(mj.stdout) && mj.stdout.includes('some-random-server'), mj.stdout.slice(0, 300));
+  fs.rmSync(path.join(PA, '.mcp.json'), { force: true });
+  mj = spawnSync(process.execPath, [MCPJS, '--project', PA], { encoding: 'utf8', timeout: 15000 });
+  check('mcp-servers.js is a silent no-crash no-op with no .mcp.json present', mj.status === 0 && !/no filing rules yet/i.test(mj.stdout), `status=${mj.status} ${(mj.stderr || '').slice(0, 120)}`);
+  writeRel(PA, '.mcp.json', '{not valid json');
+  mj = spawnSync(process.execPath, [MCPJS, '--project', PA], { encoding: 'utf8', timeout: 15000 });
+  check('mcp-servers.js fails open on a malformed .mcp.json (never crashes)', mj.status === 0, `status=${mj.status} ${(mj.stderr || '').slice(0, 120)}`);
+  fs.rmSync(path.join(PA, '.mcp.json'), { force: true });
+
   // ---------- product-design pack (Phase 6.5) ----------
   console.log('product-design pack (skills/product-design — first domain-expertise pack)');
   const PDDIR = path.join(SKILLS, 'product-design');

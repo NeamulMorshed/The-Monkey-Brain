@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-09-15",
+  "contract": "MCP servers do the craft; the brain records the knowledge. The brain never installs a server or touches a credential — it only recognizes ones the curator already connected (or is offered and chooses to connect) and knows which .brain/ folder their output belongs in. Same contract as recommended-plugins.json, extended from Claude Code plugins to MCP servers.",
+  "install": {
+    "how": "The brain never runs setup for you. Each entry's setup_hint is an instructions-only `claude mcp add ...` template with an env-var placeholder for any credential — confirm the exact command and fill in your own token before running it.",
+    "scope": "MCP servers are typically project-scoped (a project's own .mcp.json) since credentials differ per project; some (e.g. a personal Figma/Notion token) may make more sense at user scope — the curator decides."
+  },
+  "categories": ["backend", "design", "deploy"],
+  "servers": [
+    {
+      "name": "supabase",
+      "category": "backend",
+      "homepage": "https://github.com/supabase-community/supabase-mcp",
+      "fires_on": "database schema, migrations, RLS policies, edge functions",
+      "brain_integration": "Schema and migration decisions are distilled to decisions/ ADRs; the live table/policy shape is kept current in a wiki/entities/ page.",
+      "records": [
+        { "what": "schema + migration decisions", "to": "decisions/" },
+        { "what": "current DB design", "to": "wiki/entities/" }
+      ],
+      "setup_hint": "claude mcp add supabase -- npx -y @supabase/mcp-server-supabase --access-token=${SUPABASE_ACCESS_TOKEN}"
+    },
+    {
+      "name": "firebase",
+      "category": "backend",
+      "homepage": "https://github.com/firebase/firebase-tools/tree/master/src/mcp",
+      "fires_on": "Firebase auth, Firestore schema, cloud functions, hosting config",
+      "brain_integration": "Auth/Firestore/functions/hosting decisions are distilled to decisions/ ADRs; the live project shape is kept current in a wiki/entities/ page.",
+      "records": [
+        { "what": "auth + Firestore + functions + hosting decisions", "to": "decisions/" },
+        { "what": "current Firebase project design", "to": "wiki/entities/" }
+      ],
+      "setup_hint": "claude mcp add firebase -- npx -y firebase-tools@latest experimental:mcp"
+    },
+    {
+      "name": "figma",
+      "category": "design",
+      "homepage": "https://help.figma.com/hc/en-us/articles/32132100833559",
+      "fires_on": "UI / design-system work referencing a Figma file",
+      "brain_integration": "Design-system decisions pulled from Figma are filed to decisions/ ADRs — the same folder frontend-design and ui-ux-pro-max already write to. Figma MCP reads the design; those plugins still own implementation decisions.",
+      "records": [
+        { "what": "design-system decisions sourced from Figma", "to": "decisions/" }
+      ],
+      "precedence": "Figma MCP supplies design context; frontend-design/ui-ux-pro-max still decide and execute the build (same precedence as P6.5).",
+      "setup_hint": "claude mcp add figma --url https://mcp.figma.com/mcp"
+    },
+    {
+      "name": "framer",
+      "category": "design",
+      "homepage": "https://www.framer.com/developers/mcp",
+      "fires_on": "design / prototype / publish work in Framer",
+      "brain_integration": "Design decisions are filed to decisions/ ADRs; the live design system is kept current in a wiki/entities/ page.",
+      "records": [
+        { "what": "design decisions", "to": "decisions/" },
+        { "what": "current design system", "to": "wiki/entities/" }
+      ],
+      "setup_hint": "claude mcp add framer --url https://mcp.framer.com"
+    },
+    {
+      "name": "vercel",
+      "category": "deploy",
+      "homepage": "https://vercel.com/docs/mcp/vercel-mcp",
+      "fires_on": "deploy config, env vars, domains, build/runtime status",
+      "brain_integration": "Deploy config decisions (env vars, domains, build settings) are filed to decisions/ ADRs; live deployment/build status is kept on the workstream's projects/ page.",
+      "records": [
+        { "what": "deploy config decisions", "to": "decisions/" },
+        { "what": "live deployment status", "to": "projects/" }
+      ],
+      "setup_hint": "claude mcp add vercel --url https://mcp.vercel.com"
+    }
+  ]
+}

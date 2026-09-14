@@ -1,5 +1,35 @@
 # Changelog — brain plugin
 
+## 0.25.0 — 2026-09-15 (MCP capability registry)
+
+Capability-awareness for MCP servers, mirroring the P6 capability-plugin registry: "MCP
+servers do the craft; the brain records the knowledge." The brain never installs a server,
+runs its setup command, or touches a credential — it only recognizes servers the curator
+already connected and knows which `.brain/` folder their output belongs in.
+
+- **`skills/init/recommended-mcp-servers.json`** — a curated registry (same shape as
+  `recommended-plugins.json`) with five launch entries: Supabase and Firebase (schema/
+  migration/auth decisions → `decisions/` ADRs, live shape → `wiki/entities/`), Figma and
+  Framer (design-system decisions → `decisions/`, same precedence as ui-ux-pro-max/
+  frontend-design — the MCP server supplies design context, those plugins still decide the
+  build), and Vercel (deploy config → `decisions/`, live deployment status → `projects/`).
+  Notion is deferred — a content-source-shaped MCP needs a different filing story
+  (raw-source ingestion, not ADRs) than the dev-infra-shaped five above.
+- **`skills/init/scripts/mcp-servers.js`** — renders the curated list and reads the
+  project's `.mcp.json` (`mcpServers` keys, excluding the brain's own `brain-search`) to mark
+  which curated servers are already configured; any configured server outside the curated set
+  surfaces under a generic "no filing rules yet" fallback instead of going unmentioned. Fails
+  open on a missing/malformed `.mcp.json` — never crashes `/brain:init`.
+- **`/brain:init` step 6b** — offers the curated set right after the existing capability-plugin
+  offer; hands over each entry's `setup_hint` (an env-var placeholder, never a literal secret)
+  for the curator to run and confirm themselves.
+- Instance manual **§9** — "Capability plugins & MCP servers (the craft layer)" states the
+  same recording contract for both.
+- Zero changes to `brain-status.js`, `guards.js`, `wiki-check.js`, `trigger-router.js`, or
+  `doctor.js` — filing stays advisory, picked up by the brain's own skills exactly like plugin
+  output already is; no hook watches MCP tool calls.
+- Selftest 331 → 344.
+
 ## 0.24.1 — 2026-09-14 (plans are Markdown)
 
 - `/brain:plan` and the instance manual (§4 Develop) now say the spec file *is* the plan:

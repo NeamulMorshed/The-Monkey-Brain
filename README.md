@@ -30,6 +30,7 @@ synthesis already exist *before* you ask. Knowledge accumulates instead of being
 - [All skills](#all-skills)
 - [All hooks](#all-hooks)
 - [Capability plugins](#capability-plugins)
+- [MCP servers](#mcp-servers)
 - [User guide](#user-guide)
 - [Requirements](#requirements)
 - [The example brain](#the-example-brain)
@@ -333,7 +334,7 @@ these are the explicit form. Full detail (model routing, fan-out) lives in
 
 | Skill | What it does |
 | --- | --- |
-| `/brain:init` | Scaffold `.brain/` into the current project; wires the root `CLAUDE.md` import; offers capability plugins |
+| `/brain:init` | Scaffold `.brain/` into the current project; wires the root `CLAUDE.md` import; offers capability plugins and MCP servers |
 | `/brain:ingest [source]` | 8-step compile of a source into the cross-linked wiki |
 | `/brain:query <question>` | Index-first answer with citations; novel answers filed back to `syntheses/` |
 | `/brain:brief <topic>` | A ≤ ~2k-token cited context pack from built-in search |
@@ -433,6 +434,28 @@ skills and hooks.
 **Everything at once:** `/plugin install brain-all@monkey-brain` — an opt-in bundle of every
 plugin in Anthropic's official marketplace (minus the output styles that contradict terse mode).
 Heavy on context; only worth it if you want maximum coverage and don't mind the token cost.
+
+---
+
+## MCP servers
+
+Same contract, extended to MCP servers: *MCP servers do the craft; the brain records the
+knowledge.* The brain never installs a server, runs its setup command, or touches a credential —
+`/brain:init` just recognizes ones you've already connected (or offers the curated set and hands
+you the exact `claude mcp add …` command to run yourself) and knows which `.brain/` folder their
+output belongs in.
+
+| Server | Fires on | Files into |
+| --- | --- | --- |
+| [Supabase](https://github.com/supabase-community/supabase-mcp) | schema, migrations, RLS, edge functions | `decisions/`, `wiki/entities/` |
+| [Firebase](https://github.com/firebase/firebase-tools/tree/master/src/mcp) | auth, Firestore schema, functions, hosting config | `decisions/`, `wiki/entities/` |
+| Figma | UI/design-system work referencing a Figma file | `decisions/` (same folder frontend-design/ui-ux-pro-max write to) |
+| Framer | design/prototype/publish work in Framer | `decisions/`, `wiki/entities/` |
+| Vercel | deploy config, env vars, domains, build/runtime status | `decisions/`, `projects/` |
+
+A connected server outside this curated set is still surfaced (a generic "no filing rules yet"
+note) rather than going unmentioned. Notion is deferred — pulling content from it fits `/brain:ingest`
+as a source, not an ADR, and needs its own design.
 
 ---
 

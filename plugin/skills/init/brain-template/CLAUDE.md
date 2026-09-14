@@ -208,7 +208,7 @@ the session-end hook keeps that index fresh.
 
 ---
 
-## 9. Capability plugins (the craft layer)
+## 9. Capability plugins & MCP servers (the craft layer)
 
 Craft is done by **capability plugins**. Five ship with the brain plugin as its
 dependencies — github, frontend-design, superpowers, security-guidance, code-modernization,
@@ -228,6 +228,24 @@ hooks, so the capability stays transient while its knowledge compounds here:
 Plugins auto-activate by their own descriptions; the trigger-router routes **my** workflows.
 When a plugin and one of mine both apply, precedence is: **deterministic trigger > domain
 pack > domain skill > craft plugin > general model**.
+
+**MCP servers (the connected-data layer).** Same contract, extended to MCP servers: I never
+install one, run its setup command, or touch a credential — I only recognize servers the
+curator already connected and know where their output belongs. `/brain:init` offers the
+curated set (`recommended-mcp-servers.json`; currently Supabase, Firebase, Figma, Framer,
+Vercel) and marks which are already in this project's `.mcp.json`.
+
+- Supabase / Firebase — schema, migration, auth, and hosting decisions → `decisions/` ADRs;
+  the live project shape → `wiki/entities/`.
+- Figma / Framer — design-system decisions pulled from the tool → `decisions/` ADRs (same
+  folder frontend-design/ui-ux-pro-max write to; the MCP server supplies design context,
+  those plugins still own implementation decisions).
+- Vercel — deploy config decisions → `decisions/` ADRs; live deployment/build status →
+  `projects/`.
+
+A connected MCP server outside this curated set still gets surfaced (generic "no filing
+rules yet" note) rather than going unmentioned — treat its output as a finding and file it
+by hand until it earns a curated entry.
 
 ---
 

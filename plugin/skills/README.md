@@ -75,6 +75,17 @@ plugin to its target folder; the instance manual's §9 states the rule and the
 precedence chain). Plugins auto-activate by their own descriptions; the
 trigger-router only nudges the brain's own workflows.
 
+## MCP servers (MCP capability registry, v0.25.0)
+
+Same contract, extended to MCP servers: *MCP servers do the craft; the brain records the
+knowledge.* `init/recommended-mcp-servers.json` is the curated set (Supabase, Firebase,
+Figma, Framer, Vercel — Notion deferred, content-source-shaped rather than dev-infra-shaped).
+`init/scripts/mcp-servers.js` renders it and marks which curated servers are already in the
+project's `.mcp.json` (✓); any configured server outside the curated set still surfaces under
+a generic fallback. Unlike plugins, the brain never installs a server or touches a credential —
+it only hands over each entry's `setup_hint` for the curator to run themselves. No core hook
+(`brain-status`/`guards`/`wiki-check`/`trigger-router`/`doctor`) is touched by this feature.
+
 ## Domain-expertise packs (Phase 6.5)
 
 Where capability plugins are external, **packs** are hosted by the engine and

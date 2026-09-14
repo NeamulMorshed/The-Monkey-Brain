@@ -44,6 +44,15 @@ staging, `raw-sources/`, `memory/`, and `resume.md`. Once it exists, the plugin'
    model-driven: confirm the current `/plugin` command with the curator (marketplace names
    evolve); never install silently. Mention the opt-in `brain-all` bundle only if the
    curator wants every official plugin — it is heavy on context. Skip on `--update` unless asked.
+6b. **Offer the recommended MCP servers** (the connected-data layer). Run
+   `node "${CLAUDE_SKILL_DIR}/scripts/mcp-servers.js" --project "<root>"` to list the curated
+   set (Supabase, Firebase, Figma, Framer, Vercel) with ✓ marking ones already configured in
+   this project's `.mcp.json`. Offer the unconfigured ones relevant to *this* project. Same
+   contract as step 6, extended to MCP servers: the brain never installs a server, runs a
+   setup command, or touches a credential — hand over the listed `setup_hint` (an env-var
+   placeholder, never a literal secret) and let the curator run and confirm it themselves. A
+   configured server outside the curated set is still surfaced (generic "no filing rules yet"
+   note) so nothing connected goes unmentioned. Skip on `--update` unless asked.
 7. **Commit** (offer first): `feat: scaffold .brain (Monkey Brain instance)`. The
    `Clippings/.gitignore` keeps staging drops out of git by design.
 
@@ -59,3 +68,9 @@ staging, `raw-sources/`, `memory/`, and `resume.md`. Once it exists, the plugin'
   integration notes, `--json` for raw); the instance manual's §9 states the recording
   contract. Plugins auto-activate by their own descriptions; the trigger-router nudges the
   brain's own workflows, not theirs.
+- The recommended MCP server set lives in `recommended-mcp-servers.json` (next to this
+  skill) — same shape and contract as the plugin manifest, for MCP servers instead of Claude
+  Code plugins. `scripts/mcp-servers.js` renders it and detects which curated servers are
+  already in this project's `.mcp.json` (`--verbose` for setup hints, `--json` for raw); the
+  instance manual's §9 states the same recording contract. The brain never calls, installs,
+  or configures an MCP server itself — it only recognizes what's connected.
