@@ -69,6 +69,10 @@ compounds here:
 - reviews & PR links (github) → `wiki/syntheses/`; workstream status → `projects/`.
 - PRDs (product-management) → `raw-sources/` → ingested; tracking plans → `projects/`;
   migration notes (code-modernization) → `wiki/research/`.
+- superpowers — a brainstorming design → `wiki/research/<topic>.md` (or the Notes of the spec it
+  feeds); a written plan → the spec it implements (ACs, test plan, notes); a root cause from
+  systematic debugging → `wiki/`. The plugin keeps its own copies under `docs/superpowers/`; the
+  wiki-check hook names the brain home for each one it writes.
 
 Plugins auto-activate by their own descriptions; the trigger-router routes **my** workflows.
 When a plugin and one of mine both apply, precedence is: **deterministic trigger > domain

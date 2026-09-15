@@ -7,6 +7,7 @@ created: YYYY-MM-DD
 updated: YYYY-MM-DD
 raw: "../../raw-sources/<filename>.md"
 origin: "<original URL>"
+# sources / related: quoted wikilinks, e.g. ["[[page]]", "[[other-page]]"]
 related: []
 aliases: []
 ---

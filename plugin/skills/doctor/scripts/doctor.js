@@ -53,8 +53,6 @@ const daysSince = (d) => { const t = Date.parse(d); return isNaN(t) ? null : Mat
 const wikiDir = path.join(brain, 'wiki');
 const wikiFiles = lib.listFilesRecursive(wikiDir, '.md');
 const ORPHAN_EXEMPT = new Set(['index', 'log', 'dashboard']);
-const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const extractAliases = lib.extractAliases; // shared via lib.js (v0.28.0): arrays or the quoted-string form
 
 const links = lib.linkIndex(brain); // wiki pages + specs/decisions/projects records (v0.32.0)
 const pages = links.pages;
@@ -73,7 +71,8 @@ for (const p of pages) {
     if (t && !resolves(t)) broken.add(t);
   }
 }
-add(1, 'broken-links', broken.size ? 'warn' : 'ok', broken.size ? `${broken.size} broken (TODO markers are legal): ${[...broken].slice(0, 6).join(', ')}` : 'none');
+const clash = links.collisions.map((c) => `${c.slug} (${c.files.join(' + ')})`);
+add(1, 'broken-links', broken.size || clash.length ? 'warn' : 'ok', [broken.size ? `${broken.size} broken (TODO markers are legal): ${[...broken].slice(0, 6).join(', ')}` : '', clash.length ? `slug collision — a link reaches more than one page: ${clash.slice(0, 4).join('; ')}` : ''].filter(Boolean).join(' · ') || 'none');
 
 // ---- 2. orphans -------------------------------------------------------------
 const orphans = [];

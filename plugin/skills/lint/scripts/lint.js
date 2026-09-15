@@ -31,9 +31,7 @@ if (!brain || !fs.existsSync(path.join(brain, 'wiki'))) {
 const wikiDir = path.join(brain, 'wiki');
 const files = lib.listFilesRecursive(wikiDir, '.md');
 const ORPHAN_EXEMPT = new Set(['index', 'log', 'dashboard']);
-const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const extractAliases = lib.extractAliases; // shared via lib.js (v0.28.0): arrays or the quoted-string form
 
 // ---- inventory (the shared link index: wiki pages + specs/decisions/projects records, v0.32.0) ----
 const links = lib.linkIndex(brain);
@@ -67,6 +65,12 @@ if (broken.size) {
   out.push(`\nBROKEN [[links]] (${broken.size}) — TODO markers are legal, everything else needs a fix:`);
   for (const [t, refs] of [...broken].sort()) out.push(`  [[${t}]] ← ${[...refs].join(', ')}`);
 } else out.push('\nBroken [[links]]: none');
+
+// ---- slug collisions (one [[link]] name, several files) -------------------
+if (links.collisions.length) {
+  issues.push('slug collisions');
+  out.push(`\nSLUG COLLISIONS (${links.collisions.length}) — a [[link]] to these names reaches more than one page; rename one: ${links.collisions.map((c) => `${c.slug} (${c.files.join(' + ')})`).join('; ')}`);
+}
 
 // ---- orphans ----------------------------------------------------------------
 const orphans = [];

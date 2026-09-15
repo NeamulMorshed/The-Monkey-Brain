@@ -6,6 +6,7 @@ tier: feature            # quick | feature | architecture (the prototype spec in
 phase: concept           # concept | prototype | build | playtest | done
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
+# sources / related: quoted wikilinks, e.g. ["[[page]]", "[[other-page]]"]
 related: []              # link the prototype spec, playtest logs, balance ADRs
 ---
 

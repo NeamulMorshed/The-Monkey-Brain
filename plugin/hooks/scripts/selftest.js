@@ -1866,6 +1866,39 @@ try {
   check('outside a brain, a superpowers write stays silent (AC-4)', r.status === 0 && r.stdout === '', r.stdout);
   fs.rmSync(path.join(PROJ, 'docs'), { recursive: true, force: true });
 
+  // Review fixes (wiki/syntheses/engine-knowledge-review.md) — each pins a probe the reviewer ran.
+  write('.brain/wiki/concepts/dup-slug.md', '---\ntitle: "Dup"\ntype: concept\nupdated: 2026-09-16\n---\n\nx\n');
+  write('.brain/projects/dup-slug.md', '---\ntitle: "Dup project"\ntype: project\nstatus: active\n---\n\nx\n');
+  write('.brain/wiki/concepts/case-page.md', '---\ntitle: "Case page"\ntype: concept\nupdated: 2026-09-16\n---\n\nx\n');
+  write('.brain/wiki/concepts/links-review.md', '---\ntitle: "Links review"\ntype: concept\nupdated: 2026-09-16\n---\n\n[[Case-Page]] [[a-page]]\n');
+  write('.brain/wiki/templates/tpl.md', '---\ntitle: "tpl"\ntype: concept\nupdated: 2026-09-16\n---\n\nx\n');
+  const li2 = libC.linkIndex(BRAIN);
+  check('lib.linkIndex reports a slug that names more than one file (review P2)', Array.isArray(li2.collisions) && li2.collisions.some((c) => c.slug === 'dup-slug' && c.files.length === 2), JSON.stringify(li2.collisions));
+  check('a record-folder link resolves only inside that folder (review P2)', li2.resolves('projects/dup-slug') && !li2.resolves('specs/dup-slug') && !li2.resolves('decisions/a-page'));
+  const casePage = li2.pages.find((p) => p.slug === 'case-page');
+  check('links resolve and count as inbound case-insensitively, as in Obsidian (review P2)', li2.resolves('Case-Page') && !!casePage && li2.hasInbound(casePage));
+  check('wiki/templates/ is never a page or a link target (review P2)', !li2.pages.some((p) => /templates\//.test(p.rel)) && !li2.resolves('templates/tpl'));
+  const rvLint = spawnSync(process.execPath, [path.join(SKILLS, 'lint', 'scripts', 'lint.js'), '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
+  check('lint reports slug collisions as an issue group (review P2)', /SLUG COLLISION/.test(rvLint.stdout || '') && /dup-slug/.test(rvLint.stdout || ''), (rvLint.stdout || '').slice(0, 300));
+  check('doctor 1 names a slug collision (review P2)', /dup-slug/.test(finding(docFindings(ccEnv), 'broken-links').detail || ''));
+  for (const p of ['wiki/concepts/dup-slug.md', 'projects/dup-slug.md', 'wiki/concepts/case-page.md', 'wiki/concepts/links-review.md']) fs.rmSync(path.join(BRAIN, p), { force: true });
+  fs.rmSync(path.join(BRAIN, 'wiki', 'templates'), { recursive: true, force: true });
+  write('vendor/node_modules/pkg/docs/superpowers/plans/n.md', '# n\n');
+  r = run('wiki-check.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'vendor', 'node_modules', 'pkg', 'docs', 'superpowers', 'plans', 'n.md') } }));
+  check('a superpowers-shaped path inside node_modules stays silent (review P2)', !/superpowers saved/.test(r.stdout || ''), r.stdout);
+  fs.mkdirSync(path.join(PLAIN_D, 'docs', 'superpowers', 'plans'), { recursive: true });
+  fs.writeFileSync(path.join(PLAIN_D, 'docs', 'superpowers', 'plans', 'y.md'), '# y\n');
+  r = run('wiki-check.js', { cwd: PLAIN_D, hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PLAIN_D, 'docs', 'superpowers', 'plans', 'y.md') } }, { MONKEY_BRAIN_DIR: BRAIN });
+  check('a brain found through MONKEY_BRAIN_DIR does not make an outside project advise (review P2)', !/superpowers saved/.test(r.stdout || ''), r.stdout);
+  fs.rmSync(path.join(PROJ, 'vendor'), { recursive: true, force: true });
+  fs.rmSync(path.join(PLAIN_D, 'docs'), { recursive: true, force: true });
+  check('lint, doctor and wiki-check carry no dead link-inventory helpers (review P2)', [path.join(SKILLS, 'lint', 'scripts', 'lint.js'), path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), path.join(HERE, 'wiki-check.js')].every((p) => !/^const esc = /m.test(fs.readFileSync(p, 'utf8'))));
+  const rootReadmeRv = path.join(SKILLS, '..', '..', 'README.md');
+  if (fs.existsSync(rootReadmeRv)) {
+    const ver = JSON.parse(fs.readFileSync(path.join(HERE, '..', '..', '.claude-plugin', 'plugin.json'), 'utf8')).version;
+    check(`the README badge shows the plugin version (${ver}) (review P2)`, fs.readFileSync(rootReadmeRv, 'utf8').includes(`badge/plugin-v${ver}-`));
+  }
+
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');
   fs.mkdirSync(PLAIN_E, { recursive: true });

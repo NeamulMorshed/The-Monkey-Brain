@@ -15,6 +15,12 @@ checkers agree with its own linking rules.
 - **superpowers filing** — `reference.md` §9 maps a brainstorming design → `wiki/research/`, a
   written plan → the spec it implements, a debugging root cause → `wiki/`; a write under
   `docs/superpowers/` in a brain project gets one advisory naming where it belongs.
+- **Review fixes** (`wiki/syntheses/engine-knowledge-review.md`) — the link index reports slugs that
+  name more than one file (a lint issue group, doctor check 1), resolves case-insensitively as
+  Obsidian does, never indexes `templates/`, resolves a `specs/x` link only to a spec, and reads
+  every file's links once (orphan checks were O(n²)); the superpowers advisory fires only inside
+  the brain's own project and never under `node_modules`; dead helpers removed; the README badge
+  is pinned to the plugin version by a selftest.
 - **The engine compiled into its own brain** — the repo's ROADMAP, README, CHANGELOG and resume
   history ingested as dated snapshots, with 13 subsystem concept pages and 6 entity pages
   (knowledge only; no plugin behaviour).

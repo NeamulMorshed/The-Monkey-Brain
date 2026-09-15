@@ -9,6 +9,7 @@ tdd: true                # false exempts this spec from the TDD gate
 scope: []                # project-relative globs this spec's gates own, e.g. [src/auth/**]; empty = unscoped
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
+# sources / related: quoted wikilinks, e.g. ["[[page]]", "[[other-page]]"]
 related: []
 ---
 

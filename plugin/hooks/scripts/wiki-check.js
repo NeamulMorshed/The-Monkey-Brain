@@ -24,9 +24,7 @@ const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
 
 const ORPHAN_EXEMPT = new Set(['index', 'log', 'dashboard']);
-const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const extractAliases = lib.extractAliases; // shared with doctor.js and lint.js (v0.28.0)
 
 async function main() {
   const input = await lib.readStdinJson();
@@ -36,7 +34,8 @@ async function main() {
 
   // superpowers writes designs and plans outside the brain (v0.32.0): name where each belongs.
   const sp = /[\\/]docs[\\/]superpowers[\\/](specs|plans)[\\/]/.exec(abs);
-  if (sp && lib.findBrainDir(path.dirname(abs))) {
+  const spBrain = sp && lib.findBrainDir(path.dirname(abs));
+  if (spBrain && abs.startsWith(path.dirname(spBrain) + path.sep) && !/[\\/]node_modules[\\/]/.test(abs)) {
     const home = sp[1] === 'plans'
       ? 'a plan belongs in the spec it implements — .brain/specs/<feature>.md (acceptance criteria, test plan, notes)'
       : 'a design belongs in .brain/wiki/research/<topic>.md, or in the Notes of the spec it feeds';

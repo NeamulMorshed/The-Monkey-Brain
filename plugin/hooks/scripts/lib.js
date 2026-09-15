@@ -297,48 +297,85 @@ const RECORD_DIRS = ['specs', 'decisions', 'projects'];
 /**
  * The brain's link inventory (v0.32.0) — the one map wiki-check, lint and doctor resolve [[links]]
  * against. Wiki pages (wiki/**) resolve by slug, folder-qualified name ("concepts/x") and alias;
- * spec, decision and project records by slug, "specs/x"-style name and alias. Templates, sessions
- * and raw sources are never link targets. hasInbound(page): does another wiki page or a record link
- * to this page? — only wiki pages can be orphans, but a link from a spec or an ADR counts.
- * Returns { pages, records, resolves(target), hasInbound(page) }; pages are { file, rel, slug, raw, fm }.
+ * spec, decision and project records by slug, "specs/x"-style name and alias. A "specs/x" link
+ * resolves only to a spec named x. Matching is case-insensitive, as in Obsidian. Templates,
+ * sessions and raw sources are never pages or link targets. hasInbound(page): does another wiki
+ * page or a record link to this page? — only wiki pages can be orphans, but a link from a spec or
+ * an ADR counts. collisions: slugs that name more than one file, where a [[link]] is ambiguous.
+ * Returns { pages, records, collisions, resolves(target), hasInbound(page) }; pages are
+ * { file, rel, slug, raw, fm }. Every file's links are read once, so hasInbound is a lookup.
  */
 function linkIndex(brain) {
   const wikiDir = path.join(brain, 'wiki');
   const pages = [];
   const records = [];
-  const slugs = new Set();
-  const qualified = new Set();
+  const slugs = new Set(); // lower-cased wiki page slugs
+  const recordSlugs = new Set();
+  const qualified = new Set(); // lower-cased "concepts/x", "specs/x"
   const aliases = new Set();
+  const owners = new Map(); // lower-cased slug → the files it names
+  const own = (slug, file) => {
+    const k = slug.toLowerCase();
+    if (!owners.has(k)) owners.set(k, []);
+    owners.get(k).push(file);
+  };
   for (const f of listFilesRecursive(wikiDir, '.md')) {
     const rel = path.relative(wikiDir, f).split(path.sep).join('/');
+    if (/(^|\/)templates\//.test(rel)) continue; // templates are never pages or link targets
     const raw = readTextSafe(f);
     const fm = parseFrontmatter(raw);
     const slug = path.basename(f, '.md');
-    slugs.add(slug);
-    qualified.add(rel.replace(/\.md$/, ''));
+    slugs.add(slug.toLowerCase());
+    qualified.add(rel.replace(/\.md$/, '').toLowerCase());
     for (const a of extractAliases(fm.aliases)) aliases.add(a.toLowerCase());
+    own(slug, 'wiki/' + rel);
     pages.push({ file: f, rel, slug, raw, fm });
   }
   for (const dir of RECORD_DIRS) {
     for (const f of listFilesRecursive(path.join(brain, dir), '.md')) {
+      const sub = path.relative(path.join(brain, dir), f).split(path.sep).join('/').replace(/\.md$/, '');
       const slug = path.basename(f, '.md');
       const raw = readTextSafe(f);
-      slugs.add(slug);
-      qualified.add(`${dir}/${slug}`);
+      recordSlugs.add(slug.toLowerCase());
+      qualified.add((dir + '/' + sub).toLowerCase());
+      qualified.add(sub.toLowerCase());
       for (const a of extractAliases(parseFrontmatter(raw).aliases)) aliases.add(a.toLowerCase());
-      records.push({ file: f, rel: `${dir}/${slug}`, slug, raw });
+      own(slug, dir + '/' + sub + '.md');
+      records.push({ file: f, rel: dir + '/' + sub, slug, raw });
     }
   }
-  const resolves = (t) => qualified.has(t) || slugs.has(t) || slugs.has(String(t).split('/').pop()) || aliases.has(String(t).toLowerCase());
-  const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const hasInbound = (page) => {
-    const link = (name, flags) => new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(name)}(?:\\\\?\\||#|\\])`, flags); // `\|` = table-escaped pipe
-    const needles = [link(page.slug)];
-    for (const a of extractAliases(page.fm && page.fm.aliases)) needles.push(link(a, 'i'));
-    const self = path.resolve(page.file);
-    return [...pages, ...records].some((q) => path.resolve(q.file) !== self && needles.some((re) => re.test(q.raw)));
+  const collisions = [...owners].filter(([, files]) => files.length > 1).map(([slug, files]) => ({ slug, files }));
+  const resolves = (target) => {
+    const t = String(target).trim().toLowerCase();
+    if (qualified.has(t) || slugs.has(t) || recordSlugs.has(t) || aliases.has(t)) return true;
+    const segs = t.split('/');
+    if (segs.length < 2 || RECORD_DIRS.includes(segs[0])) return false; // "specs/x" means a spec named x — nothing else
+    const last = segs[segs.length - 1];
+    return slugs.has(last) || recordSlugs.has(last); // a folder-qualified wiki link ("wiki/concepts/x")
   };
-  return { pages, records, resolves, hasInbound };
+  // Every [[link]] in every page and record, read once: by the target's last segment, and whole (aliases).
+  const byTail = new Map();
+  const byTarget = new Map();
+  const put = (m, k, file) => {
+    if (!m.has(k)) m.set(k, new Set());
+    m.get(k).add(file);
+  };
+  for (const q of [...pages, ...records]) {
+    const file = path.resolve(q.file);
+    for (const m of q.raw.matchAll(/\[\[([^[\]]+)\]\]/g)) {
+      const target = m[1].split(/\\?\|/)[0].split('#')[0].trim().toLowerCase();
+      if (!target) continue;
+      put(byTarget, target, file);
+      put(byTail, target.split('/').pop(), file);
+    }
+  }
+  const hasInbound = (page) => {
+    const from = new Set(byTail.get(String(page.slug).toLowerCase()) || []);
+    for (const a of extractAliases(page.fm && page.fm.aliases)) for (const f of byTarget.get(a.toLowerCase()) || []) from.add(f);
+    from.delete(path.resolve(page.file));
+    return from.size > 0;
+  };
+  return { pages, records, collisions, resolves, hasInbound };
 }
 
 /** All files under dir (recursive), optionally filtered by extension. */
