@@ -393,35 +393,63 @@ try {
   t = routed('build an analytics dashboard page for sales');
   check('an app "dashboard" feature does not route to the brain dashboard', !t.ctx.includes('brain:dashboard'), t.ctx);
 
-  // plan-before-build: development intent phrased without "spec" still goes through brain:plan.
+  // research-first: development intent phrased without "spec" enters the lifecycle at brain:research
+  // (AC-1), unless the curator skips it (AC-2) or the brain already holds related research (AC-3).
   const BIG = path.join(BRAIN, 'specs', 'big-feature.md');
   const bigText = fs.readFileSync(BIG, 'utf8');
   fs.rmSync(BIG);
+  const RESEARCH_DIR = path.join(BRAIN, 'wiki', 'research');
+  const researchBackup = fs.existsSync(RESEARCH_DIR) ? fs.readdirSync(RESEARCH_DIR).map((f) => [f, fs.readFileSync(path.join(RESEARCH_DIR, f))]) : null;
+  fs.rmSync(RESEARCH_DIR, { recursive: true, force: true });
+  const RULE_RE = /research → plan → build — no source change without a spec/;
+  const SKIP_LINE = 'Skip research only if the curator explicitly says so in this message.';
   for (const phrase of ['add a login feature', 'fix the crash on upload', 'refactor the parser and add tests', 'can you build the settings page?']) {
     t = routed(phrase);
-    check(`"${phrase}" routes to brain:plan (plan before build)`, t.ctx.includes('brain:plan') && /plan before build/i.test(t.ctx) && /Open specs: none/.test(t.ctx), t.ctx);
+    const order = t.ctx.indexOf('brain:research') > -1 && t.ctx.indexOf('brain:research') < t.ctx.indexOf('brain:plan') && t.ctx.indexOf('brain:plan') < t.ctx.indexOf('brain:build');
+    check(`"${phrase}" enters at brain:research, then plan, then build (AC-1)`, order && RULE_RE.test(t.ctx) && /Open specs: none/.test(t.ctx) && t.ctx.trim().endsWith(SKIP_LINE), t.ctx);
   }
+  check('a missing wiki/research/ never throws (AC-9)', t.r.status === 0 && t.ctx.includes('brain:research'), `status=${t.r.status}`);
+  for (const phrase of ['skip research and add a login feature', 'add a login feature, no research needed', 'add a login feature without research', 'just build the login feature', 'quick fix: add a login button', 'trivial: add a login button']) {
+    t = routed(phrase);
+    check(`"${phrase}" skips research at the curator's word (AC-2)`, t.ctx.includes('brain:plan') && !/invoke the brain:research skill/.test(t.ctx) && /skipped at the curator/.test(t.ctx) && !t.ctx.includes(SKIP_LINE), t.ctx);
+  }
+  fs.mkdirSync(RESEARCH_DIR, { recursive: true });
+  write('.brain/wiki/research/payments-gateway.md', '---\ntitle: "Research — Stripe payments gateway"\ntype: research\nstatus: active\ntags: [payments, stripe]\naliases: ["checkout flow"]\n---\n\n# Payments\n');
+  write('.brain/wiki/research/broken.md', '---\ntitle: [unterminated\nno closing fence\n');
+  t = routed('add a payments checkout feature');
+  check('related research routes to brain:plan citing the page, no new run (AC-3)', t.ctx.includes('brain:plan') && /Related research: `payments-gateway`/.test(t.ctx) && !/invoke the brain:research skill/.test(t.ctx) && t.ctx.trim().endsWith(SKIP_LINE), t.ctx);
+  t = routed('add a login feature');
+  check('unrelated research does not match: login still enters at brain:research (AC-3)', /invoke the brain:research skill/.test(t.ctx) && !/Related research/.test(t.ctx), t.ctx);
+  t = routed('add a feature to the settings page');
+  check('dev nouns (feature, page, settings) never count as related-research overlap (AC-3)', !/Related research/.test(t.ctx), t.ctx);
+  check('a research page with broken frontmatter does not crash the router (AC-9)', t.r.status === 0 && t.ctx.length > 0, `status=${t.r.status}`);
+  fs.rmSync(RESEARCH_DIR, { recursive: true, force: true });
   for (const phrase of ['why does the build fail on upload?', 'how do I add a feature flag here?', 'explain the parser module']) {
     t = routed(phrase);
-    check(`question "${phrase}" is silent`, t.r.status === 0 && t.r.stdout === '', t.r.stdout);
+    check(`question "${phrase}" is silent (AC-4)`, t.r.status === 0 && t.r.stdout === '', t.r.stdout);
   }
   t = routed('add a login feature', PLAIN_R);
-  check('development intent without a brain stays silent (.no-brain)', t.r.status === 0 && t.r.stdout === '', t.r.stdout);
+  check('development intent without a brain stays silent (.no-brain) (AC-4)', t.r.status === 0 && t.r.stdout === '', t.r.stdout);
   fs.rmSync(path.join(PLAIN_R, '.no-brain'));
   t = routed('add a login feature', PLAIN_R);
-  check('development intent without a brain suggests init first', t.ctx.includes('brain:init') && t.ctx.includes('brain:plan'), t.ctx);
+  check('development intent without a brain suggests init, then the lifecycle from research (AC-4)', t.ctx.includes('brain:init') && t.ctx.includes('brain:research') && t.ctx.includes('brain:plan'), t.ctx);
   fs.writeFileSync(path.join(PLAIN_R, '.no-brain'), '');
   write('.brain/specs/login-expiry.md', '---\ntitle: "Login expiry"\ntype: spec\nstatus: active\ntier: feature\nphase: build\n---\n\n- AC-1 …\n');
   write('.brain/specs/old-thing.md', '---\ntitle: "Old"\ntype: spec\nstatus: done\ntier: quick\n---\n\n- AC-1 …\n');
   t = routed('add a login feature');
-  check('with open specs the hint lists them and offers brain:build', t.ctx.includes('login-expiry') && t.ctx.includes('feature') && t.ctx.includes('brain:build') && t.ctx.includes('brain:plan') && !t.ctx.includes('old-thing'), t.ctx);
+  check('with open specs the hint lists them and offers brain:build, else research first (AC-4)', t.ctx.includes('login-expiry') && t.ctx.includes('feature') && t.ctx.includes('brain:build') && t.ctx.includes('brain:research') && t.ctx.includes('brain:plan') && !t.ctx.includes('old-thing'), t.ctx);
+  t = routed('skip research, add a login feature');
+  check('with open specs a skip still offers brain:build or brain:plan, never research (AC-2)', t.ctx.includes('brain:build') && t.ctx.includes('brain:plan') && !/invoke the brain:research skill/.test(t.ctx), t.ctx);
   fs.rmSync(path.join(BRAIN, 'specs', 'login-expiry.md'));
   fs.rmSync(path.join(BRAIN, 'specs', 'old-thing.md'));
   fs.writeFileSync(BIG, bigText, 'utf8');
+  if (researchBackup) { fs.mkdirSync(RESEARCH_DIR, { recursive: true }); for (const [f, b] of researchBackup) fs.writeFileSync(path.join(RESEARCH_DIR, f), b); }
   t = routed('write a spec for user billing');
-  check('"write a spec" still wins over the generic dev rule', t.ctx.includes('brain:plan') && !/plan before build/i.test(t.ctx), t.ctx);
+  check('"write a spec" still wins over the generic dev rule (AC-5)', t.ctx.includes('brain:plan') && !RULE_RE.test(t.ctx), t.ctx);
   t = routed('implement the spec now');
-  check('"implement the spec" still wins over the generic dev rule', t.ctx.includes('brain:build') && !/plan before build/i.test(t.ctx), t.ctx);
+  check('"implement the spec" still wins over the generic dev rule (AC-5)', t.ctx.includes('brain:build') && !RULE_RE.test(t.ctx), t.ctx);
+  t = routed('research the login options');
+  check('"research X" still wins over the generic dev rule (AC-5)', t.ctx.includes('brain:research') && !RULE_RE.test(t.ctx), t.ctx);
   for (const phrase of ['lock the billing spec', 'who has the lock', 'release the lock']) {
     t = routed(phrase);
     check(`"${phrase}" routes to brain:lock`, t.ctx.includes('brain:lock'), t.ctx);
@@ -1437,6 +1465,15 @@ try {
   check('manual §4 names loop, wrap, digest and dump relative to the four stages (AC-11)', /research → plan → build → review/.test(manual) && /\/brain:wrap/.test(devSection) && /\/brain:loop/.test(devSection) && /\/brain:digest/.test(devSection));
   check('manual §10 cites §4 instead of restating the sequence (AC-11)', !/idea → PRD → spec → build → track → wrap/.test(manual));
   check('skills README cites the manual instead of restating the sequence (AC-11)', !/idea → PRD → spec → build → track → wrap/.test(rd('README.md')));
+  // research-first-routing: the docs state the entry rule once and the skills honour it.
+  const planDoc = rd('plan/SKILL.md');
+  check('/brain:plan step 1 is a rule: feature/architecture with no research must run /brain:research first, quick exempt (AC-6)', /must run `\/brain:research` first/.test(planDoc) && /`quick`/.test(planDoc) && /skip/i.test(planDoc) && !/or record the evidence gap/.test(planDoc));
+  const resDoc = rd('research/SKILL.md');
+  check('/brain:research exits early when a page already answers, handing to /brain:plan (AC-7)', /already answers/.test(resDoc) && /hand (it )?to `\/brain:plan`/.test(resDoc));
+  check('manual §4 states the entry rule: enters at research, "skip research" enters at plan (AC-8)', /enters at research/.test(devSection) && /skip research/.test(devSection));
+  const pluginReadmeRow = fs.readFileSync(path.join(SKILLS, '..', 'README.md'), 'utf8').split('\n').find((l) => /trigger-router/.test(l) && /UserPromptSubmit/.test(l)) || '';
+  check('README hook #2 row and skills README state research → plan → build with the skip (AC-8)', /research → plan → build/.test(pluginReadmeRow) && /skip research/i.test(pluginReadmeRow) && /skip research/i.test(rd('README.md')));
+  check('bundled manual and schema master stay identical (AC-8)', manual === fs.readFileSync(path.join(SKILLS, '..', '..', 'schema', 'brain-template', 'CLAUDE.md'), 'utf8'));
 
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');

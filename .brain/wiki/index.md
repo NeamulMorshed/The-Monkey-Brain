@@ -34,6 +34,7 @@ _None yet._
 - [[develop-lifecycle-fixes-review]] — AC-by-AC verification of the lifecycle fixes; 2 P0 / 1 P1 / 5 P2 found and fixed in review (2026-09-15)
 
 ## 📐 Decisions
+- [[research-first-entry-is-advisory]] — the lifecycle enters at research by default, as a routing default with a curator skip, not a gate (2026-09-15)
 - [[spec-scope-globs-gate-ownership]] — specs claim the files their gates own via `scope:` globs; unclaimed paths fall back to every open spec (2026-09-15)
 - [[one-stop-message-for-wrap-nudges]] — the three Stop-time reminders block once, together (2026-09-15)
 

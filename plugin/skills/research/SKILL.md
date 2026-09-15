@@ -21,7 +21,8 @@ lifecycle (instance manual §4) and always ends with a `wiki/research/` page.
    decision. Confirm scope with the curator if it's fuzzy.
 2. **Check the brain first.** Read `wiki/index.md`; drill into relevant pages. What is
    already known gets cited, not re-researched. Note the real gaps — they are the
-   research questions.
+   research questions. **Early exit:** if a `wiki/research/` page already answers the
+   question, cite it, add nothing, and hand it to `/brain:plan` instead of re-running.
 3. **Gather in cost order:**
    - **Codebase** — search the project for prior art, constraints, existing patterns.
    - **Web** — for external facts (APIs, libraries, pricing, standards); prefer primary

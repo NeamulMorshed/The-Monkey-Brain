@@ -1,5 +1,33 @@
 # Changelog — brain plugin
 
+## 0.29.0 — 2026-09-15 (the lifecycle enters at research by default)
+
+Curator: "by default the brain should start from research for this life cycle; if a user
+doesn't want to research they can skip this." Since 0.24.0 the router sent every development
+request to `/brain:plan` and research ran only when the prompt said the word (filed as
+`wiki/research/research-first-entry.md`, spec `specs/research-first-routing.md`).
+
+- **Research-first routing (`hooks/scripts/trigger-router.js`)** — the catch-all for
+  development intent now enters the lifecycle at `brain:research`, then `brain:plan`, then
+  `brain:build`; its rule line reads "research → plan → build — no source change without a
+  spec". Research the brain already holds is detected from `wiki/research/` frontmatter
+  (title, tags, aliases, slug; token overlap with the prompt, dev vocabulary stop-listed, first
+  8 KB per file, fails open) and routes to `brain:plan` citing the pages. An open spec that
+  covers the request still routes to `brain:build`. A project with no brain is told to init,
+  then research → plan → build.
+- **Curator skip** — "skip research", "no research", "without research", "just build / plan /
+  fix / do it", "quick fix", "trivial" enter at plan and say so; the literal-`research` rule no
+  longer fires on a skip, so "skip research and add X" cannot route *to* research. Advisory,
+  like every routing hint: nothing blocks.
+- **`/brain:plan` step 1 is a rule** — a `feature` or `architecture` spec with no research to
+  cite must run `/brain:research` first unless the curator skipped it in the conversation
+  (recorded in the spec's Notes); `quick` tier is exempt. **`/brain:research`** exits early when
+  a page already answers the question and hands to `/brain:plan`.
+- **Docs** — instance manual §4 states the entry rule once (bundled copy and schema master
+  identical); README hook #2 row and `skills/README.md` echo it. ADR
+  `decisions/research-first-entry-is-advisory.md` records why this is a default, not a gate.
+- Selftest 390 → 408.
+
 ## 0.28.0 — 2026-09-15 (develop lifecycle fixes — first dogfood of the lifecycle on this repo)
 
 The engine repo now carries its own `.brain/`, and the first thing run through it was the

@@ -129,6 +129,10 @@ Each stage names the next: research offers `/brain:plan`, plan offers `/brain:bu
 offers `/brain:review`, and review either sends the spec back to `/brain:build` (blockers
 listed in the spec) or closes it `done` and offers `/brain:wrap`. A spec's `scope:` globs tell
 the gates which files it owns, so several open specs don't block each other.
+**Entry rule:** a new feature request enters at research by default — the router sends
+development intent to `/brain:research` unless the brain already holds related research (then
+`/brain:plan`, citing it) or an open spec covers it (then `/brain:build`). Say **"skip research"**
+(or "just build it", "quick fix") to enter at plan; `quick`-tier work never needs research.
 
 **Around the four stages** — not stages themselves: **`/brain:loop`** repeats build, research
 or design until the brain's own criteria are met (every AC ✅, a stable recommendation, or no

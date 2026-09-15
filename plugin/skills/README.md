@@ -109,7 +109,9 @@ packs (game design, analytics) reuse the same shape.
 ## Domain pipelines (Phase 7)
 
 Both pipelines reuse the develop lifecycle exactly as instance manual §4 defines it, with a
-domain-shaped front end; manual §10 documents them.
+domain-shaped front end; manual §10 documents them. The lifecycle enters at `research` by
+default (the trigger-router sends development intent there); the curator says "skip research"
+to enter at `plan`.
 
 - **Product:** a PRD (`product-management` plugin → `raw-sources/` → ingest) in front of
   the §4 lifecycle, `product-tracking` plans in `projects/` behind it. No new skill.

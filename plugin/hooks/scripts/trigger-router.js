@@ -8,10 +8,13 @@
  * hint telling Claude which skill owns the workflow. Model-driven and
  * path-driven routing (L3b/c) still work when this misses.
  *
- * Plan before build: generic development intent ("add a login feature", "fix the
- * crash on upload") — anything a specific workflow above didn't claim — routes to
- * brain:plan, listing the open specs so an already-planned feature goes to
- * brain:build instead. Advisory like everything else here.
+ * Research first: generic development intent ("add a login feature", "fix the
+ * crash on upload") — anything a specific workflow above didn't claim — enters the
+ * develop lifecycle at brain:research, then brain:plan, then brain:build. An open spec
+ * that covers the request goes to brain:build; research the brain already holds
+ * (wiki/research/ frontmatter overlapping the prompt) goes to brain:plan citing it;
+ * a curator skip ("skip research", "just build it", "quick fix") enters at plan.
+ * Advisory like everything else here.
  *
  * Silence rules (this fires on EVERY prompt — the common case must be free):
  *   - no phrase match → silent;
@@ -139,6 +142,7 @@ const RULES = [
   },
   {
     re: /\bresearch\b/i,
+    not: /\b(skip|no|without|don'?t|do not) (the |any )?research\b|\bno research needed\b/i, // a skip names research without asking for it
     skill: 'research',
     needsBrain: true,
     what: 'research run',
@@ -201,7 +205,7 @@ const RULES = [
   // workflow above wins first; this one enforces plan-before-build for the rest.
   {
     re: /\b(build|implement|add|create|make|write|develop|code|refactor|migrate|integrate|wire( up)?|fix|patch|debug|rewrite|extend|ship)\b[^.!?]{0,60}\b(features?|functions?|functionality|endpoints?|apis?|routes?|components?|pages?|screens?|modules?|services?|classes|methods?|hooks?|handlers?|scripts?|commands?|flags?|buttons?|forms?|modals?|schemas?|models?|migrations?|tests?|bugs?|issues?|errors?|crash(es)?|apps?|sites?|websites?|backend|frontend|ui|database|db|auth\w*|login|signup|integrations?|plugins?|skills?|parsers?|pipelines?|dashboards?|validation|configs?|settings)\b/i,
-    skill: 'plan',
+    skill: 'research',
     needsBrain: true,
     what: 'development work',
     dev: true,
@@ -209,6 +213,56 @@ const RULES = [
 ];
 
 const QUESTION_RE = /^\s*(why|what|how|explain|describe|where|when|who)\b/i;
+
+/** The curator's explicit research skip — only their own words, never inferred. */
+const SKIP_RE = /\b(skip|no|without|don'?t|do not) (the |any )?research\b|\bno research needed\b|\bjust (plan|build|fix|do|implement|write|add) (it|this|that|the)\b|\bquick fix\b|\btrivial\b/i;
+
+/** Words that carry no topic: common function words plus the dev verbs/nouns of the catch-all rule. */
+const STOP = new Set(('about after again against before being below between could every first other should since ' +
+  'their there these think those through under until using where which while would please thing things ' +
+  'maybe still really right going research spec specs brain monkey project projects current existing ' +
+  'build implement create write develop refactor migrate integrate patch debug rewrite extend feature ' +
+  'function functionality endpoint route component page screen module service class method hook handler ' +
+  'script command flag button form modal schema model migration test issue error crash website backend ' +
+  'frontend database login signup integration plugin skill parser pipeline dashboard validation config setting').split(/\s+/));
+
+/** Significant topic tokens of a string: ≥ 5 letters, singular-ish, not a stop word. */
+function topicTokens(s) {
+  const out = new Set();
+  for (const w of String(s || '').toLowerCase().match(/[a-z][a-z0-9-]{4,}/g) || []) {
+    const t = w.length > 5 && w.endsWith('s') ? w.slice(0, -1) : w;
+    if (!STOP.has(t) && !STOP.has(w)) out.add(t);
+  }
+  return out;
+}
+
+/** Slugs of wiki/research/ pages whose title, tags, aliases or slug share a topic token with the prompt. Fails open to []. */
+function relatedResearch(brain, prompt) {
+  try {
+    const dir = path.join(brain, 'wiki', 'research');
+    if (!fs.existsSync(dir)) return [];
+    const want = topicTokens(prompt);
+    if (!want.size) return [];
+    const hits = [];
+    for (const f of lib.listFilesRecursive(dir, '.md')) {
+      let head = '';
+      try {
+        const fd = fs.openSync(f, 'r');
+        const buf = Buffer.alloc(8192);
+        head = buf.toString('utf8', 0, fs.readSync(fd, buf, 0, 8192, 0));
+        fs.closeSync(fd);
+      } catch { continue; }
+      const fm = lib.parseFrontmatter(head);
+      const slug = path.basename(f, '.md');
+      const flat = (v) => (Array.isArray(v) ? v.join(' ') : String(v || ''));
+      const have = topicTokens(`${slug.replace(/-/g, ' ')} ${flat(fm.title)} ${flat(fm.tags)} ${flat(fm.aliases)}`);
+      for (const t of want) if (have.has(t)) { hits.push(slug); break; }
+    }
+    return hits;
+  } catch {
+    return [];
+  }
+}
 
 /** Open specs (status not done/closed/superseded) as "slug (tier, phase)" labels. */
 function openSpecs(brain) {
@@ -221,17 +275,21 @@ function openSpecs(brain) {
     .map((s) => `\`${s.slug}\`${s.fm.tier ? ` (${s.fm.tier}${s.fm.phase ? `, phase: ${s.fm.phase}` : ''})` : ''}`);
 }
 
-function devHint(brain) {
+function devHint(brain, prompt) {
   const specs = openSpecs(brain);
-  const head = '🐵 trigger-router: this looks like development work. Rule: plan before build — no source change without a spec. ';
-  if (!specs.length) {
-    return head + 'Open specs: none → invoke the brain:plan skill now (Skill tool) to write the spec (tier + numbered ACs), then brain:build. Skip the spec only if the curator explicitly says so in this message.';
+  const skip = SKIP_RE.test(prompt);
+  const related = skip ? [] : relatedResearch(brain, prompt);
+  const head = '🐵 trigger-router: this looks like development work. Rule: research → plan → build — no source change without a spec. ';
+  let entry;
+  if (skip) {
+    entry = "research skipped at the curator's word → invoke the brain:plan skill now (Skill tool) to write the spec (tier + numbered ACs), then brain:build.";
+  } else if (related.length) {
+    entry = `Related research: ${related.map((s) => `\`${s}\``).join(', ')} → invoke the brain:plan skill now (Skill tool) citing it (tier + numbered ACs), then brain:build. Skip research only if the curator explicitly says so in this message.`;
+  } else {
+    entry = 'invoke the brain:research skill now (Skill tool) to file wiki/research/ findings, then brain:plan (tier + numbered ACs), then brain:build. Skip research only if the curator explicitly says so in this message.';
   }
-  return (
-    head +
-    `Open specs: ${specs.join(', ')}. If one covers this request → invoke brain:build <slug>. ` +
-    'Otherwise → invoke brain:plan first (tier + numbered ACs), then brain:build. Skip the spec only if the curator explicitly says so in this message.'
-  );
+  if (!specs.length) return head + 'Open specs: none → ' + entry;
+  return head + `Open specs: ${specs.join(', ')}. If one covers this request → invoke brain:build <slug>. Otherwise → ` + entry;
 }
 
 async function main() {
@@ -239,7 +297,7 @@ async function main() {
   const prompt = String(input.prompt || '').trim();
   if (!prompt || prompt.startsWith('/') || /\/brain:/.test(prompt)) return;
 
-  const rule = RULES.find((r) => r.re.test(prompt));
+  const rule = RULES.find((r) => r.re.test(prompt) && !(r.not && r.not.test(prompt)));
   if (!rule) return;
   if (rule.dev && QUESTION_RE.test(prompt)) return; // a question, not a work order
 
@@ -248,11 +306,12 @@ async function main() {
   if (rule.needsBrain && !brain) {
     const root = path.resolve(input.cwd || process.cwd());
     if (fs.existsSync(path.join(root, '.no-brain'))) return; // engine declined here
+    const next = rule.dev ? '/brain:research → /brain:plan → /brain:build' : `/brain:${rule.skill}`;
     hint =
       `🐵 trigger-router: that sounds like ${rule.what}, but this project has no .brain/ yet — ` +
-      `offer /brain:init first, then continue with /brain:${rule.skill}.`;
+      `offer /brain:init first, then continue with ${next}.`;
   } else if (rule.dev) {
-    hint = devHint(brain);
+    hint = devHint(brain, prompt);
   } else {
     hint =
       `🐵 trigger-router: matched "${rule.what}" → invoke the brain:${rule.skill} skill now ` +

@@ -11,9 +11,12 @@ Numbered acceptance criteria, a tier, and a truthful approval field — that is 
 
 ## Steps
 
-1. **Gather context:** `wiki/index.md` → related research / concept / decision pages. A
-   non-trivial feature with no research behind it → offer `/brain:research` first, or
-   record the evidence gap in the spec's Notes.
+1. **Gather context:** `wiki/index.md` → related research / concept / decision pages.
+   **Research comes first:** a `feature` or `architecture` spec with no `wiki/research/`
+   page to cite **must run `/brain:research` first** — unless the curator said to skip it
+   in this conversation ("skip research", "just build it"), in which case record the skip
+   and their words in the spec's Notes. `quick` tier is exempt; research on a two-hour fix
+   is waste.
 2. **Draft `specs/<kebab-feature>.md`** from `templates/spec.md`:
    - **Problem / Goals / Non-goals** in curator language.
    - **Acceptance criteria** — numbered `AC-1, AC-2…`, each observable and testable;
