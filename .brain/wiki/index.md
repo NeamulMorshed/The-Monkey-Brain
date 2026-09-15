@@ -39,6 +39,8 @@ _None yet._
 - [[research-first-entry-is-advisory]] — the lifecycle enters at research by default, as a routing default with a curator skip, not a gate (2026-09-15)
 - [[spec-scope-globs-gate-ownership]] — specs claim the files their gates own via `scope:` globs; unclaimed paths fall back to every open spec (2026-09-15)
 - [[one-stop-message-for-wrap-nudges]] — the three Stop-time reminders block once, together (2026-09-15)
+- [[resume-resolver-prefers-real-narrative]] — one resume file for every hook, chosen by a real narrative before location; a seed stays silent (2026-09-15)
+- [[model-block-every-dispatch]] — every unpinned main-model dispatch is blocked, forks exempt; fork phantoms leave no ledger line (2026-09-15)
 
 ## 🧪 Research
 - [[develop-lifecycle-dogfood]] — does research → plan → build → review → loop → wrap work end to end on this repo; 16 cited findings, 4 fixes recommended (2026-09-15)
