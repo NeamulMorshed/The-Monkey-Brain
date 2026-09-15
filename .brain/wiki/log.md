@@ -36,3 +36,6 @@ Suite re-run (never the ticks): 12/12 ACs met. Independent adversarial pass (opu
 
 ## [2026-09-15] session | lifecycle dogfood wrapped — v0.28.0
 research → plan → build → review → wrap all ran on this repo and each left its commit (52b7157 … edb0500). Verified: selftest 390 ALL GREEN, both manifests --strict, spec develop-lifecycle-fixes done. Resume narrative rewritten; pushed to origin/main. Next: reinstall the plugin locally so the running hooks are 0.28.0; spec the doctor/lint link-scope gap.
+
+## [2026-09-15] research | research-first-entry
+Curator: the lifecycle should start from research by default, with an explicit skip. Two researcher slices (router/skills code; docs + history). Findings: research fires only on the literal word or idea-validation phrases; generic dev intent hits the v0.24.0 plan-before-build catch-all which never names research; the router reads specs but not wiki/research/; /brain:plan only *offers* research; no doc states an entry rule. Recommendation: research-first router default with related-research detection, skip phrases, a plan-step rule (quick tier exempt), docs stating the entry rule once. Filed [[research-first-entry]]; next `/brain:plan research-first-entry`.

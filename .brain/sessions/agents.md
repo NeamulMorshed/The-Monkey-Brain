@@ -34,3 +34,16 @@ sonnet = routine · main model = judgment. Doctor reads the model mix and outcom
 - [2026-09-15 06:27] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
 - [2026-09-15 06:28] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
 - [2026-09-15 06:28] ↳ done · general-purpose · on claude-opus-5 · 1,680,169 tokens · 20 turn(s)
+- [2026-09-15 06:35] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:37] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:39] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:41] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:46] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:49] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:57] brain:brain-researcher · model: sonnet · Codebase slice: routing paths
+- [2026-09-15 06:57] brain:brain-researcher · model: sonnet · Docs slice: lifecycle promises
+- [2026-09-15 06:57] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:57] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:58] ↳ done · brain:brain-researcher · on claude-sonnet-5 · 145,298 tokens · 5 turn(s)
+- [2026-09-15 06:58] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:58] ↳ done · brain:brain-researcher · on claude-sonnet-5 · 202,903 tokens · 8 turn(s)

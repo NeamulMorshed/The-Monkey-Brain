@@ -39,6 +39,8 @@ Method: three read-only `brain-researcher` slices (skill docs + instance manual,
 15. **No end-to-end lifecycle example exists.** `examples/claude-code-brain/` has wiki/sources/sessions only, no `specs/`, `projects/` or `decisions/`. The "full lifecycle" claim rests on selftest counts and design docs, not a preserved walkthrough. This page is the first dogfood record.
 16. **Open dogfood debts adjacent to the lifecycle:** PR-review mode never exercised on a real PR (`resume.md:35-36`); MCP registry not run against a real `.mcp.json` (`resume.md:74`).
 
+**Addendum (2026-09-15):** this run missed that the router's automated entry point for generic dev intent is `/brain:plan`, so stage one is skipped unless the curator types "research" — see [[research-first-entry]].
+
 ## Recommendation
 Plan one **feature-tier** spec, `develop-lifecycle-fixes`, with these ACs, in this order of value:
 1. **Scope the plan and TDD gates to the spec that owns the write** (finding 7): match open specs to the written path (a spec `files:`/`scope:` field or its workstream), fall back to today's all-specs behaviour only when no spec claims the path; add the two-open-specs selftest.
