@@ -29,6 +29,7 @@ const lib = require(path.join(__dirname, 'lib.js'));
 const bans = require(path.join(__dirname, 'bans.js'));
 
 const THRESHOLD = Math.max(2, Number(process.env.MONKEY_BRAIN_INSTINCT_THRESHOLD || 3));
+const MAX_FILES = 500; // edit-counts.json keeps the most recently revised files (v0.33.0)
 
 /** Paths (relative to the brain) whose churn is bookkeeping, not correction. */
 function isExempt(relFromBrain) {
@@ -50,6 +51,7 @@ function countSession(brain, key, session) {
   const store = path.join(dir, 'edit-counts.json');
   const data = lib.readJsonSafe(store, {}) || {};
   const rec = data[key] || { count: 0, lastSession: null, flagged: false };
+  delete data[key]; // re-inserted below, so key order runs least- to most-recently revised
   if (rec.lastSession !== session) {
     rec.count += 1;
     rec.lastSession = session;
@@ -57,6 +59,8 @@ function countSession(brain, key, session) {
   const fire = rec.count >= THRESHOLD && !rec.flagged;
   if (fire) rec.flagged = true;
   data[key] = rec;
+  const keys = Object.keys(data);
+  for (const k of keys.slice(0, Math.max(0, keys.length - MAX_FILES))) delete data[k];
   try {
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(store, JSON.stringify(data, null, 2) + '\n', 'utf8');

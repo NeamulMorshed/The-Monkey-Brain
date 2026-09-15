@@ -191,6 +191,19 @@ function refreshIndex(brain) {
   fs.writeFileSync(idxPath, head + text.slice(m[0].length), 'utf8');
 }
 
+/** The hooks' once-per-session markers in the OS temp dir; a week old, they can only be stale (v0.33.0). */
+function pruneMarkers() {
+  try {
+    const dir = os.tmpdir();
+    const cutoff = Date.now() - 7 * 86400000;
+    for (const f of fs.readdirSync(dir)) {
+      if (!/^mb-(wrap|decide|gitcheck|recall|ctx|agent|router-init)-/.test(f)) continue;
+      const p = path.join(dir, f);
+      try { if (fs.statSync(p).mtimeMs < cutoff) fs.rmSync(p, { force: true }); } catch {}
+    }
+  } catch {}
+}
+
 /**
  * Semantic-search re-index (Phase 5 item 3). Only when the brain opted into qmd
  * (empty `.qmd` marker or MONKEY_BRAIN_QMD=1): spawn `qmd update` DETACHED so
@@ -223,6 +236,7 @@ async function main() {
   } else if (evt === 'SessionEnd') {
     refreshIndex(brain);
     reindex(brain);
+    pruneMarkers();
   }
 }
 

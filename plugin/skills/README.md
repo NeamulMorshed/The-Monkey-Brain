@@ -21,7 +21,7 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `compress` | Permanent instruction-file compression with before/after receipts | ✅ |
 | `product-design` | First domain-expertise **pack** — 5-phase process + `data/` (methods, Nielsen heuristics, WCAG) + `templates/` + `checklist.md` (the `/brain:wrap` gate) + `bans.json` (UI anti-patterns flagged on write) | ✅ |
 | `game` | Game pipeline — concept → GDD (`templates/gdd.md`) → prototype spec → build → playtest (ingested) → balance ADRs | ✅ |
-| `doctor` | 19-check health monitor (`scripts/doctor.js`, injected) → writes `sessions/health.json`; hook #1 surfaces failures next session | ✅ |
+| `doctor` | 20-check health monitor (`scripts/doctor.js`, injected) → writes `sessions/health.json`; hook #1 surfaces failures next session | ✅ |
 | `digest` | Standup / weekly review (`hooks/scripts/digest.js`): blocked · done (log + git) · in flight, filed to `sessions/` | ✅ |
 | `dump` | Classify a loose note and file each part (decision ADR, memory, workstream Next, ideas page, Clippings, instinct) | ✅ |
 | `dashboard` | One-page offline HTML overview of the brain (`hooks/scripts/dashboard.js`, injected) → `sessions/dashboard.html` | ✅ |

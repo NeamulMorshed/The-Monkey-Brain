@@ -27,13 +27,15 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
 const lib = require(path.join(__dirname, 'lib.js'));
 
 // Order matters: first match wins. `what` names the workflow in the hint.
 const RULES = [
   {
-    re: /\b(set\s?up|initiali[sz]e|init|create|scaffold)\b[^.!?]{0,40}\b(monkey\s?brain|\.?brain)\b|\bnew brain\b/i,
+    re: /\b(set\s?up|initiali[sz]e|init|create|scaffold)\b\s+(?:(?:a|an|the|this|my|our|new|another)\s+)*(?:monkey\s?brain|\.?brain)\b|\bnew brain\b/i, // no unrelated object in between (v0.33.0)
     skill: 'init',
     needsBrain: false,
     what: 'brain setup',
@@ -51,7 +53,8 @@ const RULES = [
     what: 'session wrap-up',
   },
   {
-    re: /\bbrain[- ]?doctor\b|\b(brain|wiki|vault) (doctor|health)\b|\bhealth[- ]?check (the |my )?(brain|wiki|vault)\b|\bis (the |my )?(brain|wiki|vault) healthy\b|\bcheck (the |my )?(brain|wiki|vault)'?s? health\b/i,
+    re: /\bbrain[- ]?doctor\b|\b(brain|wiki|vault) (doctor|health)\b|\bhealth[- ]?check (the |my )?(brain|wiki|vault)\b|\bis (the |my )?(brain|wiki|vault) healthy\b|\bcheck (the |my )?(brain|wiki|vault)'?s? health\b|\baudit (?:the |all |every |my )?(?:brain|wiki|vault|plugins?|hooks?|skills?)\b|\b(?:review|check) (?:the |this |my )?(?:entire |whole )?(?:brain|wiki|vault)\b(?!\s+(?:changes|diff|pr|branch|spec))|\bis (?:the |my )?(?:brain|wiki|vault) (?:working|ok|okay|fine|broken)\b/i,
+    not: () => DOCTOR_FEATURE, // building a doctor check is dev work, not a health report (v0.33.0)
     skill: 'doctor',
     needsBrain: true,
     what: 'brain health report',
@@ -88,6 +91,7 @@ const RULES = [
   },
   {
     re: /^\s*dump\b|\bdump\s*[:—–-]|\bjot (this|that|it) down\b|\bwe (just )?decided\b/i,
+    not: () => DUMP_PIVOT, // "we decided X, now build Y" is a work order, not a note (v0.33.0)
     skill: 'dump',
     needsBrain: true,
     what: 'note capture',
@@ -141,8 +145,9 @@ const RULES = [
     what: 'brain brief',
   },
   {
-    re: /\bresearch\b/i,
+    re: /\bresearch\b(?!\s+(?:purposes?|modes?|papers?|parsers?|models?)\b)/i, // the noun ("research purpose") is not a request
     not: () => SKIP_RE, // a skip names research without asking for it
+    question: true, // "why did the research … misfire?" is a question, not a work order (v0.33.0)
     skill: 'research',
     needsBrain: true,
     what: 'research run',
@@ -204,7 +209,7 @@ const RULES = [
   // Last on purpose: generic development intent phrased without "spec". Every specific
   // workflow above wins first; this one enforces plan-before-build for the rest.
   {
-    re: /\b(build|implement|add|create|make|write|develop|code|refactor|migrate|integrate|wire( up)?|fix|patch|debug|rewrite|extend|ship)\b[^.!?]{0,60}\b(features?|functions?|functionality|endpoints?|apis?|routes?|components?|pages?|screens?|modules?|services?|classes|methods?|hooks?|handlers?|scripts?|commands?|flags?|buttons?|forms?|modals?|schemas?|models?|migrations?|tests?|bugs?|issues?|errors?|crash(es)?|apps?|sites?|websites?|backend|frontend|ui|database|db|auth\w*|login|signup|integrations?|plugins?|skills?|parsers?|pipelines?|dashboards?|validation|configs?|settings)\b/i,
+    re: /\b(build|implement|add|create|make|write|develop|code|refactor|migrate|integrate|wire( up)?|fix|patch|debug|rewrite|extend|ship)\b[^.!?]{0,60}\b(features?|functions?|functionality|endpoints?|apis?|routes?|components?|pages?|screens?|modules?|services?|classes|methods?|hooks?|handlers?|scripts?|commands?|flags?|buttons?|forms?|modals?|schemas?|models?|migrations?|tests?|bugs?|issues?|errors?|crash(es)?|apps?|sites?|websites?|backend|frontend|ui|database|db|auth\w*|login|signup|integrations?|plugins?|skills?|parsers?|pipelines?|dashboards?|validation|configs?|settings|checks?|rules?)\b/i,
     skill: 'research',
     needsBrain: true,
     what: 'development work',
@@ -213,6 +218,15 @@ const RULES = [
 ];
 
 const QUESTION_RE = /^\s*(why|what|how|explain|describe|where|when|who)\b/i;
+
+/** A pasted subagent report or a teammate's message — someone else's words, never the curator's order (v0.33.0). */
+const HANDBACK_RE = /^\s*\[Subagent hand-back\]|\bThe report follows:|^\s*Another Claude session sent a message/i;
+/** Building a check or rule FOR the doctor is development, not a request for a health report. */
+const DOCTOR_FEATURE = /\b(?:add|create|write|build|implement|make|extend)\b[^.!?]{0,30}\b(?:checks?|rules?|features?|tests?)\b/i;
+/** "we decided X, now build Y": the build order outranks the note. */
+const DUMP_PIVOT = /\bnow\b[^.!?]{0,40}\b(?:build|implement|add|create|make|write|fix|wire|integrate)\b/i;
+/** The dev hint names at most this many open specs. */
+const MAX_SPECS = 8;
 
 /**
  * The curator's explicit research skip — only their own words, never inferred. Polarity-aware:
@@ -309,23 +323,30 @@ function devHint(brain, prompt) {
     entry = 'invoke the brain:research skill now (Skill tool) to file wiki/research/ findings, then brain:plan (tier + numbered ACs), then brain:build. Skip research only if the curator explicitly says so in this message.';
   }
   if (!specs.length) return head + 'Open specs: none → ' + entry;
-  return head + `Open specs: ${specs.join(', ')}. If one covers this request → invoke brain:build <slug>. Otherwise → ` + entry;
+  const shown = specs.slice(0, MAX_SPECS).join(', ') + (specs.length > MAX_SPECS ? ` +${specs.length - MAX_SPECS} more` : '');
+  return head + `Open specs: ${shown}. If one covers this request → invoke brain:build <slug>. Otherwise → ` + entry;
 }
 
 async function main() {
   const input = await lib.readStdinJson();
   const prompt = String(input.prompt || '').trim();
   if (!prompt || prompt.startsWith('/') || /\/brain:/.test(prompt)) return;
+  if (HANDBACK_RE.test(prompt)) return; // someone else's report pasted into the conversation
 
   const rule = RULES.find((r) => r.re.test(prompt) && !(r.not && r.not().test(prompt)));
   if (!rule) return;
-  if (rule.dev && QUESTION_RE.test(prompt)) return; // a question, not a work order
+  if ((rule.dev || rule.question) && QUESTION_RE.test(prompt)) return; // a question, not a work order
 
   const brain = lib.findBrainDir(input.cwd);
   let hint;
   if (rule.needsBrain && !brain) {
     const root = path.resolve(input.cwd || process.cwd());
     if (fs.existsSync(path.join(root, '.no-brain'))) return; // engine declined here
+    // The init offer is made once per session in a repo; after that the curator has heard it (v0.33.0).
+    const sid = String(input.session_id || 'nosession').replace(/[^\w-]/g, '');
+    const offered = path.join(os.tmpdir(), `mb-router-init-${sid}-${crypto.createHash('sha1').update(root).digest('hex').slice(0, 8)}`);
+    if (fs.existsSync(offered)) return;
+    try { fs.writeFileSync(offered, ''); } catch {}
     const next = !rule.dev ? `/brain:${rule.skill}` : SKIP_RE.test(prompt) ? '/brain:plan → /brain:build (research skipped at your word)' : '/brain:research → /brain:plan → /brain:build';
     hint =
       `🐵 trigger-router: that sounds like ${rule.what}, but this project has no .brain/ yet — ` +

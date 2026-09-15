@@ -2,7 +2,7 @@
 /**
  * doctor.js — the mechanical layer of /brain:doctor (ROADMAP Phase 8).
  *
- * 19 deterministic health checks over a brain (benchmark-parity + v3 receipts and CI), zero model
+ * 20 deterministic health checks over a brain (benchmark-parity + v3 receipts and CI), zero model
  * tokens. The SKILL.md injects this output via !` ` preprocessing; the model
  * then reasons over the findings (what to fix first, what to file). It also
  * writes sessions/health.json so hook #1 (brain-status) can surface open
@@ -223,6 +223,27 @@ if (!stacks.length && workflows.length) add(19, 'ci-presence', 'ok', `CI present
 else if (!stacks.length) add(19, 'ci-presence', 'info', 'no code project detected (package.json, pyproject / requirements, go.mod, .sln / .csproj, Cargo.toml)');
 else add(19, 'ci-presence', workflows.length ? 'ok' : 'warn', workflows.length ? `${stacks.join(', ')} project with CI (${workflows.join(', ')})` : `${stacks.join(', ')} project with no CI workflow — /brain:ci installs one`);
 
+// ---- 20. dependency health (an enabled plugin that cannot run) -------------
+const pluginSettings = [path.join(cfgDir, 'settings.json'), path.join(projectRoot, '.claude', 'settings.json'), path.join(projectRoot, '.claude', 'settings.local.json')].map((f) => lib.readJsonSafe(f, {}) || {});
+const enabledPlugins = Object.assign({}, ...pluginSettings.map((s) => s.enabledPlugins || {}));
+const pluginOn = (name) => Object.entries(enabledPlugins).some(([k, v]) => v && k.split('@')[0] === name);
+const githubToken = process.env.GITHUB_PERSONAL_ACCESS_TOKEN || pluginSettings.map((s) => (s.env || {}).GITHUB_PERSONAL_ACCESS_TOKEN).find(Boolean);
+/** The interpreters security-guidance tries; MONKEY_BRAIN_PYTHON names one explicitly (tests point it at a missing one). */
+function pythonOk() {
+  const cmds = process.env.MONKEY_BRAIN_PYTHON ? [process.env.MONKEY_BRAIN_PYTHON.split(/\s+/)] : [['python3'], ['python'], ['py', '-3']];
+  for (const cmd of cmds) {
+    try {
+      const r = spawnSync(cmd[0], [...cmd.slice(1), '-c', 'import sys;print(sys.version_info[0]*100+sys.version_info[1])'], { encoding: 'utf8', timeout: 5000, windowsHide: true });
+      if (r.status === 0 && Number(String(r.stdout).trim()) >= 310) return true;
+    } catch {}
+  }
+  return false;
+}
+const depProblems = [];
+if (pluginOn('security-guidance') && !pythonOk()) depProblems.push('security-guidance needs Python ≥ 3.10 (python3, python or py -3 on PATH) — install it from python.org, or disable the plugin');
+if (pluginOn('github') && !githubToken) depProblems.push('the github plugin\'s MCP needs GITHUB_PERSONAL_ACCESS_TOKEN (environment or a settings "env" entry) — set it, or disable the plugin');
+add(20, 'dependency-health', depProblems.length ? 'warn' : 'ok', depProblems.length ? depProblems.join(' · ') : 'every enabled plugin has the runtime and credentials it needs');
+
 // ---- verdict + report -------------------------------------------------------
 const counts = { ok: 0, info: 0, warn: 0, crit: 0 };
 for (const f of findings) counts[f.level]++;
@@ -240,7 +261,7 @@ if (asJson) {
   process.exit(strict && counts.warn + counts.crit > 0 ? 1 : 0);
 }
 
-const out = [`🩺 brain doctor — 19-check health of ${brain}`];
+const out = [`🩺 brain doctor — 20-check health of ${brain}`];
 for (const f of findings.sort((a, b) => a.n - b.n)) out.push(`  ${SYM[f.level]} ${f.n}. ${f.check}: ${f.detail}`);
 out.push(`  · model-mix (agents.md): ${mixStr}`);
 const verdict = counts.crit ? `${counts.crit} CRITICAL · ${counts.warn} warning(s) — fix criticals first (they gate wrap)` : counts.warn ? `${counts.warn} warning(s) · ${counts.ok} ok — triage below` : `all clear (${counts.ok} ok, ${counts.info} info)`;

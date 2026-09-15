@@ -3,26 +3,21 @@
   Scaffold a Monkey Brain instance (.brain/) into a project, or refresh an existing one's schema.
 
 .DESCRIPTION
-  Copies the engine's schema/brain-template into <Project>/.brain, substituting {{PROJECT}} and
-  {{DATE}} placeholders. Knowledge (wiki/, raw-sources/, memory/) is per-project and isolated.
+  A thin wrapper over the plugin's own scaffold script (plugin/skills/init/scripts/new-brain.js),
+  so the bootstrap and /brain:init can never drift apart (v0.33.0). Needs Node.js >= 18.
 
-  -Update refreshes only CLAUDE.md and templates/ from the engine; it never touches your wiki/,
-  raw-sources/, or memory/.
+  -Update refreshes CLAUDE.md, reference.md and templates/ and keeps the display name; it never
+  touches your wiki/, raw-sources/, or memory/.
 
 .PARAMETER Project
   Path to the target project root. The brain is created at <Project>/.brain.
-
 .PARAMETER Name
-  Display name for the brain (defaults to the project folder's name).
-
+  Display name for the brain (defaults to the project folder's name; -Update keeps the current one).
 .PARAMETER Update
   Refresh schema files in an existing .brain without overwriting accumulated knowledge.
-
 .PARAMETER Force
   Overwrite an existing .brain entirely (knowledge included). Use with care.
 
-.EXAMPLE
-  .\new-brain.ps1 -Project "C:\code\myproduct"
 .EXAMPLE
   .\new-brain.ps1 -Project "C:\code\myproduct" -Name "MyProduct"
 .EXAMPLE
@@ -37,85 +32,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$engineRoot = Split-Path -Parent $PSScriptRoot          # ...\The-Monkey-Brain
-$template   = Join-Path $engineRoot 'schema\brain-template'
-
-if (-not (Test-Path $template)) { throw "Template not found at $template. Run from the engine repo." }
-if (-not (Test-Path $Project))  { throw "Project path does not exist: $Project" }
-
-$Project = (Resolve-Path $Project).Path
-$brain   = Join-Path $Project '.brain'
-if (-not $Name -or $Name.Trim() -eq '') { $Name = Split-Path $Project -Leaf }
-$today = (Get-Date).ToString('yyyy-MM-dd')
-
-function Expand-Placeholders([string]$path, [string]$name, [string]$date) {
-  # Read and write as UTF-8 (no BOM) explicitly so multibyte chars (em-dashes, emoji) survive
-  # the round-trip. Get-Content -Raw can mis-decode, so use .NET I/O on both ends.
-  $utf8 = New-Object System.Text.UTF8Encoding($false)
-  $text = [System.IO.File]::ReadAllText($path, $utf8)
-  $text = $text.Replace('{{PROJECT}}', $name).Replace('{{DATE}}', $date)
-  [System.IO.File]::WriteAllText($path, $text, $utf8)
-}
-
-# ---- Update mode: refresh schema only -------------------------------------------------
-if ($Update) {
-  if (-not (Test-Path $brain)) { throw "No .brain at $brain to update. Run without -Update to create it." }
-  Write-Host "Refreshing schema in $brain (knowledge left untouched)..." -ForegroundColor Cyan
-  # Structure migration (e.g. v1 -> v2): ensure every template directory exists and add
-  # missing STRUCTURAL files (.gitkeep, Clippings\.gitignore). Seed wiki .md pages are
-  # never added - an existing brain owns its wiki.
-  Get-ChildItem $template -Recurse -Directory | ForEach-Object {
-    $rel = $_.FullName.Substring($template.Length + 1)
-    $dst = Join-Path $brain $rel
-    if (-not (Test-Path $dst)) { New-Item -ItemType Directory -Force $dst | Out-Null; Write-Host "  + $rel\" -ForegroundColor Green }
-  }
-  Get-ChildItem $template -Recurse -File | Where-Object { $_.Extension -ne '.md' } | ForEach-Object {
-    $rel = $_.FullName.Substring($template.Length + 1)
-    $dst = Join-Path $brain $rel
-    if (-not (Test-Path $dst)) { Copy-Item $_.FullName $dst; Write-Host "  + $rel" -ForegroundColor Green }
-  }
-  if (-not (Test-Path (Join-Path $brain 'templates'))) { New-Item -ItemType Directory -Force (Join-Path $brain 'templates') | Out-Null }
-  Copy-Item (Join-Path $template 'CLAUDE.md')   (Join-Path $brain 'CLAUDE.md')   -Force
-  Copy-Item (Join-Path $template 'templates\*') (Join-Path $brain 'templates')   -Recurse -Force
-  Expand-Placeholders (Join-Path $brain 'CLAUDE.md') $Name $today
-  # resume.md holds live work state: add it only when missing, never overwrite.
-  $resumeSrc = Join-Path $template 'resume.md'
-  $resumeDst = Join-Path $brain 'resume.md'
-  if ((Test-Path $resumeSrc) -and (-not (Test-Path $resumeDst))) {
-    Copy-Item $resumeSrc $resumeDst
-    Expand-Placeholders $resumeDst $Name $today
-    Write-Host "Added resume.md (new in schema v2)." -ForegroundColor Green
-  }
-  Write-Host "Done. CLAUDE.md + templates/ refreshed for '$Name'." -ForegroundColor Green
-  return
-}
-
-# ---- Create mode ----------------------------------------------------------------------
-if (Test-Path $brain) {
-  if ($Force) {
-    Write-Host "Removing existing .brain (-Force)..." -ForegroundColor Yellow
-    Remove-Item $brain -Recurse -Force
-  } else {
-    throw ".brain already exists at $brain. Use -Update to refresh schema, or -Force to recreate."
-  }
-}
-
-Write-Host "Scaffolding Monkey Brain '$Name' into $brain ..." -ForegroundColor Cyan
-Copy-Item $template $brain -Recurse -Force
-
-# Substitute placeholders in every text file
-Get-ChildItem $brain -Recurse -File -Include *.md | ForEach-Object {
-  Expand-Placeholders $_.FullName $Name $today
-}
-
-$pageCount = (Get-ChildItem (Join-Path $brain 'wiki') -Recurse -Filter *.md).Count
-Write-Host ""
-Write-Host "Created .brain for '$Name'  ($pageCount seed pages)" -ForegroundColor Green
-Write-Host "Next:" -ForegroundColor Green
-Write-Host "  1. cd `"$Project`"; claude        # .brain\CLAUDE.md loads automatically"
-Write-Host "  2. Drop a doc in .brain\raw-sources\ (or Web-Clip into .brain\Clippings\, or paste in chat), say 'ingest this'"
-Write-Host "  3. Open .brain\ as an Obsidian vault to browse the graph"
-Write-Host ""
-Write-Host "Note: when you launch claude from the project root, confirm the brain's CLAUDE.md"
-Write-Host "loaded with /memory. If it didn't, run claude from inside .brain\, or add"
-Write-Host "'@.brain/CLAUDE.md' to a root CLAUDE.md so it always loads." -ForegroundColor DarkGray
+$engineRoot = Split-Path -Parent $PSScriptRoot
+$script = Join-Path $engineRoot 'plugin\skills\init\scripts\new-brain.js'
+if (-not (Test-Path $script)) { throw "Scaffold script not found at $script. Run from the engine repo." }
+$nodeArgs = @($script, '--project', $Project)
+if ($Name -and $Name.Trim() -ne '') { $nodeArgs += @('--name', $Name) }
+if ($Update) { $nodeArgs += '--update' }
+if ($Force)  { $nodeArgs += '--force' }
+& node @nodeArgs
+exit $LASTEXITCODE

@@ -62,6 +62,7 @@ How the engine works, one subsystem per page.
 ## 📐 Decisions
 - [[fork-not-switch-model-routing]] — change model by forking or dispatching, never by switching the main thread; only `build` forks (2026-09-15, amended 2026-09-16)
 - [[links-resolve-across-records]] — wikilinks resolve across wiki pages and spec, decision and project records; one shared index (2026-09-16)
+- [[router-ignores-questions-and-reports]] — the router acts on the curator's instructions only: questions, pasted reports and incidental nouns never route (2026-09-16)
 - [[research-first-entry-is-advisory]] — the lifecycle enters at research by default, as a routing default with a curator skip, not a gate (2026-09-15)
 - [[spec-scope-globs-gate-ownership]] — specs claim the files their gates own via `scope:` globs; unclaimed paths fall back to every open spec (2026-09-15)
 - [[one-stop-message-for-wrap-nudges]] — the three Stop-time reminders block once, together (2026-09-15)

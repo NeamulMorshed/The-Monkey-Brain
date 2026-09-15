@@ -44,7 +44,8 @@ the narrative belongs to you.
    The history of what happened belongs in `wiki/log.md`, not in the resume narrative.
    Leave **"Task log (auto)"** alone — hooks own it. Bump `updated:`.
 4. **Commit** with the vault conventions — one commit per logical step that isn't
-   committed yet (`ingest:` / `query:` / `lint:` / `session:` / `feat:` / `schema:`).
+   committed yet (`ingest:` / `query:` / `lint:` / `session:` / `feat:` / `schema:` / `research:` /
+   `plan:` / `build:` / `review:`).
    Show what will be staged, then commit. Never commit `Clippings/` staging drops.
 5. **Report the outcome** in 3–5 lines: what was verified (with results), what was logged
    and committed, and the top next step now recorded in resume.md.

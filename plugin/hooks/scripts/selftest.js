@@ -441,9 +441,10 @@ try {
   t = routed('add a login feature', PLAIN_R);
   check('development intent without a brain stays silent (.no-brain) (AC-4)', t.r.status === 0 && t.r.stdout === '', t.r.stdout);
   fs.rmSync(path.join(PLAIN_R, '.no-brain'));
-  t = routed('add a login feature', PLAIN_R);
+  const routedIn = (p, cwd, sid) => { const rr = run('trigger-router.js', { cwd: cwd || PROJ, hook_event_name: 'UserPromptSubmit', prompt: p, session_id: sid }); let o = {}; try { o = JSON.parse(rr.stdout || '{}'); } catch {} return { r: rr, ctx: (o.hookSpecificOutput || {}).additionalContext || '' }; };
+  t = routedIn('add a login feature', PLAIN_R, `st${process.pid}ra`);
   check('development intent without a brain suggests init, then the lifecycle from research (AC-4)', t.ctx.includes('brain:init') && t.ctx.includes('brain:research') && t.ctx.includes('brain:plan'), t.ctx);
-  t = routed('quick fix: add a login button', PLAIN_R);
+  t = routedIn('quick fix: add a login button', PLAIN_R, `st${process.pid}rb`);
   check('development intent without a brain honours the skip: init, then plan → build (AC-2)', t.ctx.includes('brain:init') && !t.ctx.includes('brain:research') && t.ctx.includes('brain:plan'), t.ctx);
   fs.writeFileSync(path.join(PLAIN_R, '.no-brain'), '');
   write('.brain/specs/login-expiry.md', '---\ntitle: "Login expiry"\ntype: spec\nstatus: active\ntier: feature\nphase: build\n---\n\n- AC-1 …\n');
@@ -970,12 +971,12 @@ try {
   console.log('doctor.js (skill /brain:doctor — 15 health checks + health.json surfacing)');
   const DOCTOR = path.join(SKILLS, 'doctor', 'scripts', 'doctor.js');
   let dr = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
-  check('doctor runs all 19 checks, exit 0 by default', dr.status === 0 && /19-check health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout) && /19\. ci-presence/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
+  check('doctor runs all 20 checks, exit 0 by default', dr.status === 0 && /20-check health/.test(dr.stdout) && /20\. dependency-health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout) && /19\. ci-presence/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
   const HEALTHP = path.join(BRAIN, 'sessions', 'health.json');
   check('doctor writes sessions/health.json', fs.existsSync(HEALTHP), 'no health.json');
   let dj = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN, '--json'], { encoding: 'utf8', timeout: 20000 });
   let hrep = {}; try { hrep = JSON.parse(dj.stdout); } catch {}
-  check('doctor --json reports exactly 19 findings + numeric counts', Array.isArray(hrep.findings) && hrep.findings.length === 19 && typeof hrep.ok === 'number' && typeof hrep.crit === 'number', `findings=${(hrep.findings || []).length}`);
+  check('doctor --json reports exactly 20 findings + numeric counts', Array.isArray(hrep.findings) && hrep.findings.length === 20 && typeof hrep.ok === 'number' && typeof hrep.crit === 'number', `findings=${(hrep.findings || []).length}`);
   check('doctor flags the fixture orphan (check 2)', (hrep.findings || []).some((f) => f.check === 'orphans' && f.level === 'warn' && /orphan-page/.test(f.detail)), JSON.stringify((hrep.findings || []).find((f) => f.check === 'orphans')));
   check('doctor flags a feature+ spec with no test plan (check 13)', (hrep.findings || []).some((f) => f.check === 'specs-without-tests' && f.level === 'warn'), 'no specs-without-tests warn');
   check('doctor reports model-mix from agents.md', typeof hrep.model_mix === 'string' && /sonnet/.test(hrep.model_mix), hrep.model_mix);
@@ -1899,6 +1900,115 @@ try {
     check(`the README badge shows the plugin version (${ver}) (review P2)`, fs.readFileSync(rootReadmeRv, 'utf8').includes(`badge/plugin-v${ver}-`));
   }
 
+  // ---------- v0.33.0 router-and-drift (spec router-and-drift AC-1…11) ----------
+  console.log('router-and-drift (v0.33.0 — router misfires, dependency health, drift)');
+  const rt = (prompt, cwd, sid) => {
+    const rr = run('trigger-router.js', { cwd: cwd || PROJ, hook_event_name: 'UserPromptSubmit', prompt, session_id: sid || `st${process.pid}rd` });
+    let o = {}; try { o = JSON.parse(rr.stdout || '{}'); } catch {}
+    return { rr, ctx: (o.hookSpecificOutput || {}).additionalContext || '' };
+  };
+  const DEV = /research → plan → build/;
+  let rq = rt('Why did the research-first routing misfire?');
+  check('a question that mentions research is silent (AC-1)', rq.rr.status === 0 && rq.rr.stdout === '', rq.ctx);
+  for (const p of ['create a new doctor check for the brain', 'add a check to the brain doctor that flags stale specs', 'we decided to use postgres, now build the auth endpoint']) {
+    rq = rt(p);
+    check(`"${p}" enters the dev lifecycle, not init / doctor / dump (AC-2)`, DEV.test(rq.ctx) && !/brain:(init|doctor|dump)\b/.test(rq.ctx), rq.ctx);
+  }
+  rq = rt('are you checking the rules? like research purpose model will use opus or fable, for coding sonnet');
+  check('the noun "research" (research purpose / mode / paper) does not fire research (AC-3)', !/brain:research/.test(rq.ctx), rq.ctx);
+  rq = rt('research competitor pricing models');
+  check('"research competitor pricing models" still fires research (AC-3)', /brain:research/.test(rq.ctx), rq.ctx);
+  for (const p of ['[Subagent hand-back] The text below is the final report. I ingested the raw source files and ran the research.', 'All done. The report follows: I ingested the raw source files into the wiki as part of the ingest step.']) {
+    rq = rt(p);
+    check(`a pasted subagent report is silent: "${p.slice(0, 32)}…" (AC-4)`, rq.rr.status === 0 && rq.rr.stdout === '', rq.ctx);
+  }
+  for (const p of ['review the entire brain', 'audit all plugins and hooks', 'is the brain working properly', 'check the entire brain and review how it works']) {
+    rq = rt(p);
+    check(`"${p}" routes to brain:doctor (AC-5)`, /brain:doctor/.test(rq.ctx), rq.ctx);
+  }
+  rq = rt('please review the changes on this branch');
+  check('"review the changes on this branch" still routes to review (AC-5)', /brain:review/.test(rq.ctx) && !/brain:doctor/.test(rq.ctx), rq.ctx);
+  rq = rt('can you lint the brain');
+  check('"lint the brain" still routes to lint (AC-5)', /brain:lint/.test(rq.ctx) && !/brain:doctor/.test(rq.ctx), rq.ctx);
+  const PLAIN_Q = path.join(ROOT, 'plain-rq');
+  fs.mkdirSync(PLAIN_Q, { recursive: true });
+  const sidQ = `st${process.pid}rinit`;
+  const firstOffer = rt('add a login feature', PLAIN_Q, sidQ);
+  const secondOffer = rt('add a signup feature', PLAIN_Q, sidQ);
+  check('without a brain the /brain:init offer appears once per session (AC-6)', /brain:init/.test(firstOffer.ctx) && secondOffer.rr.stdout === '', secondOffer.ctx);
+  for (let i = 0; i < 11; i++) write(`.brain/specs/cap-${String(i).padStart(2, '0')}.md`, `---\ntitle: "Cap ${i}"\ntype: spec\nstatus: active\ntier: quick\nphase: plan\n---\n\n- AC-1 …\n`);
+  rq = rt('add a login feature');
+  const capListed = (rq.ctx.match(/`cap-\d\d`/g) || []).length;
+  check('the dev hint lists at most 8 open specs, then "+N more" (AC-6)', capListed <= 8 && /\+\d+ more/.test(rq.ctx), `${capListed} listed · ${rq.ctx.slice(0, 160)}`);
+  for (let i = 0; i < 11; i++) fs.rmSync(path.join(BRAIN, 'specs', `cap-${String(i).padStart(2, '0')}.md`), { force: true });
+
+  // AC-7 — doctor #20 dependency health.
+  const CCSET = path.join(CCFG, 'settings.json');
+  fs.mkdirSync(CCFG, { recursive: true });
+  const docWith = (env) => { const d = spawnSync(process.execPath, [DOCTOR2, '--brain', BRAIN, '--json'], { encoding: 'utf8', timeout: 30000, env }); let o = {}; try { o = JSON.parse(d.stdout); } catch {} return o.findings || []; };
+  const depEnv = Object.fromEntries(Object.entries(process.env).filter(([k]) => k !== 'GITHUB_PERSONAL_ACCESS_TOKEN'));
+  const noPython = { MONKEY_BRAIN_PYTHON: 'mb-no-such-python' }; // deterministic "no interpreter" on every OS
+  fs.writeFileSync(CCSET, JSON.stringify({ enabledPlugins: { 'security-guidance@claude-plugins-official': true, 'github@claude-plugins-official': true } }));
+  let dep = finding(docWith({ ...depEnv, ...ccEnv, ...noPython }), 'dependency-health');
+  check('doctor 20: no Python for security-guidance and no github token → a warning naming both fixes (AC-7)', dep.level === 'warn' && /Python/.test(dep.detail || '') && /GITHUB_PERSONAL_ACCESS_TOKEN/.test(dep.detail || ''), JSON.stringify(dep));
+  dep = finding(docWith({ ...depEnv, ...ccEnv, ...noPython, GITHUB_PERSONAL_ACCESS_TOKEN: 'x' }), 'dependency-health');
+  check('doctor 20: a token in the environment clears the github warning (AC-7)', !/GITHUB_PERSONAL_ACCESS_TOKEN/.test(dep.detail || ''), JSON.stringify(dep));
+  fs.writeFileSync(CCSET, JSON.stringify({ enabledPlugins: { 'github@claude-plugins-official': true }, env: { GITHUB_PERSONAL_ACCESS_TOKEN: 'x' } }));
+  dep = finding(docWith({ ...depEnv, ...ccEnv }), 'dependency-health');
+  check('doctor 20: a token in a settings "env" counts, nothing else needs a runtime → ok (AC-7)', dep.level === 'ok', JSON.stringify(dep));
+  fs.rmSync(CCSET, { force: true });
+
+  // AC-8 — drift: release checklist, dead schema copies.
+  check('the plugin README release checklist runs gen-brain-all --check (AC-8)', /gen-brain-all\.js --check/.test(fs.readFileSync(path.join(SKILLS, '..', 'README.md'), 'utf8')));
+  const schemaDir = path.join(SKILLS, '..', '..', 'schema');
+  if (fs.existsSync(schemaDir)) check('the dead v1 schema/CLAUDE.md and schema/templates/ are gone (AC-8)', !fs.existsSync(path.join(schemaDir, 'CLAUDE.md')) && !fs.existsSync(path.join(schemaDir, 'templates')));
+
+  // AC-9 — bootstrap scripts are thin wrappers.
+  const bootDir = path.join(SKILLS, '..', '..', 'bootstrap');
+  if (fs.existsSync(bootDir)) {
+    const bsh = fs.readFileSync(path.join(bootDir, 'new-brain.sh'), 'utf8');
+    const bps = fs.readFileSync(path.join(bootDir, 'new-brain.ps1'), 'utf8');
+    const blp = fs.readFileSync(path.join(bootDir, 'lint-brain.ps1'), 'utf8');
+    check('bootstrap scripts wrap new-brain.js and lint.js instead of copying the template (AC-9)', /new-brain\.js/.test(bsh) && /new-brain\.js/.test(bps) && /lint\.js/.test(blp) && !/cp -R "\$TEMPLATE"/.test(bsh) && !/Expand-Placeholders/.test(bps));
+    if (spawnSync('bash', ['--version'], { encoding: 'utf8' }).status === 0) {
+      const BW = path.join(ROOT, 'boot-wrap');
+      fs.mkdirSync(BW, { recursive: true });
+      const fwd = (p) => p.split(path.sep).join('/');
+      const bw = spawnSync('bash', [fwd(path.join(bootDir, 'new-brain.sh')), fwd(BW), 'Wrapped Brain'], { encoding: 'utf8', timeout: 30000 });
+      const bwManual = (() => { try { return fs.readFileSync(path.join(BW, '.brain', 'CLAUDE.md'), 'utf8'); } catch { return ''; } })();
+      check('new-brain.sh scaffolds through new-brain.js, reference.md included (AC-9)', fs.existsSync(path.join(BW, '.brain', 'reference.md')) && /Wrapped Brain/.test(bwManual), (bw.stdout || '') + (bw.stderr || ''));
+    }
+  }
+
+  // AC-10 — wording.
+  const bothReadmes = [path.join(SKILLS, '..', 'README.md'), path.join(SKILLS, '..', '..', 'README.md')].filter((p) => fs.existsSync(p)).map((p) => fs.readFileSync(p, 'utf8')).join('\n');
+  check('the READMEs call the home registry per machine, not cross-machine (AC-10)', !/cross-machine/.test(bothReadmes) && /this machine's project registry/.test(bothReadmes));
+  const wrapNow = fs.readFileSync(path.join(SKILLS, 'wrap', 'SKILL.md'), 'utf8');
+  check('/brain:wrap lists every log prefix as a commit prefix (AC-10)', ['research:', 'plan:', 'build:', 'review:'].every((p) => wrapNow.includes('`' + p + '`')));
+  check('reference.md §10 names the GDD type and folder (AC-10)', /type: gdd/.test(fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'reference.md'), 'utf8')));
+
+  // AC-11 — bounded growth.
+  const EC = path.join(BRAIN, 'sessions', 'edit-counts.json');
+  const ecBig = {};
+  for (let i = 0; i < 600; i++) ecBig[`src/f${i}.js`] = { count: 1, lastSession: `s${i}`, flagged: false };
+  fs.mkdirSync(path.dirname(EC), { recursive: true });
+  fs.writeFileSync(EC, JSON.stringify(ecBig));
+  write('src/capme.js', 'x\n');
+  run('instinct-track.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Edit', session_id: 'cap1', tool_input: { file_path: path.join(PROJ, 'src', 'capme.js') } }));
+  const ecAfter = libC.readJsonSafe(EC, {}) || {};
+  check('edit-counts.json keeps the 500 most recently revised files (AC-11)', Object.keys(ecAfter).length === 500 && 'src/capme.js' in ecAfter && !('src/f0.js' in ecAfter) && 'src/f599.js' in ecAfter, `${Object.keys(ecAfter).length} keys`);
+  fs.rmSync(EC, { force: true });
+  fs.rmSync(path.join(PROJ, 'src', 'capme.js'), { force: true });
+  const oldMark = path.join(os.tmpdir(), `mb-wrap-st${process.pid}old`);
+  const freshMark = path.join(os.tmpdir(), `mb-ctx-st${process.pid}fresh`);
+  fs.writeFileSync(oldMark, '');
+  const eightDays = new Date(Date.now() - 8 * 86400000);
+  fs.utimesSync(oldMark, eightDays, eightDays);
+  fs.writeFileSync(freshMark, '0:1');
+  run('wrap.js', evt({ hook_event_name: 'SessionEnd' }));
+  check('SessionEnd prunes session markers older than 7 days and keeps fresh ones (AC-11)', !fs.existsSync(oldMark) && fs.existsSync(freshMark));
+  fs.rmSync(freshMark, { force: true });
+
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');
   fs.mkdirSync(PLAIN_E, { recursive: true });
@@ -1920,7 +2030,7 @@ try {
   fs.rmSync(GLOBAL_CFG, { recursive: true, force: true });
   try {
     for (const f of fs.readdirSync(os.tmpdir())) {
-      if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`) || f.startsWith(`mb-gitcheck-st${process.pid}`) || f.startsWith(`mb-ctx-st${process.pid}`)) {
+      if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`) || f.startsWith(`mb-gitcheck-st${process.pid}`) || f.startsWith(`mb-ctx-st${process.pid}`) || f.startsWith('mb-router-init-')) {
         fs.rmSync(path.join(os.tmpdir(), f), { force: true });
       }
     }

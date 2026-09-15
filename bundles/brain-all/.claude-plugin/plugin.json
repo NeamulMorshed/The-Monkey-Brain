@@ -183,6 +183,10 @@
       "marketplace": "claude-plugins-official"
     },
     {
+      "name": "blackrock-advisor-center-plugin",
+      "marketplace": "claude-plugins-official"
+    },
+    {
       "name": "boltz",
       "marketplace": "claude-plugins-official"
     },
@@ -1008,6 +1012,10 @@
     },
     {
       "name": "slack",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "small-business",
       "marketplace": "claude-plugins-official"
     },
     {

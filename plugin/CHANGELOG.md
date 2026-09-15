@@ -1,5 +1,27 @@
 # Changelog — brain plugin
 
+## 0.33.0 — 2026-09-16 (router misfires, dependency health, drift)
+
+Spec `specs/router-and-drift.md`, from the audit and a router probe that reproduced six
+misfires with file:line.
+
+- **Router** — questions are exempt from the literal-`research` rule too; the noun ("research
+  purpose", "research paper") no longer fires research; "create a new doctor check for the brain"
+  and "add a check to the brain doctor" are development work, not init / doctor; "we decided X,
+  now build Y" is a work order, not a dump; pasted subagent reports are silent; audit phrasings
+  ("review the entire brain", "audit all plugins and hooks", "is the brain working properly")
+  reach `/brain:doctor`; a brainless repo hears the `/brain:init` offer once per session; the dev
+  hint names at most 8 open specs, then "+N more".
+- **Doctor check #20 `dependency-health`** — an enabled `security-guidance` without a Python ≥
+  3.10, or an enabled `github` plugin without `GITHUB_PERSONAL_ACCESS_TOKEN`, is a warning that
+  names the fix. Doctor now runs 20 checks.
+- **Drift** — the release checklist runs `gen-brain-all.js --check`; the dead v1
+  `schema/CLAUDE.md` and `schema/templates/` are gone; `bootstrap/new-brain.{sh,ps1}` and
+  `lint-brain.ps1` are thin wrappers over `new-brain.js` / `lint.js`; the READMEs call the home
+  registry per machine; `/brain:wrap` lists every commit prefix; `reference.md` §10 names the GDD.
+- **Bounded growth** — `edit-counts.json` keeps the 500 most recently revised files; SessionEnd
+  prunes the hooks' temp-dir markers older than a week.
+
 ## 0.32.0 — 2026-09-16 (engine knowledge: links across records, superpowers filing)
 
 Spec `specs/engine-knowledge.md`. The brain now knows the engine it lives in, and its link

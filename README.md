@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.32.0](https://img.shields.io/badge/plugin-v0.32.0-blue)
+![Plugin v0.33.0](https://img.shields.io/badge/plugin-v0.33.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -134,7 +134,7 @@ The engine stands on three pillars:
   *plugins do the craft; the brain records the knowledge.*
 
 **🩺 Health monitoring**
-- `/brain:doctor` runs **19 deterministic checks** (links, orphans, staleness, budget, WIP, cache safety, CI,
+- `/brain:doctor` runs **20 deterministic checks** (links, orphans, staleness, budget, WIP, cache safety, CI,
   open P0s, schema drift…). Failures inject a health report into the *next* session.
 
 **25 `/brain:*` skills · 10 hook events · 2 subagents · 4 bundled + 5 offered plugins · cross-platform (Node).**
@@ -341,7 +341,7 @@ these are the explicit form. Full detail (model routing, fan-out) lives in
 | `/brain:brief <topic>` | A ≤ ~2k-token cited context pack from built-in search |
 | `/brain:lint` | Mechanical scan (broken links, orphans, frontmatter) + reasoning over contradictions/staleness |
 | `/brain:wrap` | Definition-of-done: verify, sync log + index, commit |
-| `/brain:doctor` | 19-check health report; failures surface at the next session start |
+| `/brain:doctor` | 20-check health report; failures surface at the next session start |
 
 **Development lifecycle**
 
@@ -394,7 +394,7 @@ right skill got invoked. Full technical detail in [`plugin/README.md`](plugin/RE
 
 | # | Fires on | Script(s) | What it does |
 | --- | --- | --- | --- |
-| 1 | Session start | `brain-status` | Injects a budgeted (≤3k token) status block: index stats, active specs/projects, decisions, health report, running loops, a team lock if one is held, terse-mode rules. Offers `/brain:init` in brainless projects; registers/refreshes the project in the cross-machine registry `/brain:home` reads. |
+| 1 | Session start | `brain-status` | Injects a budgeted (≤3k token) status block: index stats, active specs/projects, decisions, health report, running loops, a team lock if one is held, terse-mode rules. Offers `/brain:init` in brainless projects; registers/refreshes the project in this machine's project registry, which `/brain:home` reads. |
 | 2 | Every prompt | `trigger-router` + `recall` | Routes natural phrases ("ingest this", "wrap up"…) to the right skill; **plan before build** — any development request ("add a login feature", "fix the crash on upload") is routed to `/brain:plan` unless an open spec already covers it (then `/brain:build`); searches the brain for the session's first prompt and surfaces matching pages. |
 | 3 | Before a file write | `guards` | Blocks secrets in any file; blocks edits to immutable raw sources; keeps the log append-only; enforces the plan gate (architecture tier) and TDD gate (feature+ tier); refuses writes matching a `block`-level learned ban or inside a teammate's active lock; keeps uncleared career case studies private. |
 | 4 | After a wiki write | `wiki-check` + `instinct-track` | Self-heals broken links and orphans in the same turn; advises an instinct when a file is revised across 3+ sessions; reports `warn`-level learned bans right after the write. |
@@ -495,7 +495,7 @@ good novel answers are filed back to `syntheses/` so the knowledge compounds.
 ### 5. Keep it healthy
 
 - **"lint the brain"** (`/brain:lint`) — catch broken links, orphans, and stale claims.
-- **"brain doctor"** (`/brain:doctor`) — 19-check health report; failures surface next session.
+- **"brain doctor"** (`/brain:doctor`) — 20-check health report; failures surface next session.
 - **"wrap up"** (`/brain:wrap`) — end-of-session: verify, log, refresh the index, commit.
 - **Terse output is on by default** — `/brain:terse off` (or "be more verbose") for a session;
   an empty `.no-terse` at the project root or `MONKEY_BRAIN_TERSE=0` turns it off for good.

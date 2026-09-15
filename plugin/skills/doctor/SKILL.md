@@ -1,12 +1,12 @@
 ---
-description: Run the 19-check health report on the project's Monkey Brain (links, orphans, index, log gaps, hooks, budget, open P0s, schema, cache, CI) and triage the fixes. Use for "brain doctor", "check brain health", "is the brain healthy", or before a release.
+description: Run the 20-check health report on the project's Monkey Brain (links, orphans, index, log gaps, hooks, budget, open P0s, schema, cache, CI) and triage the fixes. Use for "brain doctor", "check brain health", "is the brain healthy", or before a release.
 argument-hint: "[--strict]"
 effort: high
 ---
 
 # /brain:doctor — full health report
 
-The health monitor of the brain (ROADMAP Phase 8, receipts added in v3 P11). The 19-check mechanical scan below ran
+The health monitor of the brain (ROADMAP Phase 8, receipts added in v3 P11). The 20-check mechanical scan below ran
 before you read this — its report is already in context (zero model tokens), and it also wrote
 `sessions/health.json` so the **next session's** brain-status surfaces any open failures.
 
@@ -37,6 +37,8 @@ info is context.
    - subagents returning nothing (#18) → review those dispatches' prompts and models in
      `sessions/agents.md`.
    - a code project with no CI (#19) → `/brain:ci`.
+   - a dependency that cannot run (#20) → install what it names (Python 3.10+ for
+     security-guidance, a `GITHUB_PERSONAL_ACCESS_TOKEN` for the github MCP), or disable that plugin.
 3. **Report** the health line and the model-mix, then do (or offer) the top 1–3 fixes. Don't
    silently auto-fix structural things — surface them and let the curator steer.
 

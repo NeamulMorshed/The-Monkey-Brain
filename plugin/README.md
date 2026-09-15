@@ -50,7 +50,7 @@ plugin/
 │   ├── terse/  compress/        #   token discipline (Caveman-inspired)
 │   ├── product-design/          #   domain-expertise pack (data+templates+gate) ✅ Phase 6.5
 │   ├── game/                    #   game pipeline (GDD → prototype → playtest)   ✅ Phase 7
-│   └── doctor/                  #   19-check health monitor (doctor.js)          ✅ Phase 8
+│   └── doctor/                  #   20-check health monitor (doctor.js)          ✅ Phase 8
 ├── agents/                      # brain-librarian, brain-researcher   ✅ Phase 5.5
 └── .mcp.json                    # brain-search (opt-in qmd)           ✅ Phase 5
 ```
@@ -59,7 +59,7 @@ plugin/
 
 | # | Event | Script | Does |
 | --- | --- | --- | --- |
-| 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, **health report**, semantic-search state, **team lock**, running loops, review-required specs); **terse-mode rules, on by default** in every project (`.no-terse` / `MONKEY_BRAIN_TERSE=0` opt out); `/brain:init` offer in brainless projects; **registers/refreshes the project in the cross-machine registry** (`registry.js`) that `/brain:home` reads; writes an **injection-size receipt** to `sessions/injection-stats.json` |
+| 1 | SessionStart | `brain-status` | budgeted ≤3k status block (index, specs, projects, instincts, **decisions**, **health report**, semantic-search state, **team lock**, running loops, review-required specs); **terse-mode rules, on by default** in every project (`.no-terse` / `MONKEY_BRAIN_TERSE=0` opt out); `/brain:init` offer in brainless projects; **registers/refreshes the project in this machine's project registry** (`registry.js`) that `/brain:home` reads; writes an **injection-size receipt** to `sessions/injection-stats.json` |
 | 2 | UserPromptSubmit | `trigger-router` + `recall` | natural phrases → `/brain:*` routing hints (never blocks); **research → plan → build** — generic development intent ("add a login feature", "fix the crash on upload") enters the lifecycle at `/brain:research`; research the brain already holds routes to `/brain:plan` citing it, an open spec that covers the request goes to `/brain:build`, and the curator can say **skip research** (or "just build it", "quick fix") to enter at plan (questions — why/what/how — stay silent); **first-prompt recall** — the session's first prompt is searched against the brain and the top 3 matching pages are injected (`MONKEY_BRAIN_RECALL=0` off); **context nudge** — past 150k tokens of context, one line per 100k band: wrap, then `/clear`, and don't switch models mid-session (`MONKEY_BRAIN_CONTEXT_NUDGE`, `0` off) |
 | 3 | PreToolUse Write\|Edit | `guards` | secrets everywhere · raw-sources add-only · log append-only · plan gate (architecture tier) · TDD gate (feature+ tiers, new code files need a test); a spec the plan gate blocks twice is escalated to `sessions/review-required.md` and surfaced next session; a write matching an `enforce: block` **learned ban** is refused; writes inside a teammate's active **lock** are refused; an uncleared **case study** can't be marked publishable or leave `private/` |
 | 4 | PostToolUse Write\|Edit | `wiki-check` + `instinct-track` | self-healing wiki (frontmatter/orphan block, TODO advisory); **instinct advisory** when a file is revised across 3+ sessions; `warn`-level **learned bans** (active instincts' `ban:` patterns and declared packs' `bans.json`) reported right after the write |
@@ -82,7 +82,7 @@ Node script, works from a marketplace install) · `/brain:ingest` (8-step
 compile) · `/brain:query` (index-first + file-back) · `/brain:brief`
 (cited ≤ ~2k-token pack from built-in recall) · `/brain:lint` (mechanical
 scan injected, reasoning follows) · `/brain:wrap` (definition-of-done) ·
-`/brain:doctor` (19-check health monitor, `doctor.js` injected; writes
+`/brain:doctor` (20-check health monitor, `doctor.js` injected; writes
 `sessions/health.json` for hook #1 to surface next session).
 **Develop lifecycle:** `/brain:research` (filed to `wiki/research/`) ·
 `/brain:plan` (numbered ACs + a tier sized by the `graph.js` import-graph blast radius,
@@ -175,6 +175,9 @@ wraps it.
   nothing, never error.
 - Validate before committing: `claude plugin validate ./plugin --strict` and
   `claude plugin validate . --strict` (marketplace).
+- **Release:** bump both manifests, add a CHANGELOG entry, run the selftest and both
+  `--strict` validations, and `node bundles/gen-brain-all.js --check` — regenerate the
+  `brain-all` bundle (the same command without `--check`) when the official catalog moved.
 - Test before committing: `node hooks/scripts/selftest.js` — builds a temp
   `.brain` fixture and drives every hook and skill script with synthetic
   events, and checks skill routing frontmatter + agent definitions.
@@ -183,7 +186,7 @@ wraps it.
   fails on drift — refresh with
   `node skills/init/scripts/new-brain.js --sync-template`.
 - **Resume system (hook #8):** `resume.md` is the live work-in-progress
-  pointer. one resolver, `lib.resumePath()`, picks the file (the brain copy first, a root
+  pointer. One resolver, `lib.resumePath()`, picks the file (the brain copy first, a root
   `resume.md` only when it alone holds a real narrative); `resume.js` injects it on fresh
   sessions (startup/clear) and asks whether to continue — silent while it is still the seed; `resume-log.js` appends task/session events to its
   `## Task log (auto)` automatically. The narrative sections belong to the
