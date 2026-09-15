@@ -32,7 +32,6 @@ const TYPES = {
   research: 'research → synthesise',
   design: 'design → critique → refine',
 };
-const openP0 = (line) => lib.openP0Lines(line).length > 0; // one line, no section context
 const loopsDir = (brain) => path.join(brain, 'sessions', 'loops');
 const loopFile = (brain, id) => path.join(loopsDir(brain), `${id}.json`);
 const hash = (s) => crypto.createHash('sha1').update(String(s)).digest('hex').slice(0, 12);
@@ -257,4 +256,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { activeLoops, family, describe, acProgress, openP0 };
+module.exports = { activeLoops, family, describe, acProgress };

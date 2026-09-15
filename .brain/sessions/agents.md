@@ -94,3 +94,17 @@ sonnet = routine · main model = judgment. Doctor reads the model mix and outcom
 - [2026-09-15 23:05] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
 - [2026-09-15 23:06] ↳ done · claude-code-guide · on claude-sonnet-5 · 351,059 tokens · 6 turn(s)
 - [2026-09-15 23:08] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:30] general-purpose · model: opus · Adversarial review of brain-correctness
+- [2026-09-15 23:30] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:31] claude-code-guide · model: sonnet · PreModelSwitch hook schema lookup
+- [2026-09-15 23:32] ↳ done · claude-code-guide · on claude-sonnet-5 · 120,751 tokens · 3 turn(s)
+- [2026-09-15 23:32] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:32] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:34] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:36] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:37] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:38] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:38] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:39] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:39] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 23:40] ↳ done · general-purpose · on claude-opus-5 · 1,417,326 tokens · 11 turn(s)

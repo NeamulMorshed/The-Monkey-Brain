@@ -25,6 +25,16 @@ A full audit of the brain (`wiki/research/brain-health-audit.md`, spec
   blocked, not only the first per session; forks pass (Claude Code ignores their model).
 - **Stop nudges ignore the hooks' own writes** — `wrap[git]` skips `sessions/` and
   `resume.md`; `wrap[log]` skips `index.md`, which SessionEnd rewrites after the log.
+- **Review fixes** (independent review, `wiki/syntheses/brain-correctness-review.md`) — a
+  heading closes its P0s only with an explicit status marker ("(all fixed)", "— resolved", a
+  bare "Done") and never when it negates ("not fixed yet", "to be resolved", "definition of
+  done"); an unclosed code fence no longer hides the rest of a page; "no P0" beside a real
+  finding no longer drops it. `lib.brainGitDirty()` excludes hook-owned files with brain-relative
+  pathspecs, so a wiki page named `resume.md` or under a `sessions/` folder still counts (wrap and
+  doctor #7 share it). `lib.resumePath()` looks beside the brain, not the working directory, so
+  a subdirectory still finds the root narrative. A log `updated:` bump may carry a time.
+  `MONKEY_BRAIN_MODEL_BLOCK=0` turns the per-dispatch model block off — third-party plugins that
+  dispatch `general-purpose` without a model would otherwise lose a turn on every dispatch.
 - **Smaller fixes** — table-escaped `[[slug\|Alias]]` links count as inbound (wiki-check, lint,
   doctor); `brain-librarian` lists the 8 ingest steps inline and has `WebFetch` instead of a
   Skill call it could not make; § references (tiers §5, conventions §6) and README counts

@@ -183,18 +183,27 @@ function mdSection(text, heading) {
 }
 
 /** Placeholder narratives written by /brain:init's template and by the resume hook's own seed. */
-const SEED_NARRATIVE = /^_(Nothing yet\b|Auto-created by the Monkey Brain resume hook)[\s\S]*_$/;
+const SEED_NARRATIVE = /^_(Nothing yet\b|Auto-created by the Monkey Brain resume hook)[^_]*_$/; // one italic span only
 
 /**
  * True when a resume.md still holds only its seed (v0.30.0): "Where we left off" is empty or a seed
  * placeholder and "Next steps" has nothing but `- [ ] …`. The task log never counts — hooks write it.
- * A file with neither heading is someone's own format, never a seed.
+ * With neither heading, the file is a seed only when a hook-written task log is all it holds;
+ * any other content is someone's own format.
  */
 function isSeedResume(text) {
   const body = String(text || '').replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
   const where = mdSection(body, 'Where we left off');
   const next = mdSection(body, 'Next steps');
-  if (where === null && next === null) return false;
+  if (where === null && next === null) {
+    let inLog = false;
+    const rest = [];
+    for (const l of body.split(/\r?\n/)) {
+      if (/^## /.test(l)) inLog = /^## Task log/.test(l);
+      if (!inLog && l.trim()) rest.push(l);
+    }
+    return rest.length === 0 && /^## Task log/m.test(body);
+  }
   const whereSeed = !where || SEED_NARRATIVE.test(where);
   const nextSeed = !next || next.split(/\r?\n/).every((l) => !l.trim() || /^\s*-\s*\[ \]\s*…\s*$/.test(l));
   return whereSeed && nextSeed;
@@ -203,7 +212,7 @@ function isSeedResume(text) {
 /**
  * The project's resume file — the ONE file every reader and writer uses (v0.30.0): resume.js
  * injects it, resume-log.js appends to it, snapshot.js copies its next steps. Candidates are
- * <brain>/resume.md then <cwd>/resume.md; the first existing file with a real narrative wins, else
+ * <brain>/resume.md then <project>/resume.md (the brain's parent; the cwd without a brain); the first existing file with a real narrative wins, else
  * the first existing file, else — only with `create`, inside a brain — the brain path; else null.
  * Preferring a real narrative over location lets a brain seeded beside an older root resume.md
  * recover without a migration.
@@ -212,7 +221,7 @@ function resumePath(cwd, opts = {}) {
   const brain = findBrainDir(cwd);
   const candidates = [];
   if (brain) candidates.push(path.join(brain, 'resume.md'));
-  candidates.push(path.join(path.resolve(cwd || process.cwd()), 'resume.md'));
+  candidates.push(path.join(brain ? path.dirname(brain) : path.resolve(cwd || process.cwd()), 'resume.md'));
   const existing = candidates.filter((c) => fs.existsSync(c));
   const real = existing.find((c) => !isSeedResume(readTextSafe(c)));
   if (real) return real;
@@ -220,33 +229,66 @@ function resumePath(cwd, opts = {}) {
   return opts.create && brain ? candidates[0] : null;
 }
 
-const CLOSED_INLINE = /(resolved|accepted|closed|fixed|✅|~~)/i;
-const CLOSING_HEADING = /\b(fixed|resolved|closed|accepted|done)\b/i;
+/** A P0 line closed inline: a closing word (not "not fixed", not "unresolved"), ✅, or strikethrough. */
+const CLOSED_INLINE = /(?<!\bnot\s)\b(resolved|accepted|closed|fixed)\b|✅|~~/i;
+/** A heading closes its section only with an explicit status marker at its end — "(all fixed)",
+ *  "— resolved", ": done", or a bare "Done" — and never when it also negates. */
+const CLOSING_HEADING = /(?:^|[(\[,:;—–-]\s*)(?:all\s+|now\s+)?(?:fixed|resolved|closed|accepted|done)\s*[)\]]?\s*$/i;
+const NEGATED_HEADING = /\b(not|none|yet|to be|once|until|pending|open|unresolved|todo)\b/i;
+/** "0 P0", "no P0s" — counts, not findings. */
+const P0_COUNT = /\b(?:0|no|zero)\s+P0s?\b/gi;
 
 /**
  * Open P0 findings in a markdown page (v0.30.0) — the one detector doctor #14, loops and digests
- * share. A line mentioning P0 is closed inline (resolved / accepted / closed / fixed / ✅ / ~~) or by
- * its section: a heading containing fixed / resolved / closed / accepted / done closes every line
- * beneath it until the next heading of the same or higher level. "0 P0" / "no P0" are counts, not
- * findings; fenced code is skipped. Returns the open lines.
+ * share. A line mentioning P0 is closed inline (CLOSED_INLINE) or by its section: a closing heading
+ * (CLOSING_HEADING, not NEGATED_HEADING) closes every line beneath it until the next heading of the
+ * same or higher level. Count phrases are ignored, but a real finding beside one still counts.
+ * Fenced code is skipped; an unclosed fence at the end is not a fence, so one stray fence cannot
+ * hide the rest of a page. Returns the open lines.
  */
 function openP0Lines(text) {
+  const lines = String(text || '').split(/\r?\n/);
+  const fenceAt = lines.map((l, i) => (/^\s*```/.test(l) ? i : -1)).filter((i) => i >= 0);
+  if (fenceAt.length % 2) fenceAt.pop();
+  const fences = new Set(fenceAt);
   const out = [];
   let closedAt = 0; // level of the heading that closed the current section; 0 = open
   let fence = false;
-  for (const line of String(text || '').split(/\r?\n/)) {
-    if (/^\s*```/.test(line)) { fence = !fence; continue; }
-    if (fence) continue;
+  lines.forEach((line, i) => {
+    if (fences.has(i)) { fence = !fence; return; }
+    if (fence) return;
     const h = /^(#{1,6})\s+(.*)$/.exec(line);
     if (h) {
       if (closedAt && h[1].length <= closedAt) closedAt = 0;
-      if (!closedAt && CLOSING_HEADING.test(h[2])) { closedAt = h[1].length; continue; }
+      const title = h[2].trim();
+      if (!closedAt && CLOSING_HEADING.test(title) && !NEGATED_HEADING.test(title)) { closedAt = h[1].length; return; }
     }
-    if (closedAt || !/\bP0\b/.test(line)) continue;
-    if (/\b(0|no|zero)\s+P0s?\b/i.test(line) || CLOSED_INLINE.test(line)) continue;
+    if (closedAt || !/\bP0\b/.test(line.replace(P0_COUNT, ''))) return;
+    if (CLOSED_INLINE.test(line)) return;
     out.push(line);
-  }
+  });
   return out;
+}
+
+/**
+ * Uncommitted changes inside a brain, minus the files the hooks write themselves (v0.30.0):
+ * sessions/ (agent ledger, snapshots) and resume.md (its task log). The pathspecs are relative to
+ * the brain, so a wiki page named resume.md or a folder named sessions elsewhere still counts.
+ * Returns { count }, or null when the brain is not in a git repo (or git is unavailable).
+ */
+function brainGitDirty(brain) {
+  let git;
+  try {
+    git = require('child_process').spawnSync(
+      'git',
+      ['-C', brain, 'status', '--porcelain', '--untracked-files=all', '--', '.', ':(exclude)sessions', ':(exclude)resume.md'],
+      { encoding: 'utf8', timeout: 8000 }
+    );
+  } catch {
+    return null;
+  }
+  if (!git || git.status !== 0) return null;
+  return { count: git.stdout.split('\n').filter((l) => l.trim()).length };
 }
 
 /** All files under dir (recursive), optionally filtered by extension. */
@@ -306,6 +348,7 @@ module.exports = {
   isSeedResume,
   resumePath,
   openP0Lines,
+  brainGitDirty,
   listFilesRecursive,
   estimateTokens,
   today,

@@ -16,7 +16,8 @@ related: [brain-health-audit, brain-correctness, token-diet, engine-knowledge]
 Acting on [[brain-health-audit]]: three specs in order, each through plan → build → review → wrap.
 
 ## Now
-- [[brain-correctness]] — plan approved (curator: "do all of these one by one, on your own"); entering build.
+- [[brain-correctness]] — closed `done` in 0.30.0 after an independent review ([[brain-correctness-review]]): 15/15 ACs, 2 P1 + 4 P2 review findings fixed in review.
+- [[token-diet]] — plan drafted; in build.
 
 ## Next
 1. [[token-diet]] — model-routing table, fork instead of pin, context nudge, manual split, description cap, dependency slimming.

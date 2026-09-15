@@ -8,7 +8,8 @@
  * ("Where we left off", "Next steps") belong to the model (/brain:wrap or a
  * manual update); a script cannot write narrative, only events.
  *
- * File resolution mirrors resume.js. Auto-creation: inside a brain the first
+ * File resolution is lib.resumePath(), shared with resume.js and snapshot.js
+ * (v0.30.0). Auto-creation: inside a brain the first
  * event CREATES <brain>/resume.md from a seed; outside a brain the hook only
  * appends to an already-existing ./resume.md (never litters foreign repos).
  * This hook must never disturb a session: every path exits 0.

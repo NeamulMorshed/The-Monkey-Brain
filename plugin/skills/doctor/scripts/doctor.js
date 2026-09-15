@@ -124,16 +124,10 @@ const logGap = newestSession && logMtime && newestSession > logMtime + 60000;
 add(6, 'log-gaps', logGap ? 'warn' : 'ok', logGap ? 'sessions/ has activity newer than the last wiki/log.md entry — a session went unlogged (/brain:wrap)' : 'log tracks session activity');
 
 // ---- 7. uncommitted .brain/ changes -----------------------------------------
-let git;
-try { git = spawnSync('git', ['-C', brain, 'status', '--porcelain', '--', '.'], { encoding: 'utf8', timeout: 8000 }); } catch { git = null; }
-if (!git || git.status !== 0) add(7, 'uncommitted', 'info', 'not a git repo (or git unavailable) — skipped');
+const git = lib.brainGitDirty(brain); // .brain/ only, minus hook-owned files (v0.30.0, shared with wrap.js)
+if (!git) add(7, 'uncommitted', 'info', 'not a git repo (or git unavailable) — skipped');
 else {
-  // Only .brain/ (the pathspec), and never the files the hooks write themselves (v0.30.0, as wrap.js).
-  const dirty = git.stdout
-    .split('\n')
-    .filter((l) => l.trim())
-    .map((l) => l.slice(3).split(' -> ').pop().replace(/^"|"$/g, ''))
-    .filter((p) => !/(^|\/)(sessions\/|resume\.md$)/.test(p)).length;
+  const dirty = git.count;
   add(7, 'uncommitted', dirty ? 'warn' : 'ok', dirty ? `${dirty} uncommitted change(s) in .brain/ — commit per §7` : 'clean');
 }
 

@@ -3,7 +3,7 @@ title: "Spec — Token diet: model routing, context nudge, lighter manual and sk
 type: spec
 status: active
 tier: feature
-phase: plan
+phase: build
 audit_score:
 plan_approved: false
 tdd: true

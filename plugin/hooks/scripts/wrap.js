@@ -37,9 +37,6 @@ const GRACE_MS = 90_000;
 /** An ADR filed within this window of the build/review log entry counts as "distilled". */
 const DECIDE_GRACE_MS = 15 * 60_000;
 
-/** Files the hooks write themselves (v0.30.0): the agent ledger, snapshots, resume.md's task log. */
-const HOOK_OWNED = /(^|\/)(sessions\/|resume\.md$)/;
-
 function newestWikiMtime(wikiDir, logPath) {
   // index.md is skipped too: SessionEnd's refreshIndex rewrites it after the log (v0.30.0).
   const idxPath = path.join(path.dirname(logPath), 'index.md');
@@ -147,18 +144,9 @@ function gitCheck(input, brain) {
   const marker = sessionMarker('mb-gitcheck', input);
   if (fs.existsSync(marker)) return null;
 
-  let git;
-  try {
-    git = spawnSync('git', ['-C', brain, 'status', '--porcelain', '--', '.'], { encoding: 'utf8', timeout: 8000 });
-  } catch { git = null; }
-  if (!git || git.status !== 0) return null; // not a git repo, or git unavailable — silent
-
-  // Porcelain lines are "XY path" (renames "XY old -> new"); hook-owned paths never nudge.
-  const dirty = git.stdout
-    .split('\n')
-    .filter((l) => l.trim())
-    .map((l) => l.slice(3).split(' -> ').pop().replace(/^"|"$/g, ''))
-    .filter((p) => !HOOK_OWNED.test(p)).length;
+  // .brain/ only, minus hook-owned files; null outside a git repo or without git — silent.
+  const git = lib.brainGitDirty(brain);
+  const dirty = git ? git.count : 0;
   if (!dirty) return null;
 
   return {

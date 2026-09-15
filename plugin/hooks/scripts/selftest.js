@@ -1616,6 +1616,52 @@ try {
   check('a table-escaped [[slug\\|Alias]] link counts as inbound (AC-12)', r.status === 0 && out.decision !== 'block', r.stdout);
   for (const f of ['wiki/concepts/table-linked.md', 'wiki/concepts/table-hub.md']) fs.rmSync(path.join(BRAIN, f), { force: true });
 
+  // Review fixes (wiki/syntheses/brain-correctness-review.md) — each pins a probe the reviewer ran.
+  for (const [label, text] of [
+    ['## Not fixed yet', '## Not fixed yet\n- **P0 — x** broken\n'],
+    ['## Open — to be resolved', '## Open — to be resolved\n- **P0 — x**\n'],
+    ['## Blockers (none closed yet)', '## Blockers (none closed yet)\n- P0: x\n'],
+    ['## Next steps once the build is fixed', '## Next steps once the build is fixed\n- P0: x\n'],
+    ['## Definition of done', '## Definition of done\n- P0: x\n'],
+    ['an unclosed fence', '```\ncode\n## Open\n- P0: x\n'],
+    ['a count beside a real finding', '- P0: login broken, no P0 regression test yet\n'],
+  ]) check(`openP0Lines: "${label}" stays open (review P1-1)`, op(text).length === 1, JSON.stringify(op(text)));
+  check('openP0Lines: "Findings — fixed" and a bare "Done" heading still close (review P1-1)', op('## Findings — fixed\n- P0: x\n').length === 0 && op('## Done\n- P0: y\n').length === 0);
+  if (spawnSync('git', ['--version'], { encoding: 'utf8' }).status === 0) {
+    const GN = path.join(ROOT, 'gitnest');
+    const GNB = path.join(GN, '.brain');
+    for (const d of ['wiki/entities', 'wiki/concepts/sessions', 'sessions']) fs.mkdirSync(path.join(GNB, d), { recursive: true });
+    const gn = (...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@x', '-c', 'init.defaultBranch=main', ...a], { cwd: GN, encoding: 'utf8', timeout: 15000 });
+    fs.writeFileSync(path.join(GNB, 'CLAUDE.md'), '# b\n');
+    fs.writeFileSync(path.join(GNB, 'resume.md'), realText('n'));
+    fs.writeFileSync(path.join(GNB, 'sessions', 'agents.md'), '# l\n');
+    fs.writeFileSync(path.join(GN, 'README.md'), 'repo\n');
+    gn('init', '-q'); gn('add', '-A'); gn('commit', '-q', '-m', 'init');
+    fs.appendFileSync(path.join(GNB, 'resume.md'), 'x\n');
+    fs.appendFileSync(path.join(GNB, 'sessions', 'agents.md'), 'x\n');
+    fs.writeFileSync(path.join(GNB, 'wiki', 'entities', 'resume.md'), '---\ntitle: "R"\n---\n');
+    fs.writeFileSync(path.join(GNB, 'wiki', 'concepts', 'sessions', 'login.md'), '---\ntitle: "L"\n---\n');
+    fs.writeFileSync(path.join(GN, 'outside.js'), 'x\n');
+    const gd = typeof libC.brainGitDirty === 'function' ? libC.brainGitDirty(GNB) : null;
+    check('lib.brainGitDirty: a nested .brain counts real pages named resume.md or under a sessions/ folder, never hook-owned files or files outside the brain (review P1-2)', !!gd && gd.count === 2, JSON.stringify(gd));
+  } else {
+    check('git not installed — nested brainGitDirty test skipped', true);
+  }
+  check('wrap.js and doctor #7 share lib.brainGitDirty (review P1-2)', [path.join(HERE, 'wrap.js'), path.join(SKILLS, 'doctor', 'scripts', 'doctor.js')].every((f) => /brainGitDirty\(/.test(fs.readFileSync(f, 'utf8'))));
+  const RC = path.join(ROOT, 'resume-sub');
+  const RCB = mkBrain(RC);
+  fs.writeFileSync(path.join(RCB, 'resume.md'), seedText);
+  fs.writeFileSync(path.join(RC, 'resume.md'), realText('sub-root'));
+  fs.mkdirSync(path.join(RC, 'src'), { recursive: true });
+  check('lib.resumePath from a subdirectory still finds the project-root narrative (review P2-1)', path.resolve(libC.resumePath(path.join(RC, 'src')) || '.') === path.resolve(RC, 'resume.md'), String(libC.resumePath(path.join(RC, 'src'))));
+  check('isSeedResume: a placeholder line followed by a real narrative is not a seed (review P2-2)', !libC.isSeedResume('## Where we left off\n_Nothing yet._\nAuth refactor half done, see _pending_\n\n## Next steps\n- [ ] …\n'));
+  check('isSeedResume: a file holding only a hook-written task log is a seed (review P2-2)', libC.isSeedResume('---\nupdated: x\n---\n\n## Task log (auto)\n- [x] ■ session ended\n'));
+  r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: path.join(BRAIN, 'wiki', 'log.md'), old_string: 'updated: 2026-07-17', new_string: 'updated: 2026-07-18 10:15' } }));
+  check('a log updated: bump may add a time (review P2-3)', r.status === 0, `status=${r.status} ${r.stderr}`);
+  a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: 'optout', tool_input: { subagent_type: 'general-purpose', description: 'third-party dispatch' } }), { MONKEY_BRAIN_MODEL_BLOCK: '0' });
+  check('MONKEY_BRAIN_MODEL_BLOCK=0 turns the model block off (review P2-4)', a.status === 0, `status=${a.status} ${a.stderr}`);
+  check('plugin README describes the one resume resolver and the silent seed (review P2-4)', /lib\.resumePath/.test(fs.readFileSync(path.join(SKILLS, '..', 'README.md'), 'utf8')));
+
   // AC-13 — the librarian can do what it is told.
   const libr = fs.readFileSync(path.join(HERE, '..', '..', 'agents', 'brain-librarian.md'), 'utf8');
   const librTools = (/^tools:\s*(.+)$/m.exec(libr.split(/\r?\n---/)[0]) || [])[1] || '';

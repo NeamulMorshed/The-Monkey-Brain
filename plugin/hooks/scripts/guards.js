@@ -63,7 +63,7 @@ function gatherNewText(ti) {
 /** Append-only rule for one edit pair. */
 function editIsAppendOnly(oldS, newS) {
   if (String(newS).includes(String(oldS))) return true; // pure insertion
-  const bump = /^updated:\s*["']?\d{4}-\d{2}-\d{2}["']?$/;
+  const bump = /^updated:\s*["']?\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}(?::\d{2})?)?["']?$/; // a date, optionally with a time
   return bump.test(String(oldS).trim()) && bump.test(String(newS).trim()); // frontmatter date bump — a date on both sides
 }
 

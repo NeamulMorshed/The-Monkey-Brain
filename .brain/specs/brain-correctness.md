@@ -1,10 +1,10 @@
 ---
 title: "Spec — Brain correctness: resume, gates, health signal, Stop nudges"
 type: spec
-status: active
+status: done
 tier: architecture
-phase: review
-audit_score:
+phase: done
+audit_score: "done — 0 open findings (0 P0, 2 P1, 4 P2 found in review; 5 fixed + pinned, 1 declined with reason; selftest 463 green)"
 plan_approved: true
 tdd: true
 scope: [plugin/hooks/scripts/lib.js, plugin/hooks/scripts/resume.js, plugin/hooks/scripts/resume-log.js, plugin/hooks/scripts/snapshot.js, plugin/hooks/scripts/guards.js, plugin/hooks/scripts/agent-track.js, plugin/hooks/scripts/wrap.js, plugin/hooks/scripts/wiki-check.js, plugin/hooks/scripts/loop.js, plugin/hooks/scripts/digest.js, plugin/hooks/scripts/selftest.js, plugin/skills/doctor/**, plugin/skills/lint/**, plugin/skills/wrap/**, plugin/agents/**, plugin/skills/init/brain-template/templates/**, schema/brain-template/templates/**, plugin/README.md, README.md, plugin/CHANGELOG.md, plugin/.claude-plugin/**, .claude-plugin/**]
@@ -53,7 +53,7 @@ The brain gives itself wrong signals and has two real holes ([[brain-health-audi
 - **AC-12** ✅ `a table-escaped [[slug\|Alias]] link counts as inbound` — `wiki-check`'s orphan scan accepts a table-escaped link `[[slug\|Alias]]` as inbound.
 - **AC-13** ✅ `brain-librarian: no Skill call it cannot make, WebFetch for URLs, all 8 ingest steps inline` — `brain-librarian` no longer tells itself to invoke a Skill it cannot call: it lists `/brain:ingest`'s 8 steps inline (discuss skipped in batch, commit left to the lead) and has `WebFetch` for URL sources.
 - **AC-14** ✅ `spec template cites manual §5 for tiers` · `wiki-check and lint cite §6…` · `READMEs say 10 hook events and hard-code no selftest count` — Section references match the manual: the spec template says tiers are "manual §5" (both template masters and this brain's `templates/spec.md`); `wiki-check.js` and `lint.js` cite §6 for TODO markers and orphans. The READMEs' hook-event count equals the number of events in `hooks.json` and no README hard-codes a selftest count.
-- **AC-15** — Release: selftest ALL GREEN; both manifests `claude plugin validate --strict`; CHANGELOG `0.30.0`; both manifests `0.30.0`; doctor on this repo's brain reports no open-P0 critical. *(Build evidence: selftest ALL GREEN, 447 checks; both manifests 0.30.0; CHANGELOG 0.30.0; repo doctor on `.brain` → `14. open-p0: none`. Left for the reviewer to re-run, never tick from here.)*
+- **AC-15** ✅ reviewer re-ran: selftest 463 ALL GREEN · `claude plugin validate --strict` ×2 · CHANGELOG + manifests 0.30.0 · doctor #14 none — Release: selftest ALL GREEN; both manifests `claude plugin validate --strict`; CHANGELOG `0.30.0`; both manifests `0.30.0`; doctor on this repo's brain reports no open-P0 critical. *(Build evidence: selftest ALL GREEN, 447 checks; both manifests 0.30.0; CHANGELOG 0.30.0; repo doctor on `.brain` → `14. open-p0: none`. Left for the reviewer to re-run, never tick from here.)*
 
 ## Test plan
 Selftest additions, written red first: AC-1 both-files fixture through all three hooks; AC-2 seed-only and seed+task-log fixtures; AC-3 wrap SKILL text check; AC-4 a second project under `<tmp>/specs/…`; AC-5 `lib.inProject` table incl. `D:/x`; AC-6 two log edits; AC-7 three fixture pages through doctor and `loop.openP0Lines`; AC-8 phantom SubagentStop + mixed ledger through doctor; AC-9 workflow-only project; AC-10 two dispatches + fork; AC-11 git-dirty and mtime fixtures; AC-12 table-link orphan fixture; AC-13 agent-definition check; AC-14 template/README checks; AC-15 the release checklist run by the reviewer.
@@ -64,4 +64,5 @@ Selftest additions, written red first: AC-1 both-files fixture through all three
 - Approval: the curator, after reading the audit that recommended exactly this spec, said "do all of these one by one, on your own" (2026-09-15) and repeated "do one by one, on your own". Recorded as `plan_approved: true` on that word.
 - Decision: the resume resolver prefers a real narrative over location, so existing brains with a root `resume.md` and a seeded brain copy recover without a migration.
 - **Build (2026-09-15):** 19 checks red first (plus one renamed identifier crash in the new selftest block), then green; selftest 417 → 447 ALL GREEN.
+- **Review (2026-09-15):** [[brain-correctness-review]] — 0 P0, 2 P1, 4 P2; five fixed and pinned (selftest 447 → 463), one declined with reason.
 - **Build deviations:** (1) doctor #7 got the same hook-owned filter as `wrap[git]`, and a `-- .` pathspec — it counted changes anywhere in the repo while saying "in .brain/". (2) lint and doctor orphan scans got the same `\|` fix as wiki-check, so the three never disagree. (3) `loop.openP0(line)` stays exported for compatibility but delegates to `lib.openP0Lines`. Live on this repo after build: doctor 0 critical (was 1), #18 "10 done" (phantoms gone), #19 "CI present (selftest.yml)", and `resume.js` injects the root narrative instead of the seed.

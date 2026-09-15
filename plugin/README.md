@@ -181,7 +181,8 @@ wraps it.
   fails on drift — refresh with
   `node skills/init/scripts/new-brain.js --sync-template`.
 - **Resume system (hook #8):** `resume.md` is the live work-in-progress
-  pointer. `resume.js` injects it on fresh sessions (startup/clear) and asks
-  whether to continue; `resume-log.js` appends task/session events to its
+  pointer. one resolver, `lib.resumePath()`, picks the file (the brain copy first, a root
+  `resume.md` only when it alone holds a real narrative); `resume.js` injects it on fresh
+  sessions (startup/clear) and asks whether to continue — silent while it is still the seed; `resume-log.js` appends task/session events to its
   `## Task log (auto)` automatically. The narrative sections belong to the
   model — `/brain:wrap` (Phase 3) rewrites them at session end.

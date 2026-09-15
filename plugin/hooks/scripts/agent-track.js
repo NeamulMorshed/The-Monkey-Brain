@@ -115,7 +115,8 @@ async function main() {
     }
   }
 
-  const willBlock = !model && HEAVY_TYPES.has(type);
+  // MONKEY_BRAIN_MODEL_BLOCK=0 opts out — for third-party plugins that dispatch without a model.
+  const willBlock = !model && HEAVY_TYPES.has(type) && process.env.MONKEY_BRAIN_MODEL_BLOCK !== '0';
 
   // Log first so blocked attempts leave a trace too.
   appendLog(
