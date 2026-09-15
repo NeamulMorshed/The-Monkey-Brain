@@ -1,20 +1,21 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-16 00:40
+updated: 2026-09-16 12:00
 ---
 
 ## Where we left off
-2026-09-16 — acting on the brain health audit ([[brain-health-audit]]), one spec at a time on the
-curator's "do all of these on your own": brain-correctness (0.30.0) and token-diet (0.31.0) closed
-after independent reviews; engine-knowledge (0.32.0) is built — one link index across records,
-superpowers filing, the engine compiled into its own brain — and in review. Nothing pushed yet.
+2026-09-16 — the brain health audit ([[brain-health-audit]]) is fully acted on, one spec at a time on
+the curator's "do all of these on your own". Four specs, each built test-first and closed after an
+independent review on another model family: brain-correctness (0.30.0), token-diet (0.31.0),
+engine-knowledge (0.32.0), router-and-drift (0.33.0; review fixes in `6ce0203`, selftest 579).
+Workstream `brain-hardening` → done. `brain-all` is 0.14.1 (294/294) and a weekly `bundle-drift`
+CI job watches the catalog.
 
 ## Next steps
-- [ ] Review engine-knowledge with an independent reviewer (a model family other than the builder's), then close it.
-- [ ] Build router-and-drift (`specs/router-and-drift.md`): router misfires, doctor #20 dependency health, bundle / `schema/` / bootstrap drift, marker pruning.
-- [ ] Wrap: push to origin/main, reinstall the plugin locally, restart Claude Code.
-- [ ] Curator: set `GITHUB_PERSONAL_ACCESS_TOKEN` or disable the github MCP (it fails at every session start).
+- [ ] Curator: set `GITHUB_PERSONAL_ACCESS_TOKEN` or disable the github plugin — doctor #20 warns until then.
+- [ ] Restart Claude Code after the reinstall so the hooks run 0.33.0 (the old session ran 0.29.1 hooks).
+- [ ] Watch the weekly `bundle-drift` job; a router misfire seen in a real session gets a selftest case before its fix.
 
 ## Task log (auto)
 - [2026-09-15 11:17] ■ session ended (other)
