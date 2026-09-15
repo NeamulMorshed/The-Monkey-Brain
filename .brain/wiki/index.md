@@ -6,7 +6,7 @@ tags: [index, navigation, moc]
 created: 2026-09-15
 updated: 2026-09-16
 source_count: 4
-page_count: 33
+page_count: 35
 ---
 
 # 🐵 The Monkey Brain (engine) — Index
@@ -14,7 +14,7 @@ page_count: 33
 The content catalog for this brain. **Read this first** on any query to locate pages, then drill
 in. Updated on every ingest. Chronological view: [[log]]. Live tables: [[dashboard]].
 
-> **Stats:** 4 sources · 33 pages · created 2026-09-15.
+> **Stats:** 4 sources · 35 pages · created 2026-09-15.
 
 The engine's own knowledge base: its roadmap, README, changelog and resume history (sources),
 one page per subsystem (concepts), Claude Code and the capability plugins (entities), and the
@@ -41,7 +41,7 @@ How the engine works, one subsystem per page.
 - [[instincts-and-bans]] — `instincts.js`, `instinct-track.js`, `bans.js`: learned rules and enforced patterns
 - [[team-lock]] — `lock.js`: the committed, expiring `LOCK.md`
 - [[wiki-self-healing]] — `wiki-check.js` + `lint.js`: links, orphans, frontmatter, the shared link index
-- [[doctor-health-checks]] — `doctor.js`: the 19 checks and `sessions/health.json`
+- [[doctor-health-checks]] — `doctor.js`: the 20 checks (dependency health since 0.33.0) and `sessions/health.json`
 - [[bounded-loops]] — `loop.js`: build / research / design loops that know when to stop
 - [[develop-lifecycle-stages]] — research → plan → build → review → wrap, the gates and hand-offs
 
@@ -59,6 +59,7 @@ How the engine works, one subsystem per page.
 - [[brain-correctness-review]] — AC-by-AC verification of brain correctness (0.30.0); 0 P0 / 2 P1 / 4 P2 found, fixed in review (2026-09-15)
 - [[token-diet-review]] — AC-by-AC verification of the token diet (0.31.0); 0 P0 / 3 P1 / 9 P2, fixed in review; only `build` forks (2026-09-16)
 - [[engine-knowledge-review]] — AC-by-AC verification of engine knowledge (0.32.0); 0 P0 / 3 P1 / 13 P2, code and 14 pages fixed in review (2026-09-16)
+- [[router-and-drift-review]] — AC-by-AC verification of router misfires, doctor #20 and drift (0.33.0); 0 P0 / 2 P1 / 12 P2, fixed in review; bundle 0.14.1 + weekly drift job (2026-09-16)
 
 ## 📐 Decisions
 - [[fork-not-switch-model-routing]] — change model by forking or dispatching, never by switching the main thread; only `build` forks (2026-09-15, amended 2026-09-16)

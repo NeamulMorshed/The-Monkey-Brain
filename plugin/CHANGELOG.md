@@ -19,6 +19,16 @@ misfires with file:line.
   `schema/CLAUDE.md` and `schema/templates/` are gone; `bootstrap/new-brain.{sh,ps1}` and
   `lint-brain.ps1` are thin wrappers over `new-brain.js` / `lint.js`; the READMEs call the home
   registry per machine; `/brain:wrap` lists every commit prefix; `reference.md` §10 names the GDD.
+- **Review fixes** (`wiki/syntheses/router-and-drift-review.md`) — "review the brain" routes to
+  doctor only as a whole clause (never "review the brain-hardening spec"); "research papers on X" is
+  a request again (only "the/for/any … research" is the noun); "set up a fresh brain" reaches init;
+  a curator's own "…the report follows:" routes (only a message that starts as a hand-back is
+  skipped); "audit skills" stays with career; "we decided X. build Y" is a work order; questions
+  opening with an auxiliary ("is there…", "should we…") and questions to ingest, wrap and init stay
+  silent; after the one init offer, dev prompts keep their lifecycle line; doctor #20 accepts a
+  `MONKEY_BRAIN_PYTHON` path with spaces; `edit-counts.json` evicts by timestamp and remembers
+  advised files; markers are pruned without a brain too; `brain-all` regenerated (0.14.1) and a
+  weekly `bundle-drift` CI job checks it against the live catalog.
 - **Bounded growth** — `edit-counts.json` keeps the 500 most recently revised files; SessionEnd
   prunes the hooks' temp-dir markers older than a week.
 

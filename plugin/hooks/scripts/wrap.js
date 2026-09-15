@@ -228,6 +228,7 @@ function reindex(brain) {
 
 async function main() {
   const input = await lib.readStdinJson();
+  if (input.hook_event_name === 'SessionEnd') pruneMarkers(); // markers from brainless repos too
   const brain = lib.findBrainDir(input.cwd);
   if (!brain) return;
   const evt = input.hook_event_name || '';
@@ -236,7 +237,6 @@ async function main() {
   } else if (evt === 'SessionEnd') {
     refreshIndex(brain);
     reindex(brain);
-    pruneMarkers();
   }
 }
 

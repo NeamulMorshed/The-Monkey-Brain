@@ -35,25 +35,28 @@ const lib = require(path.join(__dirname, 'lib.js'));
 // Order matters: first match wins. `what` names the workflow in the hint.
 const RULES = [
   {
-    re: /\b(set\s?up|initiali[sz]e|init|create|scaffold)\b\s+(?:(?:a|an|the|this|my|our|new|another)\s+)*(?:monkey\s?brain|\.?brain)\b|\bnew brain\b/i, // no unrelated object in between (v0.33.0)
+    re: /\b(set\s?up|initiali[sz]e|init|create|scaffold)\b\s+(?:(?!(?:checks?|rules?|tests?|features?|doctor|for|to|in|on|with|of|from|about|into|inside|that|which|and)\b)\w+\s+){0,3}(?:monkey\s?brain|\.?brain)\b|\bnew brain\b/i, // up to three plain words in between — never a feature noun or a preposition (v0.33.0)
+    question: true,
     skill: 'init',
     needsBrain: false,
     what: 'brain setup',
   },
   {
     re: /\bingest\b|\bprocess (the |my )?clippings?\b|\badd (this|that|it|these) to the (brain|wiki|vault)\b/i,
+    question: true, // "how do I ingest a PDF?" asks; it does not order (v0.33.0)
     skill: 'ingest',
     needsBrain: true,
     what: 'source ingestion',
   },
   {
     re: /\bwrap(\s+\w+){0,2}\s+up\b|\bend (the |this )?session\b|\bcall it a (day|night)\b/i,
+    question: true,
     skill: 'wrap',
     needsBrain: true,
     what: 'session wrap-up',
   },
   {
-    re: /\bbrain[- ]?doctor\b|\b(brain|wiki|vault) (doctor|health)\b|\bhealth[- ]?check (the |my )?(brain|wiki|vault)\b|\bis (the |my )?(brain|wiki|vault) healthy\b|\bcheck (the |my )?(brain|wiki|vault)'?s? health\b|\baudit (?:the |all |every |my )?(?:brain|wiki|vault|plugins?|hooks?|skills?)\b|\b(?:review|check) (?:the |this |my )?(?:entire |whole )?(?:brain|wiki|vault)\b(?!\s+(?:changes|diff|pr|branch|spec))|\bis (?:the |my )?(?:brain|wiki|vault) (?:working|ok|okay|fine|broken)\b/i,
+    re: /\bbrain[- ]?doctor\b|\b(brain|wiki|vault) (doctor|health)\b|\bhealth[- ]?check (the |my )?(brain|wiki|vault)\b|\bis (the |my )?(brain|wiki|vault) healthy\b|\bcheck (the |my )?(brain|wiki|vault)'?s? health\b|\baudit (?:the |all |every |my )?(?:brain|wiki|vault|plugins?|hooks?)\b|\b(?:review|check) (?:the |this |my )?(?:entire |whole )?(?:brain|wiki|vault)\b(?![-'’])(?=\s*(?:$|[.,;:!?)]|\b(?:and|then|please|now)\b))|\bis (?:the |my )?(?:brain|wiki|vault) (?:working|ok|okay|fine|broken)\b/i,
     not: () => DOCTOR_FEATURE, // building a doctor check is dev work, not a health report (v0.33.0)
     skill: 'doctor',
     needsBrain: true,
@@ -145,7 +148,7 @@ const RULES = [
     what: 'brain brief',
   },
   {
-    re: /\bresearch\b(?!\s+(?:purposes?|modes?|papers?|parsers?|models?)\b)/i, // the noun ("research purpose") is not a request
+    re: /(?<!\b(?:for|the|a|an|this|that|my|our|your|in|of|any|some|no|like)\s)\bresearch\b(?!\s+purposes?\b)/i, // a verb — not "the research", "for research purposes"
     not: () => SKIP_RE, // a skip names research without asking for it
     question: true, // "why did the research … misfire?" is a question, not a work order (v0.33.0)
     skill: 'research',
@@ -217,14 +220,14 @@ const RULES = [
   },
 ];
 
-const QUESTION_RE = /^\s*(why|what|how|explain|describe|where|when|who)\b/i;
+const QUESTION_RE = /^\s*(why|what|how|explain|describe|where|when|who|is|are|does|did|should|would|will|has|any|was|were)\b/i;
 
 /** A pasted subagent report or a teammate's message — someone else's words, never the curator's order (v0.33.0). */
-const HANDBACK_RE = /^\s*\[Subagent hand-back\]|\bThe report follows:|^\s*Another Claude session sent a message/i;
+const HANDBACK_RE = /^\s*(?:\[Subagent hand-back\]|Another Claude session sent a message|<agent-message\b)/i;
 /** Building a check or rule FOR the doctor is development, not a request for a health report. */
 const DOCTOR_FEATURE = /\b(?:add|create|write|build|implement|make|extend)\b[^.!?]{0,30}\b(?:checks?|rules?|features?|tests?)\b/i;
 /** "we decided X, now build Y": the build order outranks the note. */
-const DUMP_PIVOT = /\bnow\b[^.!?]{0,40}\b(?:build|implement|add|create|make|write|fix|wire|integrate)\b/i;
+const DUMP_PIVOT = /^(?!\s*dump\b)[\s\S]*?\bwe (?:just )?decided\b[\s\S]*?(?:\bnow\b|[.;:—–,]|\s-)\s*(?:(?:so|then|and|now|please)\s+)*(?:build|implement|add|create|make|write|fix|wire|integrate)\b/i;
 /** The dev hint names at most this many open specs. */
 const MAX_SPECS = 8;
 
@@ -342,15 +345,20 @@ async function main() {
   if (rule.needsBrain && !brain) {
     const root = path.resolve(input.cwd || process.cwd());
     if (fs.existsSync(path.join(root, '.no-brain'))) return; // engine declined here
-    // The init offer is made once per session in a repo; after that the curator has heard it (v0.33.0).
-    const sid = String(input.session_id || 'nosession').replace(/[^\w-]/g, '');
-    const offered = path.join(os.tmpdir(), `mb-router-init-${sid}-${crypto.createHash('sha1').update(root).digest('hex').slice(0, 8)}`);
-    if (fs.existsSync(offered)) return;
-    try { fs.writeFileSync(offered, ''); } catch {}
     const next = !rule.dev ? `/brain:${rule.skill}` : SKIP_RE.test(prompt) ? '/brain:plan → /brain:build (research skipped at your word)' : '/brain:research → /brain:plan → /brain:build';
-    hint =
-      `🐵 trigger-router: that sounds like ${rule.what}, but this project has no .brain/ yet — ` +
-      `offer /brain:init first, then continue with ${next}.`;
+    // The init offer is made once per session in a repo (v0.33.0); afterwards dev work still gets its
+    // lifecycle line and other workflows stay quiet. Without a session id nothing is remembered.
+    const sid = String(input.session_id || '').replace(/[^\w-]/g, '');
+    const offered = sid ? path.join(os.tmpdir(), `mb-router-init-${sid}-${crypto.createHash('sha1').update(root).digest('hex').slice(0, 8)}`) : '';
+    if (offered && fs.existsSync(offered)) {
+      if (!rule.dev) return;
+      hint = `🐵 trigger-router: that sounds like ${rule.what} (this project has no .brain/) — ${next}.`;
+    } else {
+      if (offered) { try { fs.writeFileSync(offered, ''); } catch {} }
+      hint =
+        `🐵 trigger-router: that sounds like ${rule.what}, but this project has no .brain/ yet — ` +
+        `offer /brain:init first, then continue with ${next}.`;
+    }
   } else if (rule.dev) {
     hint = devHint(brain, prompt);
   } else {

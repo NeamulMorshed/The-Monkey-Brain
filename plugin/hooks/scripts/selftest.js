@@ -1909,7 +1909,7 @@ try {
   };
   const DEV = /research → plan → build/;
   let rq = rt('Why did the research-first routing misfire?');
-  check('a question that mentions research is silent (AC-1)', rq.rr.status === 0 && rq.rr.stdout === '', rq.ctx);
+  check('a question that mentions research is silent (AC-1)', rq.rr.status === 0 && rq.rr.stdout === '' && rq.rr.stderr === '', rq.ctx);
   for (const p of ['create a new doctor check for the brain', 'add a check to the brain doctor that flags stale specs', 'we decided to use postgres, now build the auth endpoint']) {
     rq = rt(p);
     check(`"${p}" enters the dev lifecycle, not init / doctor / dump (AC-2)`, DEV.test(rq.ctx) && !/brain:(init|doctor|dump)\b/.test(rq.ctx), rq.ctx);
@@ -1918,9 +1918,9 @@ try {
   check('the noun "research" (research purpose / mode / paper) does not fire research (AC-3)', !/brain:research/.test(rq.ctx), rq.ctx);
   rq = rt('research competitor pricing models');
   check('"research competitor pricing models" still fires research (AC-3)', /brain:research/.test(rq.ctx), rq.ctx);
-  for (const p of ['[Subagent hand-back] The text below is the final report. I ingested the raw source files and ran the research.', 'All done. The report follows: I ingested the raw source files into the wiki as part of the ingest step.']) {
+  for (const p of ['[Subagent hand-back] The text below is the final report. I ingested the raw source files and ran the research.', 'Another Claude session sent a message:\n<agent-message from="a1">\nThe report follows: I ingested the raw source files into the wiki as part of the ingest step.\n</agent-message>']) {
     rq = rt(p);
-    check(`a pasted subagent report is silent: "${p.slice(0, 32)}…" (AC-4)`, rq.rr.status === 0 && rq.rr.stdout === '', rq.ctx);
+    check(`a pasted subagent report is silent: "${p.slice(0, 32)}…" (AC-4)`, rq.rr.status === 0 && rq.rr.stdout === '' && rq.rr.stderr === '', rq.ctx);
   }
   for (const p of ['review the entire brain', 'audit all plugins and hooks', 'is the brain working properly', 'check the entire brain and review how it works']) {
     rq = rt(p);
@@ -1935,7 +1935,7 @@ try {
   const sidQ = `st${process.pid}rinit`;
   const firstOffer = rt('add a login feature', PLAIN_Q, sidQ);
   const secondOffer = rt('add a signup feature', PLAIN_Q, sidQ);
-  check('without a brain the /brain:init offer appears once per session (AC-6)', /brain:init/.test(firstOffer.ctx) && secondOffer.rr.stdout === '', secondOffer.ctx);
+  check('without a brain the /brain:init offer appears once per session; later dev prompts keep the lifecycle line (AC-6)', /offer \/brain:init/.test(firstOffer.ctx) && !/offer \/brain:init/.test(secondOffer.ctx) && /brain:research/.test(secondOffer.ctx), secondOffer.ctx);
   for (let i = 0; i < 11; i++) write(`.brain/specs/cap-${String(i).padStart(2, '0')}.md`, `---\ntitle: "Cap ${i}"\ntype: spec\nstatus: active\ntier: quick\nphase: plan\n---\n\n- AC-1 …\n`);
   rq = rt('add a login feature');
   const capListed = (rq.ctx.match(/`cap-\d\d`/g) || []).length;
@@ -1970,7 +1970,8 @@ try {
     const bps = fs.readFileSync(path.join(bootDir, 'new-brain.ps1'), 'utf8');
     const blp = fs.readFileSync(path.join(bootDir, 'lint-brain.ps1'), 'utf8');
     check('bootstrap scripts wrap new-brain.js and lint.js instead of copying the template (AC-9)', /new-brain\.js/.test(bsh) && /new-brain\.js/.test(bps) && /lint\.js/.test(blp) && !/cp -R "\$TEMPLATE"/.test(bsh) && !/Expand-Placeholders/.test(bps));
-    if (spawnSync('bash', ['--version'], { encoding: 'utf8' }).status === 0) {
+    const unameO = spawnSync('bash', ['-c', 'uname -o'], { encoding: 'utf8' });
+    if (unameO.status === 0 && (process.platform !== 'win32' || /msys|cygwin/i.test(unameO.stdout || ''))) {
       const BW = path.join(ROOT, 'boot-wrap');
       fs.mkdirSync(BW, { recursive: true });
       const fwd = (p) => p.split(path.sep).join('/');
@@ -2009,6 +2010,77 @@ try {
   check('SessionEnd prunes session markers older than 7 days and keeps fresh ones (AC-11)', !fs.existsSync(oldMark) && fs.existsSync(freshMark));
   fs.rmSync(freshMark, { force: true });
 
+  // Review fixes (wiki/syntheses/router-and-drift-review.md) — each pins a probe the reviewer ran.
+  for (const [p, want] of [
+    ['review the brain-hardening spec', 'review'],
+    ['review the brain-correctness spec and close it', 'review'],
+    ['research papers on RAG and summarize them', 'research'],
+    ['research models for churn', 'research'],
+    ['set up a fresh brain', 'init'],
+    ['initialize a proper monkey brain', 'init'],
+    ['create a dedicated brain for this', 'init'],
+    ['ingest this article. The report follows: https://example.com/a', 'ingest'],
+    ['audit skill matrix', 'career'],
+  ]) {
+    rq = rt(p);
+    check(`"${p}" routes to brain:${want} (review)`, rq.ctx.includes(`brain:${want}`) && !/brain:doctor/.test(rq.ctx), rq.ctx);
+  }
+  for (const p of ['we decided on postgres. build the auth endpoint', 'we decided to go with postgres — implement the migration', 'we decided on postgres, so build the auth endpoint now', 'we decided: fix the login crash first']) {
+    rq = rt(p);
+    check(`"${p}" is a work order, not a dump (review)`, DEV.test(rq.ctx) && !/brain:dump/.test(rq.ctx), rq.ctx);
+  }
+  rq = rt('dump — we decided to use Postgres for billing');
+  check('an explicit "dump —" note stays a dump (review)', /brain:dump/.test(rq.ctx), rq.ctx);
+  for (const p of ['is there research on caching?', 'should we research this first?', 'did the research get filed?', 'How do I ingest a PDF?', 'what does wrap up do?', 'how do I set up a brain?']) {
+    rq = rt(p);
+    check(`question "${p}" is silent (review)`, rq.rr.status === 0 && rq.rr.stdout === '' && rq.rr.stderr === '', rq.ctx);
+  }
+  rq = rt('check the wiki for broken links');
+  check('"check the wiki for broken links" is not a doctor report (review)', !/brain:doctor/.test(rq.ctx), rq.ctx);
+  const PLAIN_W = path.join(ROOT, 'plain-w');
+  fs.mkdirSync(PLAIN_W, { recursive: true });
+  const sidW = `st${process.pid}rw`;
+  const wOffer = rt('wrap up', PLAIN_W, sidW);
+  const wDev = rt('add a login feature', PLAIN_W, sidW);
+  check('after the one init offer, a dev prompt still gets its research → plan → build line (review)', /offer \/brain:init/.test(wOffer.ctx) && /brain:research/.test(wDev.ctx) && !/offer \/brain:init/.test(wDev.ctx), wDev.ctx);
+  const noSid1 = run('trigger-router.js', { cwd: PLAIN_W, hook_event_name: 'UserPromptSubmit', prompt: 'add a login feature' });
+  const noSid2 = run('trigger-router.js', { cwd: PLAIN_W, hook_event_name: 'UserPromptSubmit', prompt: 'add a login feature' });
+  check('without a session id nothing is remembered: each prompt gets the offer (review)', /offer \/brain:init/.test(noSid1.stdout || '') && /offer \/brain:init/.test(noSid2.stdout || ''));
+  const pyOk = ['python3', 'python'].some((c) => {
+    const pr = spawnSync(c, ['-c', 'import sys;print(sys.version_info[0]*100+sys.version_info[1])'], { encoding: 'utf8' });
+    return pr.status === 0 && Number(String(pr.stdout).trim()) >= 310;
+  });
+  if (pyOk) {
+    fs.writeFileSync(CCSET, JSON.stringify({ enabledPlugins: { 'security-guidance@claude-plugins-official': true } }));
+    dep = finding(docWith({ ...depEnv, ...ccEnv }), 'dependency-health');
+    check('doctor 20: an installed Python ≥ 3.10 satisfies security-guidance (review)', dep.level === 'ok', JSON.stringify(dep));
+    fs.rmSync(CCSET, { force: true });
+  }
+  const ecT = {};
+  for (let i = 0; i < 500; i++) ecT[`src/t${i}.js`] = { count: i === 0 ? 3 : 1, lastSession: `s${i}`, flagged: i === 0, at: i + 1 };
+  fs.mkdirSync(path.dirname(EC), { recursive: true });
+  fs.writeFileSync(EC, JSON.stringify(ecT));
+  write('src/t999.js', 'x\n');
+  run('instinct-track.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Edit', session_id: 'tomb1', tool_input: { file_path: path.join(PROJ, 'src', 't999.js') } }));
+  const ecTomb = libC.readJsonSafe(EC, {}) || {};
+  check('an evicted, already-advised file is remembered in __flagged (review)', !('src/t0.js' in ecTomb) && Array.isArray(ecTomb.__flagged) && ecTomb.__flagged.includes('src/t0.js'), JSON.stringify(ecTomb.__flagged));
+  write('src/t0.js', 'x\n');
+  let tombAdvice = '';
+  for (const s of ['tomb2', 'tomb3', 'tomb4']) tombAdvice += run('instinct-track.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Edit', session_id: s, tool_input: { file_path: path.join(PROJ, 'src', 't0.js') } })).stdout || '';
+  check('a remembered file never gets the "revised across sessions" advisory twice (review)', !/revised across/.test(tombAdvice), tombAdvice.slice(0, 200));
+  fs.rmSync(EC, { force: true });
+  for (const p of ['t999.js', 't0.js']) fs.rmSync(path.join(PROJ, 'src', p), { force: true });
+  const staleRecall = path.join(os.tmpdir(), `mb-recall-st${process.pid}old2`);
+  fs.writeFileSync(staleRecall, '');
+  fs.utimesSync(staleRecall, eightDays, eightDays);
+  run('wrap.js', { cwd: PLAIN_W, hook_event_name: 'SessionEnd' });
+  check('SessionEnd prunes stale markers even in a repo without a brain (review)', !fs.existsSync(staleRecall));
+  if (fs.existsSync(path.join(SKILLS, '..', '..', 'bundles'))) {
+    const driftWf = path.join(SKILLS, '..', '..', '.github', 'workflows', 'bundle-drift.yml');
+    const driftText = fs.existsSync(driftWf) ? fs.readFileSync(driftWf, 'utf8') : '';
+    check('a scheduled CI job checks brain-all against the live catalog (review P1)', /schedule:/.test(driftText) && /gen-brain-all\.js --check/.test(driftText));
+  }
+
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');
   fs.mkdirSync(PLAIN_E, { recursive: true });
@@ -2030,7 +2102,7 @@ try {
   fs.rmSync(GLOBAL_CFG, { recursive: true, force: true });
   try {
     for (const f of fs.readdirSync(os.tmpdir())) {
-      if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`) || f.startsWith(`mb-gitcheck-st${process.pid}`) || f.startsWith(`mb-ctx-st${process.pid}`) || f.startsWith('mb-router-init-')) {
+      if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`) || f.startsWith(`mb-gitcheck-st${process.pid}`) || f.startsWith(`mb-ctx-st${process.pid}`) || f.startsWith(`mb-router-init-st${process.pid}`) || f.startsWith('mb-router-init-selftest-')) {
         fs.rmSync(path.join(os.tmpdir(), f), { force: true });
       }
     }

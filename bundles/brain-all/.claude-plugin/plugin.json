@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "brain-all",
   "displayName": "The Monkey Brain — every official plugin",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "Opt-in bundle: one install pulls in brain plus every plugin in Anthropic's official marketplace (except the output styles that contradict terse mode). Heavy by design — each enabled plugin adds context every turn; service connectors still need your own login, LSP plugins their language binaries.",
   "author": {
     "name": "NeamulMorshed",
@@ -1012,10 +1012,6 @@
     },
     {
       "name": "slack",
-      "marketplace": "claude-plugins-official"
-    },
-    {
-      "name": "small-business",
       "marketplace": "claude-plugins-official"
     },
     {

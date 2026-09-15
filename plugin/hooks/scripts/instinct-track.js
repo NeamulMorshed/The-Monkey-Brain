@@ -30,6 +30,7 @@ const bans = require(path.join(__dirname, 'bans.js'));
 
 const THRESHOLD = Math.max(2, Number(process.env.MONKEY_BRAIN_INSTINCT_THRESHOLD || 3));
 const MAX_FILES = 500; // edit-counts.json keeps the most recently revised files (v0.33.0)
+const FLAGGED = '__flagged'; // files already advised, remembered after their record is evicted (≤ 2,000)
 
 /** Paths (relative to the brain) whose churn is bookkeeping, not correction. */
 function isExempt(relFromBrain) {
@@ -50,17 +51,26 @@ function countSession(brain, key, session) {
   const dir = path.join(brain, 'sessions');
   const store = path.join(dir, 'edit-counts.json');
   const data = lib.readJsonSafe(store, {}) || {};
-  const rec = data[key] || { count: 0, lastSession: null, flagged: false };
-  delete data[key]; // re-inserted below, so key order runs least- to most-recently revised
+  const gone = Array.isArray(data[FLAGGED]) ? data[FLAGGED] : [];
+  const rec = data[key] || { count: 0, lastSession: null, flagged: gone.includes(key) };
   if (rec.lastSession !== session) {
     rec.count += 1;
     rec.lastSession = session;
   }
   const fire = rec.count >= THRESHOLD && !rec.flagged;
   if (fire) rec.flagged = true;
+  rec.at = Date.now();
   data[key] = rec;
-  const keys = Object.keys(data);
-  for (const k of keys.slice(0, Math.max(0, keys.length - MAX_FILES))) delete data[k];
+  const files = Object.keys(data).filter((k) => k !== FLAGGED);
+  if (files.length > MAX_FILES) {
+    // Least recently revised first, by timestamp (object key order puts integer-like names first).
+    const age = (k) => (data[k] && data[k].at) || 0;
+    for (const k of files.sort((a, b) => age(a) - age(b)).slice(0, files.length - MAX_FILES)) {
+      if (data[k] && data[k].flagged && !gone.includes(k)) gone.push(k);
+      delete data[k];
+    }
+    if (gone.length) data[FLAGGED] = gone.slice(-2000);
+  }
   try {
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(store, JSON.stringify(data, null, 2) + '\n', 'utf8');

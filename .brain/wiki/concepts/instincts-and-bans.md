@@ -27,7 +27,10 @@ never blocks) has two jobs:
    `MONKEY_BRAIN_INSTINCT_THRESHOLD`, min 2) it suggests filing a rule in `instincts/pending/`,
    once per file. Hook-written/always-churning files are exempt (`isExempt`: `resume.md`,
    `wiki/log.md`, `wiki/index.md`, `wiki/dashboard.md`, `sessions/**`, `Clippings/**`,
-   `.git/**`).
+   `.git/**`). Since 0.33.0 the store is bounded: it keeps the 500 most recently revised files,
+   evicting by each record's `at` timestamp, and an evicted file that was already advised is
+   remembered in a `__flagged` list (≤ 2,000) so it is never advised twice
+   ([[router-and-drift-review]]).
 
 **Authoring — `templates/instinct.md`**: `status: pending|active`, `trigger` (when it applies),
 `confidence` (blank derives from the evidence count), `ban:` (single-quoted regex),

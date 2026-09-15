@@ -1,0 +1,21 @@
+name: bundle-drift
+
+# brain-all depends on every plugin in the official catalog; when the catalog drops one, the bundle
+# stops loading for everyone. This job notices within a week instead of at the next release.
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch the official plugin catalog
+        run: curl -fsSL https://raw.githubusercontent.com/anthropics/claude-plugins-official/main/.claude-plugin/marketplace.json -o catalog.json
+      - name: brain-all matches the catalog
+        run: node bundles/gen-brain-all.js --check --from catalog.json

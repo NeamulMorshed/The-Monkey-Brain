@@ -35,7 +35,7 @@
       "source": "./bundles/brain-all",
       "displayName": "The Monkey Brain — every official plugin",
       "description": "Opt-in bundle: one install pulls in brain plus every plugin in Anthropic's official marketplace (except the output styles that contradict terse mode). Heavy by design — each enabled plugin adds context every turn; service connectors still need your own login, LSP plugins their language binaries.",
-      "version": "0.14.0",
+      "version": "0.14.1",
       "author": {
         "name": "NeamulMorshed"
       },

@@ -85,7 +85,7 @@ model's reasoning pass, so its cost is the report size, not a subagent call.
   shares the same "one shared lib function, three consumers" pattern this page describes.
 
 ## Related
-- [[doctor-health-checks]] — the periodic, 19-check superset that also reads these same link/
+- [[doctor-health-checks]] — the periodic, 20-check superset that also reads these same link/
   orphan signals (checks 1–2) plus health that persists across sessions.
 - [[plan-and-tdd-gates]] — the sibling enforcement layer for source writes, same hooks.json,
   different concern (immutability/tiers vs. graph consistency).

@@ -230,7 +230,9 @@ const pluginOn = (name) => Object.entries(enabledPlugins).some(([k, v]) => v && 
 const githubToken = process.env.GITHUB_PERSONAL_ACCESS_TOKEN || pluginSettings.map((s) => (s.env || {}).GITHUB_PERSONAL_ACCESS_TOKEN).find(Boolean);
 /** The interpreters security-guidance tries; MONKEY_BRAIN_PYTHON names one explicitly (tests point it at a missing one). */
 function pythonOk() {
-  const cmds = process.env.MONKEY_BRAIN_PYTHON ? [process.env.MONKEY_BRAIN_PYTHON.split(/\s+/)] : [['python3'], ['python'], ['py', '-3']];
+  const override = (process.env.MONKEY_BRAIN_PYTHON || '').trim();
+  // An override is tried whole first (C:\Program Files\Python312\python.exe), then split ("py -3").
+  const cmds = !override ? [['python3'], ['python'], ['py', '-3']] : /\s/.test(override) ? [[override], override.split(/\s+/)] : [[override]];
   for (const cmd of cmds) {
     try {
       const r = spawnSync(cmd[0], [...cmd.slice(1), '-c', 'import sys;print(sys.version_info[0]*100+sys.version_info[1])'], { encoding: 'utf8', timeout: 5000, windowsHide: true });
