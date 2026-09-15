@@ -6,7 +6,7 @@ tags: [index, navigation, moc]
 created: 2026-09-15
 updated: 2026-09-15
 source_count: 0
-page_count: 7
+page_count: 8
 ---
 
 # 🐵 The Monkey Brain (engine) — Index
@@ -14,10 +14,11 @@ page_count: 7
 The content catalog for this brain. **Read this first** on any query to locate pages, then drill
 in. Updated on every ingest. Chronological view: [[log]]. Live tables: [[dashboard]].
 
-> **Stats:** 0 sources · 7 pages · created 2026-09-15.
+> **Stats:** 0 sources · 8 pages · created 2026-09-15.
 
-This brain is empty. To fill it: drop a document into `raw-sources/` (or paste it in chat) and
-say **"ingest this"**. I'll write a summary, cross-link concepts, and update this index.
+So far this brain records the engine's own develop-lifecycle runs (research, reviews, ADRs) and
+one full health audit. It holds no compiled sources yet — the engine's ROADMAP, README and hook
+architecture are the first ingest candidates ([[brain-health-audit]] finding 6).
 
 ---
 
@@ -42,3 +43,4 @@ _None yet._
 ## 🧪 Research
 - [[develop-lifecycle-dogfood]] — does research → plan → build → review → loop → wrap work end to end on this repo; 16 cited findings, 4 fixes recommended (2026-09-15)
 - [[research-first-entry]] — why generic dev intent enters at plan, not research; 13 findings, recommends a research-first router default with an explicit curator skip (2026-09-15)
+- [[brain-health-audit]] — full audit of standard, hooks, skills, MCP, dependency plugins, token cost and model routing; 2 P0 / 8 P1 / 15 P2, three specs recommended (2026-09-15)

@@ -1,7 +1,7 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-15
+updated: 2026-09-15 22:33
 ---
 
 ## Where we left off
@@ -13,3 +13,5 @@ when wrapping up significant work._
 - [ ] …
 
 ## Task log (auto)
+- [2026-09-15 11:17] ■ session ended (other)
+- [2026-09-15 22:33] ■ session ended (clear)

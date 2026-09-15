@@ -54,3 +54,6 @@ research → plan → build → review → wrap ran end to end for the second ti
 
 ## [2026-09-15] build | 0.29.1 — selftest from a marketplace install
 The installed 0.29.0 cache's selftest threw ENOENT: the new AC-8 drift check read schema/brain-template/CLAUDE.md unconditionally, and marketplace installs ship only plugin/. Guarded with existsSync like the older drift check. Patch release 0.29.1; no behaviour change.
+
+## [2026-09-15] research | brain-health-audit
+Curator asked for a full review of the brain: standard, hooks, plugins, MCP, tokens, context management, model routing. Ran doctor/lint/selftest/validate/usage, probed every prompt hook, analysed model-switch cache cost over 15 transcripts, plus two read-only subagent audits (hook code on opus, skills/docs on the main model). 2 P0 (resume split-brain; gates off under a test/spec parent folder), 8 P1 (false doctor critical + phantom dispatches, link scope, Stop nags on hook writes, no engine knowledge, superpowers second lifecycle, dead security-guidance/github deps, librarian tools, leaky model block), 15 P2. Measured: ~270k tokens re-read per call; mid-session model switches cause 25 % of cache writes. Filed [[brain-health-audit]]; recommends specs brain-correctness → token-diet → engine-knowledge.
