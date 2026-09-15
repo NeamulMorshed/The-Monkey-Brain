@@ -25,8 +25,9 @@ ADRs, a review synthesis, the spec closed `done`. The lifecycle worked; the fixe
 first things it tripped over.
 
 - [x] Push v0.28.0 (done in this wrap).
-- [ ] Reinstall the plugin locally so the running hooks pick up v0.28.0 (the session ran on the
-  cached 0.27.0 hooks — e.g. the old TDD gate blocked a scratch-dir write).
+- [x] Reinstall the plugin locally (2026-09-15: `claude plugin marketplace update monkey-brain` +
+  `claude plugin update brain@monkey-brain` → 0.28.0, cache selftest 390 green; takes effect on the next
+  Claude Code restart).
 - [ ] Doctor/lint check 1 counts wiki `[[links]]` to `decisions/` and `specs/` as broken (they
   only know `wiki/` slugs) — spec it via the lifecycle (`/brain:plan doctor-link-scope`).
 - [ ] Dogfood debts still open: PR-review mode on a real PR; MCP registry on a real `.mcp.json`.
