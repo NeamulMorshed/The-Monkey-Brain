@@ -42,7 +42,7 @@ Tokens go where the brain does not look ([[brain-health-audit]], "Token & contex
 - **AC-7** — Always-loaded bytes (manual + 25 skill descriptions + 2 agent descriptions) drop by ≥ 9,000 from the 0.29.1 baseline of 26,491.
 
 **Dependencies**
-- **AC-8** — `plugin.json` depends on `github`, `frontend-design` and `superpowers` only; `security-guidance` (needs Python 3) and `code-modernization` are offered by `/brain:init` (`auto_install: false`). READMEs, `reference.md` and the init skill state 3 bundled plugins.
+- **AC-8** — `plugin.json` depends on `github`, `frontend-design`, `superpowers` and `security-guidance`; `code-modernization` (15 skills + 8 agents in every request's listing, used by few brains) is offered by `/brain:init` (`auto_install: false`). The manifest notes that security-guidance needs Python 3. READMEs, `reference.md` and the init skill state 4 bundled plugins.
 
 **Cheaper instructions**
 - **AC-9** — Ingest cross-links "every page the source genuinely informs" (skill, manual, librarian — no "5–10+" quota); `/brain:lint`'s reasoning pass covers flagged pages and the named scope, not the whole wiki; `/brain:wrap` reuses a verification already run this session after the last source change instead of re-running it.
@@ -58,4 +58,5 @@ Selftest, red first: AC-1 manual table + four citing surfaces; AC-2 the routing 
 - Tier: `graph.js radius` → "touches 9 file(s) across 5 module(s) · 1 file type(s) · score 45 · suggested tier: feature". The graph counts JS imports only; most of this change is Markdown, and no new code file is planned.
 - Approval: feature tier, verbal suffices (manual §5); the curator said "do all of these one by one, on your own" after the audit recommended this spec. `plan_approved` stays false as the manual requires for this tier.
 - Dropped from the audit: a `PreModelSwitch` hook. Per the hooks reference, a skill's `model:` frontmatter does not fire it, and only the `deny` decision is documented; blocking a curator's own `/model` is not the brain's call. The fork rule (AC-2) plus the context nudge (AC-4) cover the cost.
+- AC-8 revised before build (2026-09-15): the curator installed Python ("I have installed python"), so `security-guidance` — the security net the manual's P0 gate relies on — stays a bundled dependency; only `code-modernization` is demoted. The audit had proposed demoting both.
 - The context nudge lives in `recall.js` (already a per-prompt hook) rather than a new script: no new hook process per prompt, and no new file for the TDD gate.
