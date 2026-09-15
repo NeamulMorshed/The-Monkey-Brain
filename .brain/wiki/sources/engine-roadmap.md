@@ -13,7 +13,7 @@ aliases: ["ROADMAP.md", "enhancement roadmap"]
 
 # Source — Enhancement Roadmap (Monkey Brain v2)
 
-> **Raw source:** [[engine-roadmap]] · **Origin:** ROADMAP.md (engine repo root) · **Ingested:** 2026-09-16
+> **Raw source:** [raw snapshot](../../raw-sources/engine-roadmap.md) · **Origin:** ROADMAP.md (engine repo root) · **Ingested:** 2026-09-16
 
 ## TL;DR
 The engine's own step-by-step design log: six design principles, a five-layer activation
@@ -84,10 +84,11 @@ up to v0.26.0. A gap-analysis table and a competitor scorecard justify every pha
 
 ## Contradictions / notes
 > ⚠️ **Roadmap tracker is itself stale relative to the live engine.** The execution table ends
-> at Post-v3 gh-based PR review, **v0.26.0** (2026-09-15, selftest 350). The current
-> `plugin/.claude-plugin/plugin.json` on disk is **v0.31.0** — later work (e.g. `build:
-> token-diet` 0.31.0, `review: brain-correctness` 0.30.0 per `git log`) postdates this source
-> and isn't recorded here; treat those versions via [[engine-changelog]], not this page.
+> at Post-v3 gh-based PR review, **v0.26.0** (2026-09-15, selftest 350). At the time of this
+> snapshot (2026-09-16) the plugin was 0.31.0–0.32.0 — later work (e.g. `build: token-diet`
+> 0.31.0, `review: brain-correctness` 0.30.0, `build: engine-knowledge` 0.32.0 per `git log`)
+> postdates this source and isn't recorded here; treat those versions via [[engine-changelog]],
+> not this page.
 >
 > ⚠️ **Dependency-count drift.** The v0.14.0 tracker row states `plugin.json` `dependencies` =
 > **five** plugins — github, frontend-design, superpowers, security-guidance, **and
@@ -102,7 +103,8 @@ up to v0.26.0. A gap-analysis table and a competitor scorecard justify every pha
 > authoritative, mostly-complete build log; left as-is (raw-sources is immutable).
 
 ## Sources
-Raw: [[engine-roadmap]] (`raw-sources/engine-roadmap.md`, snapshotted 2026-09-16 from
-`ROADMAP.md`). Cross-checked against `plugin/.claude-plugin/plugin.json` (v0.31.0),
-`plugin/hooks/hooks.json` (10 events / 11 scripts), and `plugin/skills/*/SKILL.md` (25 skills)
-on disk 2026-09-16.
+Raw: [raw snapshot](../../raw-sources/engine-roadmap.md) (`raw-sources/engine-roadmap.md`,
+snapshotted 2026-09-16 from `ROADMAP.md`). Cross-checked against
+`plugin/.claude-plugin/plugin.json` (0.31.0–0.32.0 at the time of this snapshot,
+2026-09-16), `plugin/hooks/hooks.json` (10 events / 11 scripts), and `plugin/skills/*/SKILL.md`
+(25 skills) on disk 2026-09-16.

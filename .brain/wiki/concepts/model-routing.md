@@ -46,9 +46,12 @@ dispatching, never by switching the main thread mid-session.
     (no `agent_type`, no transcript) leave no line — logging them as "done" used to drown real
     outcomes in doctor check 18's window (fixed v0.30.0, see Gotchas).
 - **Skill-level pinning**: a skill's `model:` frontmatter applies only together with
-  `context: fork` (six skills do this: `build`, `digest`, `usage` on sonnet; `brief`,
-  `dashboard`, `home` on haiku) — a forked skill runs on a fresh context and can't see the
-  conversation, so it reads its inputs from files.
+  `context: fork`. As of 0.31.0 only **`build`** does this (`model: sonnet`, `effort: medium`,
+  `context: fork` in `plugin/skills/build/SKILL.md`) — a forked skill runs on a fresh context
+  and can't see the conversation, so it reads its inputs from files, and gets the active
+  instincts injected via `instincts.js active` since a fork misses the session-start
+  injection. Every other skill (`digest`, `usage`, `brief`, `dashboard`, `home` included) lost
+  its pin at the same release and runs on the session model.
 
 ## Knobs
 - `MONKEY_BRAIN_MODEL_BLOCK=0` — opts a dispatch out of the unpinned-heavy-type block, for
@@ -76,8 +79,8 @@ in a single call. This is why forking, not switching, is the rule — see
 - **[[fork-not-switch-model-routing]]**: ten skills originally pinned a cheaper `model:` with no
   `context: fork`; Claude Code applies a skill's `model:` only to the invoking turn then
   reverts to the session model, and a skill's `model:` switch does not fire `PreModelSwitch`,
-  so no hook can catch it after the fact. The fix moved six skills to `context: fork` and left
-  the rest on the session model.
+  so no hook can catch it after the fact. The fix moved only `build` to `context: fork` and
+  left every other skill on the session model.
 - [[recall-and-search]]'s context nudge repeats "don't switch models mid-session" once context
   passes threshold — the same finding, surfaced at the point it's most likely to be ignored.
 - The routing table itself lives in exactly one place (`CLAUDE.md` §5) specifically so hooks

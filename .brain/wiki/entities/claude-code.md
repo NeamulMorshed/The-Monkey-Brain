@@ -80,15 +80,20 @@ Measured cost of getting this wrong: same-model calls wrote ~4.3k cache tokens o
 15 sessions; the 8 main-thread model switches averaged **162,732** cache tokens each and caused
 25% of all main-thread cache writes (1.30M tokens) — one opus→sonnet mid-session switch alone
 re-wrote 488,844 tokens ([[brain-health-audit]], [[model-routing]]). [[engine-changelog]]'s
-`0.31.0` entry fixed this: every routine skill that still pins a model now also sets `context:
-fork` (`build`, `digest`, `usage` as Sonnet forks; `brief`, `dashboard`, `home` as Haiku forks),
-and skills that don't need a pin (`research`, `ingest`, `dump`, `learn`, `init`, `ci`, `terse`,
-`lock`) dropped it to run on the session model instead.
+`0.31.0` entry fixed this: a `model:` pin now always comes with `context: fork`, and only
+**`build`** does this (Sonnet, `effort: medium` — `plugin/skills/build/SKILL.md`), with the
+active instincts injected into the fork via `instincts.js active` since a fork misses the
+session-start injection. Every other skill (`research`, `ingest`, `dump`, `learn`, `init`, `ci`,
+`terse`, `lock`, `digest`, `usage`, `brief`, `dashboard`, `home` included) lost its pin at the
+same release and runs on the session model.
 
-The model-routing dispatch block itself is **once per session, not per dispatch**
-([[brain-health-audit]] finding 10) — a live probe found the first model-less dispatch blocked
-while its parallel sibling ran unpinned on the main model; `selftest.js:612-613` currently asserts
-the leak as intended.
+The model-routing dispatch block applies to **every** unpinned heavy dispatch, not just the
+first per session (fixed in `0.30.0`, ADR [[model-block-every-dispatch]]): `agent-track.js`
+blocks any model-less dispatch of a main-model agent type (`general-purpose`, `claude`, `Plan`,
+or no type at all), citing the routing table; forks are exempt, since Claude Code ignores a
+model override on a fork; `MONKEY_BRAIN_MODEL_BLOCK=0` opts a dispatch out. Before the fix the
+block used a once-per-session temp-dir marker — a live probe found the first model-less
+dispatch blocked while its parallel sibling ran unpinned on the main model.
 
 ## Related
 - [[github-plugin]] · [[frontend-design-plugin]] · [[superpowers-plugin]] ·

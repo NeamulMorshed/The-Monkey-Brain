@@ -37,17 +37,26 @@ call. qmd (`reference.md` §8) is the opt-in vector-search upgrade past ~100 sou
   brain has opted in, `handoff()` (`:85-89`) spawns the real `qmd mcp` and hands it the stdio
   channel, falling back to the built-in server on spawn error.
 - **`recall.js`** is hook logic on `UserPromptSubmit` with two independent jobs:
-  1. **First-prompt recall** (`recall()`, `:80-98`): on a session's first natural-language
-     prompt (temp-dir marker per `session_id`), if the prompt yields ≥2 meaningful terms,
-     searches the brain and injects up to 3 matches (`matched >= 2`) as title/path/snippet —
-     "read these before re-deriving." Silent on slash commands, repeat prompts, thin prompts,
-     no hits, or `MONKEY_BRAIN_RECALL=0`.
-  2. **Context-size nudge** (`contextNudge()`, `:64-78`): reads the last main-thread `usage`
-     block from the transcript tail (512 KB, `:29,34-61`) — `input + cache_read + cache_creation`
-     tokens — and once context passes `MONKEY_BRAIN_CONTEXT_NUDGE` (default 150,000) prints one
-     line suggesting `/brain:wrap` then `/clear`, once per 100k-token band per session (its own
-     temp-dir marker). The line also repeats manual §5's "don't switch models mid-session" —
-     see [[model-routing]].
+  1. **First-prompt recall** (`recall()`): on a session's first natural-language prompt
+     (temp-dir marker per `session_id`), if the prompt yields ≥2 meaningful terms, searches the
+     brain and injects up to 3 matches (`matched >= 2`) as title/path/snippet — "read these
+     before re-deriving." Silent on slash commands, repeat prompts, thin prompts, no hits, or
+     `MONKEY_BRAIN_RECALL=0`.
+  2. **Context-size nudge** (`contextNudge()`, backed by `contextTokens()` and
+     `lastMainUsage()`): `contextTokens()` reads the transcript's tail through a 512 KB window,
+     then a second 512 KB window if the first was empty (a huge trailing tool result can fill
+     the first window); `lastMainUsage()` walks that text backward for the last real
+     main-thread `usage` entry, skipping subagent (`isSidechain`), synthetic
+     (`model === '<synthetic>'`) and zero-token entries, and sums
+     `input + cache_read + cache_creation` tokens. Once that total passes
+     `MONKEY_BRAIN_CONTEXT_NUDGE` (default 150,000) the hook prints one line suggesting
+     `/brain:wrap` then `/clear`, once per 100k-token band per session — the marker stores
+     `band:tokens` in a temp-dir file, resets (forgets the band) once context drops back below
+     the threshold, and re-fires early if context shrank 40%+ yet is still above threshold (a
+     `/compact` that didn't clear enough). A marker older than 12 hours (a resumed session) is
+     ignored, so a stale band can't suppress a real nudge. The nudge also fires on slash
+     commands — only first-prompt recall skips them. The line also repeats manual §5's "don't
+     switch models mid-session" — see [[model-routing]].
 
 ## Knobs
 - `MONKEY_BRAIN_RECALL=0` — disables first-prompt recall only.

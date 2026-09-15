@@ -20,7 +20,7 @@ blocks and never rewrites the prompt** — it injects a one-line routing hint vi
 path-driven (L3c) routing still apply when it misses.
 
 ## How it works
-- **`RULES` is a first-match list** (`trigger-router.js:34-213`), ~27 entries, each a regex,
+- **`RULES` is a first-match list** in `trigger-router.js`, 29 entries, each a regex,
   target skill, `needsBrain` flag and human `what`. Order matters: specific workflows (init,
   ingest, wrap, doctor, lock, lint, learn, career, digest, dump, dashboard, ci, loop, brief,
   spec/build/review, product-design, game, query, usage, terse, compress) are tried before the
@@ -77,7 +77,8 @@ only — it is Never a hard gate itself (contrast [[plan-and-tdd-gates]]'s `guar
   auto-activate on their own descriptions. Precedence when both apply: deterministic trigger
   (this hook) > domain pack > domain skill > craft plugin > general model (`reference.md` §9).
 
-## Known misfires (to be fixed by spec router-and-drift)
+## Misfires found in the 2026-09-16 audit — fixed in 0.33.0
+Each bullet below describes the router **before 0.33.0** ([[router-and-drift]], ADR [[router-ignores-questions-and-reports]]). Fixed: the literal-`research` rule is question-exempt (`question: true`, checked with `QUESTION_RE` like the dev catch-all) and ignores the noun forms ("research purpose / paper / parser / model"); `HANDBACK_RE` silences pasted subagent reports and teammate messages before any rule runs; `DOCTOR_FEATURE` and `DUMP_PIVOT` `not:` guards let a build order about the doctor or after "we decided" reach the dev catch-all; the init rule no longer spans an unrelated object; audit phrasings ("review the entire brain", "audit all plugins and hooks", "is the brain working properly") reach `/brain:doctor`; a brainless repo hears the init offer once per session (a temp marker keyed by session and project root); `devHint()` names at most `MAX_SPECS` (8) open specs, then "+N more".
 - **Questions are only exempt from the dev catch-all.** `QUESTION_RE` (`:215`) gates `rule.dev`
   alone (`:322`) — a question that happens to contain a specific-workflow phrase, e.g. "why did
   research take so long?", still matches the literal `research` rule and fires a hint.

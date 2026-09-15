@@ -59,15 +59,19 @@ hook invocation per wiki write; `lint.js`'s output is injected as literal text b
 model's reasoning pass, so its cost is the report size, not a subagent call.
 
 ## Gotchas & history
-- **The known gap this brain hits right now**: link resolution in all three checkers (
-  wiki-check, lint, `doctor.js`) only indexes `wiki/**` — slugs, qualified paths and aliases.
-  A `[[link]]` to a `specs/`, `decisions/` or `projects/` record (e.g. this brain's own
-  `[[token-diet]]` or `[[brain-correctness]]` specs) reads as **broken**, even though the
-  templates tell authors to link those records. Spec `[[engine-knowledge]]` (AC-1–AC-3) is
-  the fix in flight: one shared `lib.linkIndex(brain)` covering `wiki/**` plus `specs/`,
-  `decisions/` and `projects/` (never `templates/`, `sessions/`, `raw-sources/`), consulted
-  by all three checkers, with orphan checks counting inbound links from those record kinds too.
-  Until that lands, treat a spec/ADR/project link as a deliberate TODO-style false positive.
+- **The `wiki/`-only link-index gap is fixed** ([[links-resolve-across-records]]). Through
+  0.31.0, link resolution in all three checkers (wiki-check, lint, `doctor.js`) only indexed
+  `wiki/**` — slugs, qualified paths and aliases — so a `[[link]]` to a `specs/`, `decisions/`
+  or `projects/` record (e.g. this brain's own `[[token-diet]]` or `[[brain-correctness]]`
+  specs) read as **broken**, even though the templates tell authors to link those records.
+  Spec `[[engine-knowledge]]` closed the gap: `lib.linkIndex(brain)` is now the one inventory
+  all three checkers consult — `wiki/**` plus `specs/`, `decisions/` and `projects/` records
+  (never `templates/`), matched by slug, folder-qualified name and alias; orphan checks count
+  an inbound link from any of those record kinds too. A follow-up review fix in the same
+  release: `linkIndex` also resolves case-insensitively (as Obsidian does), reports slugs that
+  name more than one file (a lint issue group and doctor check 1's ambiguous-link case), and
+  resolves a `specs/x`-style link only to a spec named `x` (not a wiki page or another record
+  kind that happens to share the tail segment).
 - **Escaped-pipe table links** (`[[page\|Label]]`): dogfooding on a fresh scaffold (2026-07-19)
   found the parser splitting only on `|`, leaving a dangling `\` so the target read as `page\`
   and was wrongly reported broken — false-positived 16 links in the 69-page example brain at
@@ -85,5 +89,6 @@ model's reasoning pass, so its cost is the report size, not a subagent call.
   orphan signals (checks 1–2) plus health that persists across sessions.
 - [[plan-and-tdd-gates]] — the sibling enforcement layer for source writes, same hooks.json,
   different concern (immutability/tiers vs. graph consistency).
-- [[engine-knowledge]] — the open spec that fixes the `wiki/`-only link-index gap.
+- [[engine-knowledge]] — the spec (in review) that fixed the `wiki/`-only link-index gap.
+- [[links-resolve-across-records]] — the ADR for the link-index widening this page describes.
 - [[trigger-router]] — routes "lint the brain" to `/brain:lint`, distinct from "brain doctor".

@@ -13,7 +13,7 @@ aliases: ["README.md", "root README"]
 
 # Source — Root README (The Monkey Brain engine)
 
-> **Raw source:** [[engine-readme]] · **Origin:** README.md (engine repo root) · **Ingested:** 2026-09-16
+> **Raw source:** [raw snapshot](../../raw-sources/engine-readme.md) · **Origin:** README.md (engine repo root) · **Ingested:** 2026-09-16
 
 ## TL;DR
 The engine's public front door: what it is (an LLM-wiki plugin per Karpathy's pattern, "you
@@ -87,10 +87,11 @@ guide, requirements, and a pointer to the 66-page worked example brain.
 - [[doctor-health-checks]] — "19 deterministic checks" health-monitoring bullet
 
 ## Contradictions / notes
-> ⚠️ **Version badge is stale.** The badge at the top reads `Plugin v0.29.1`, but the live
-> `plugin/.claude-plugin/plugin.json` (checked 2026-09-16) is **v0.31.0** — the badge wasn't
-> bumped through the last two releases (`review: brain-correctness` 0.30.0, `build: token-diet`
-> AC-1…9 0.31.0 per `git log`). Cosmetic but visible to anyone reading the repo front page.
+> ⚠️ **Version badge is stale.** The badge at the top reads `Plugin v0.29.1`; at the time of
+> this snapshot (2026-09-16) the plugin was 0.31.0–0.32.0 — the badge wasn't bumped through the
+> last releases (`review: brain-correctness` 0.30.0, `build: token-diet` AC-1…9 0.31.0,
+> `build: engine-knowledge` 0.32.0 per `git log`). Cosmetic but visible to anyone reading the
+> repo front page.
 >
 > ⚠️ **Internal contradiction on the bundled-plugin count.** The Quickstart section says the
 > install "installs and enables **four** capability plugins... github, frontend-design,
@@ -110,7 +111,8 @@ guide, requirements, and a pointer to the 66-page worked example brain.
 > scripts), and doctor's "19 checks."
 
 ## Sources
-Raw: [[engine-readme]] (`raw-sources/engine-readme.md`, snapshotted 2026-09-16 from
-`README.md`). Cross-checked against `plugin/.claude-plugin/plugin.json` (v0.31.0),
+Raw: [raw snapshot](../../raw-sources/engine-readme.md) (`raw-sources/engine-readme.md`,
+snapshotted 2026-09-16 from `README.md`). Cross-checked against
+`plugin/.claude-plugin/plugin.json` (0.31.0–0.32.0 at the time of this snapshot, 2026-09-16),
 `plugin/hooks/hooks.json`, and `plugin/skills/*/SKILL.md` on disk 2026-09-16; see
 [[engine-roadmap]] for the design history behind these features.

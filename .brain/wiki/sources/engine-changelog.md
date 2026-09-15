@@ -13,7 +13,7 @@ aliases: ["changelog", "CHANGELOG.md"]
 
 # Source — Engine Changelog (plugin/CHANGELOG.md)
 
-> **Raw source:** [[engine-changelog]] · **Origin:** `plugin/CHANGELOG.md` · **Ingested:** 2026-09-16
+> **Raw source:** [raw snapshot](../../raw-sources/engine-changelog.md) · **Origin:** `plugin/CHANGELOG.md` · **Ingested:** 2026-09-16
 
 ## TL;DR
 33 releases (0.1.0 → 0.31.0, all 2026-07-17 through 2026-09-15) trace the engine from a bare
@@ -21,7 +21,11 @@ plugin skeleton to a self-dogfooding SDLC brain: hooks (8), skills/`/brain:*` ve
 gates, memory engineering, v3's seven competitive gaps (recall, receipts, loops, blast-radius
 sizing, daily drivers, learned bans, team mode, life packs), and — in the newest three — the
 brain auditing and fixing itself (research-first routing, a correctness audit, and a token-diet
-pass). Selftest count is the running quality signal: 23 → 417 checks over the series.
+pass). Selftest count is the running quality signal: 23 → 417 checks over the series through
+0.29.0/0.29.1 — this raw snapshot (up to 0.31.0) states no further count for 0.30.0 or 0.31.0,
+so **the changelog is not the source of truth for the current selftest total**; past this
+snapshot it kept climbing (447 then 463 at 0.30.0, 485 then 501 at 0.31.0 — review fixes add
+checks within a release — then 513 at 0.32.0).
 
 ## Key takeaways
 - **Self-hosting inflection at 0.28.0** (2026-09-15): the engine gets its own `.brain/` and the
@@ -125,5 +129,6 @@ pass). Selftest count is the running quality signal: 23 → 417 checks over the 
 > source, just a documented policy reversal worth flagging on [[trigger-router]].
 
 ## Sources
-[[engine-changelog]] (raw) · cross-checked against [[engine-resume-history]] and git log at
-ingest time (2026-09-16). See also [[engine-roadmap]], [[engine-readme]].
+[raw snapshot](../../raw-sources/engine-changelog.md) · cross-checked against
+[[engine-resume-history]] and git log at ingest time (2026-09-16). See also [[engine-roadmap]],
+[[engine-readme]].

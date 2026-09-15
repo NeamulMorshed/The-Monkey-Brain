@@ -58,6 +58,7 @@ How the engine works, one subsystem per page.
 - [[research-first-routing-review]] — AC-by-AC verification of research-first routing; 0 P0 / 6 P1 / 4 P2 found and fixed in review (2026-09-15)
 - [[brain-correctness-review]] — AC-by-AC verification of brain correctness (0.30.0); 0 P0 / 2 P1 / 4 P2 found, fixed in review (2026-09-15)
 - [[token-diet-review]] — AC-by-AC verification of the token diet (0.31.0); 0 P0 / 3 P1 / 9 P2, fixed in review; only `build` forks (2026-09-16)
+- [[engine-knowledge-review]] — AC-by-AC verification of engine knowledge (0.32.0); 0 P0 / 3 P1 / 13 P2, code and 14 pages fixed in review (2026-09-16)
 
 ## 📐 Decisions
 - [[fork-not-switch-model-routing]] — change model by forking or dispatching, never by switching the main thread; only `build` forks (2026-09-15, amended 2026-09-16)

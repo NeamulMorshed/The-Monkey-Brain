@@ -110,12 +110,12 @@ This engine repo dogfoods its own lifecycle; four specs have gone through it in 
    the plan/TDD gates for any project under a `specs/`/`tests/` folder), doctor's false
    criticals and phantom dispatch lines, and Stop nudges firing on the hooks' own writes — see
    [[doctor-health-checks]] for the detail. Review found 0 P0, 2 P1, 4 P2.
-4. **`token-diet`** (feature, review phase as of this writing) — model routing consolidation,
-   the context-size nudge, and a lighter always-loaded manual/skill footprint; not yet reviewed
-   at ingest time.
+4. **`token-diet`** (feature, `done`) — model routing consolidation (only `build` forks now),
+   the context-size nudge, and a lighter always-loaded manual/skill footprint; reviewed in
+   [[token-diet-review]].
 
-A fifth, `engine-knowledge` (architecture, `plan_approved: true`), is what produced this very
-page — see [[wiki-self-healing]] for the link-index gap it's closing.
+A fifth, `engine-knowledge` (architecture, `plan_approved: true`, `phase: review`), is what
+produced this very page — see [[wiki-self-healing]] for the link-index gap it closed.
 
 ## Related
 - [[plan-and-tdd-gates]] — the hard enforcement (`guards.js`) the plan/build stages run against.

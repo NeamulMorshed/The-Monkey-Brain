@@ -13,7 +13,7 @@ aliases: ["resume.md", "resume history"]
 
 # Source — Engine Resume History (resume.md narrative)
 
-> **Raw source:** [[engine-resume-history]] · **Origin:** `resume.md` · **Ingested:** 2026-09-16
+> **Raw source:** [raw snapshot](../../raw-sources/engine-resume-history.md) · **Origin:** `resume.md` · **Ingested:** 2026-09-16
 
 ## TL;DR
 The root `resume.md`'s "Where we left off" narrative, in the curator's/maintainer's own prose,
@@ -89,7 +89,7 @@ auto-appended task log of session-end markers. It is **stale**: two more release
 > the lifecycle itself hasn't yet routed through `/brain:plan`.
 
 ## Sources
-[[engine-resume-history]] (raw) · cross-checked against [[engine-changelog]] and (for the
-sessions it narrates) [[research-first-entry]], [[develop-lifecycle-dogfood]],
-[[research-first-routing-review]], [[develop-lifecycle-fixes-review]] at ingest time
-(2026-09-16). See also [[engine-roadmap]].
+[raw snapshot](../../raw-sources/engine-resume-history.md) · cross-checked against
+[[engine-changelog]] and (for the sessions it narrates) [[research-first-entry]],
+[[develop-lifecycle-dogfood]], [[research-first-routing-review]],
+[[develop-lifecycle-fixes-review]] at ingest time (2026-09-16). See also [[engine-roadmap]].

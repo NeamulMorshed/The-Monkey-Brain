@@ -38,13 +38,14 @@ itself.
 
 ## Gotchas
 
-- **Two lifecycles** ([[brain-health-audit]] finding 7). The curator's standing rule is to always
-  invoke `superpowers:brainstorming` before building, even when the design was already agreed in
-  chat — but no brain skill maps its outputs anywhere in `.brain/`, so every feature risks a
-  design doc that the brain's own gates, search, and index never see. The audit's fix, planned in
-  `specs/engine-knowledge.md` (AC-4): `.brain/reference.md` §9 maps superpowers outputs into the
-  brain (a brainstorming design → the spec's Notes or `wiki/research/`; a written plan → the
-  spec; a systematic-debugging root cause → `wiki/`), and a filing hook advises on any write under
+- **Two lifecycles, now bridged** ([[brain-health-audit]] finding 7). The curator's standing
+  rule is to always invoke `superpowers:brainstorming` before building, even when the design was
+  already agreed in chat — but no brain skill used to map its outputs anywhere in `.brain/`, so
+  every feature risked a design doc that the brain's own gates, search, and index never saw. The
+  audit's fix shipped in 0.32.0 (`specs/engine-knowledge.md` AC-4, built, not merely planned):
+  `.brain/reference.md` §9 now maps superpowers outputs into the brain (a brainstorming design →
+  the spec's Notes or `wiki/research/`; a written plan → the spec; a systematic-debugging root
+  cause → `wiki/`), and the wiki-check hook gives an advisory on any write under
   `docs/superpowers/` in a brain project, naming where it belongs.
 - Works correctly as a plugin on this machine — unlike `github` and `security-guidance`, it is
   not among the audit's list of dead dependencies, but it "runs a second lifecycle outside

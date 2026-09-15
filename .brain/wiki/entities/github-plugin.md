@@ -5,8 +5,8 @@ status: active
 tags: [plugin, github, pr, ci, mcp, capability-plugin]
 created: 2026-09-16
 updated: 2026-09-16
-sources: ["[[engine-readme]]", "[[brain-health-audit]]"]
-related: ["[[claude-code]]", "[[frontend-design-plugin]]", "[[superpowers-plugin]]", "[[security-guidance-plugin]]", "[[code-modernization-plugin]]", "[[develop-lifecycle-stages]]", "[[doctor-health-checks]]"]
+sources: ["[[engine-readme]]", "[[brain-health-audit]]", "[[engine-resume-history]]"]
+related: ["[[claude-code]]", "[[frontend-design-plugin]]", "[[superpowers-plugin]]", "[[security-guidance-plugin]]", "[[code-modernization-plugin]]", "[[develop-lifecycle-stages]]", "[[doctor-health-checks]]", "[[engine-resume-history]]"]
 aliases: [github plugin]
 ---
 
@@ -25,8 +25,10 @@ craft; the brain records the knowledge* — its output is filed:
 - Workstream status → `projects/`.
 
 In the develop lifecycle ([[develop-lifecycle-stages]]), `/brain:review` reads a PR's diff and CI
-checks via `gh` (read-only) as part of AC-by-AC verification, and `/brain:wrap` posts status back
-to the PR ([[engine-readme]]).
+checks via `gh` (read-only) as part of AC-by-AC verification. `pr.js` is deliberately read-only —
+no `gh pr comment`/`review`/`merge` call anywhere in the brain; posting to a PR is the curator's
+own action, per their explicit choice recorded in [[engine-resume-history]] (the 0.26.0 entry:
+"explicitly asked read-only vs. posting-back and chose read-only").
 
 ## Setup & requirements
 
@@ -52,5 +54,6 @@ to the PR ([[engine-readme]]).
 - [[frontend-design-plugin]] · [[superpowers-plugin]] · [[security-guidance-plugin]] ·
   [[code-modernization-plugin]] — the other capability plugins under the same craft/knowledge
   contract.
-- [[develop-lifecycle-stages]] — where `/brain:review` and `/brain:wrap` touch PR flow.
+- [[develop-lifecycle-stages]] — where `/brain:review` touches PR flow via `pr.js`.
 - [[doctor-health-checks]] — where dependency health should be (but isn't yet) checked.
+- [[engine-resume-history]] — records the curator's read-only choice for PR review (0.26.0).
