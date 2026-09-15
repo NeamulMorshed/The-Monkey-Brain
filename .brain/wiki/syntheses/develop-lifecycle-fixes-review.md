@@ -5,8 +5,8 @@ status: active
 tags: [review, lifecycle, hooks, gates]
 created: 2026-09-15
 updated: 2026-09-15
-sources: [develop-lifecycle-fixes, develop-lifecycle-dogfood]
-related: [develop-lifecycle-fixes, develop-lifecycle-dogfood, spec-scope-globs-gate-ownership, one-stop-message-for-wrap-nudges]
+sources: ["[[develop-lifecycle-fixes]]", "[[develop-lifecycle-dogfood]]"]
+related: ["[[develop-lifecycle-fixes]]", "[[develop-lifecycle-dogfood]]", "[[spec-scope-globs-gate-ownership]]", "[[one-stop-message-for-wrap-nudges]]"]
 aliases: []
 question: "Does build commit aed8351 meet every AC of develop-lifecycle-fixes, and is the code sound?"
 ---

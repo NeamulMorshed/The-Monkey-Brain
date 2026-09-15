@@ -1820,6 +1820,52 @@ try {
   (function walkRefs(d) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const q = path.join(d, e.name); if (e.isDirectory()) walkRefs(q); else if (/\.(js|md)$/.test(e.name) && !/^(CHANGELOG\.md|selftest\.js)$/.test(e.name) && MANUAL_REF.test(fs.readFileSync(q, 'utf8'))) staleRefs.push(path.relative(plugRoot, q)); } })(plugRoot);
   check('no file in plugin/ cites manual §8–§10 any more (review P2)', staleRefs.length === 0, staleRefs.join(', '));
 
+  // ---------- v0.32.0 engine-knowledge (spec engine-knowledge AC-1…4) ----------
+  console.log('engine-knowledge (v0.32.0 — one link index across records, superpowers filing)');
+  write('.brain/specs/linked-spec.md', '---\ntitle: "Linked spec"\ntype: spec\nstatus: done\ntier: quick\n---\n\nclosed\n');
+  write('.brain/decisions/use-links.md', '---\ntitle: "ADR — use links"\ntype: decision\nstatus: accepted\nupdated: 2026-09-16\n---\n\nSee [[record-linked]].\n');
+  write('.brain/projects/linkwork.md', '---\ntitle: "Linkwork"\ntype: project\nstatus: active\n---\n\nnothing yet\n');
+  write('.brain/wiki/concepts/links-to-records.md', '---\ntitle: "Links to records"\ntype: concept\nupdated: 2026-09-16\n---\n\nSee [[linked-spec]], [[use-links]] and [[projects/linkwork]]; home [[a-page]].\n');
+  write('.brain/wiki/concepts/record-linked.md', '---\ntitle: "Record linked"\ntype: concept\nupdated: 2026-09-16\n---\n\nLinked only from an ADR.\n');
+  const li = typeof libC.linkIndex === 'function' ? libC.linkIndex(BRAIN) : null;
+  check('lib.linkIndex resolves wiki pages and spec, decision and project records (AC-1)', !!li && ['linked-spec', 'use-links', 'projects/linkwork', 'specs/linked-spec', 'a-page', 'concepts/a-page'].every((x) => li.resolves(x)) && !li.resolves('no-such-page'));
+  r = run('wiki-check.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: path.join(BRAIN, 'wiki', 'concepts', 'links-to-records.md') } }));
+  check('wiki-check: links to a spec, an ADR and a workstream resolve (AC-1)', !/linked-spec|use-links|linkwork/.test(r.stdout || ''), r.stdout);
+  r = run('wiki-check.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: path.join(BRAIN, 'wiki', 'concepts', 'record-linked.md') } }));
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  check('wiki-check: a page linked only from an ADR is not an orphan (AC-2)', out.decision !== 'block', r.stdout);
+  const ekLint = spawnSync(process.execPath, [path.join(SKILLS, 'lint', 'scripts', 'lint.js'), '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
+  const ekOrphans = ((ekLint.stdout || '').split('ORPHANS')[1] || '').split('\n')[0];
+  check('lint: records resolve and count as inbound links (AC-1, AC-2)', !/\[\[(linked-spec|use-links|projects\/linkwork)\]\]/.test(ekLint.stdout || '') && !/record-linked/.test(ekOrphans), (ekLint.stdout || '').slice(0, 400));
+  const ekDoc = docFindings(ccEnv);
+  check('doctor: records resolve and count as inbound links (AC-1, AC-2)', !/linked-spec|use-links|linkwork/.test(finding(ekDoc, 'broken-links').detail || '') && !/record-linked/.test(finding(ekDoc, 'orphans').detail || ''), JSON.stringify([finding(ekDoc, 'broken-links'), finding(ekDoc, 'orphans')]));
+  check('wiki-check, lint and doctor share lib.linkIndex (AC-1)', [path.join(HERE, 'wiki-check.js'), path.join(SKILLS, 'lint', 'scripts', 'lint.js'), path.join(SKILLS, 'doctor', 'scripts', 'doctor.js')].every((p) => /linkIndex\(/.test(fs.readFileSync(p, 'utf8'))));
+  for (const p of ['specs/linked-spec.md', 'decisions/use-links.md', 'projects/linkwork.md', 'wiki/concepts/links-to-records.md', 'wiki/concepts/record-linked.md']) fs.rmSync(path.join(BRAIN, p), { force: true });
+
+  // AC-3 — templates show the quoted-wikilink form.
+  const tplDir = path.join(SKILLS, 'init', 'brain-template', 'templates');
+  const tplNoForm = fs.readdirSync(tplDir).filter((n) => { const tx = fs.readFileSync(path.join(tplDir, n), 'utf8'); return /^(sources|related):/m.test(tx) && !/"\[\[/.test(tx); });
+  check('every template with sources:/related: shows the quoted-wikilink form (AC-3)', tplNoForm.length === 0, tplNoForm.join(', '));
+  const tplParsed = libC.parseFrontmatter(fs.readFileSync(path.join(tplDir, 'decision.md'), 'utf8'));
+  check('the example comment does not change what the template parses to (AC-3)', Array.isArray(tplParsed.sources) && tplParsed.sources.length === 0 && Array.isArray(tplParsed.related) && tplParsed.related.length === 0, JSON.stringify([tplParsed.sources, tplParsed.related]));
+
+  // AC-4 — superpowers outputs are pointed at their brain home.
+  const ekRef = fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'reference.md'), 'utf8');
+  check('reference.md §9 maps superpowers designs, plans and root causes into the brain (AC-4)', /superpowers/.test(ekRef) && /docs\/superpowers/.test(ekRef) && /written plan/.test(ekRef) && /systematic/.test(ekRef));
+  write('docs/superpowers/plans/2026-09-16-thing.md', '# plan\n');
+  r = run('wiki-check.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'docs', 'superpowers', 'plans', '2026-09-16-thing.md') } }));
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  const spPlan = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('a superpowers plan written in a brain project gets one advisory naming the spec as its home (AC-4)', /superpowers/.test(spPlan) && /\.brain\/specs/.test(spPlan) && out.decision !== 'block', r.stdout);
+  write('docs/superpowers/specs/2026-09-16-thing-design.md', '# design\n');
+  r = run('wiki-check.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'docs', 'superpowers', 'specs', '2026-09-16-thing-design.md') } }));
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  const spDesign = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('a superpowers design gets one advisory naming wiki/research as its home (AC-4)', /wiki\/research/.test(spDesign), r.stdout);
+  r = run('wiki-check.js', { cwd: PLAIN_D, hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PLAIN_D, 'docs', 'superpowers', 'plans', 'x.md') } });
+  check('outside a brain, a superpowers write stays silent (AC-4)', r.status === 0 && r.stdout === '', r.stdout);
+  fs.rmSync(path.join(PROJ, 'docs'), { recursive: true, force: true });
+
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');
   fs.mkdirSync(PLAIN_E, { recursive: true });

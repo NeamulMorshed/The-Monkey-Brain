@@ -4,8 +4,8 @@ type: decision
 status: accepted
 created: 2026-09-15
 updated: 2026-09-15
-sources: [research-first-entry, research-first-routing]
-related: [research-first-entry, research-first-routing, develop-lifecycle-dogfood, spec-scope-globs-gate-ownership]
+sources: ["[[research-first-entry]]", "[[research-first-routing]]"]
+related: ["[[research-first-entry]]", "[[research-first-routing]]", "[[develop-lifecycle-dogfood]]", "[[spec-scope-globs-gate-ownership]]"]
 ---
 
 # The lifecycle enters at research by default, as a routing default, not a gate

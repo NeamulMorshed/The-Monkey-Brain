@@ -33,36 +33,39 @@ async function main() {
   const fp = (input.tool_input || {}).file_path;
   if (!fp || !fp.endsWith('.md')) return;
   const abs = path.resolve(fp);
+
+  // superpowers writes designs and plans outside the brain (v0.32.0): name where each belongs.
+  const sp = /[\\/]docs[\\/]superpowers[\\/](specs|plans)[\\/]/.exec(abs);
+  if (sp && lib.findBrainDir(path.dirname(abs))) {
+    const home = sp[1] === 'plans'
+      ? 'a plan belongs in the spec it implements — .brain/specs/<feature>.md (acceptance criteria, test plan, notes)'
+      : 'a design belongs in .brain/wiki/research/<topic>.md, or in the Notes of the spec it feeds';
+    return lib.succeed({
+      hookSpecificOutput: {
+        hookEventName: 'PostToolUse',
+        additionalContext: `🐵 wiki-check: superpowers saved a ${sp[1] === 'plans' ? 'plan' : 'design'} outside the brain — ${home} (reference.md §9). Its docs/superpowers copy can stay as the plugin's working file.`,
+      },
+    });
+  }
+
   const brain = lib.findBrainDir(path.dirname(abs));
   if (!brain || !abs.startsWith(brain + path.sep)) return;
   const rel = path.relative(brain, abs).split(path.sep).join('/');
   if (!rel.startsWith('wiki/')) return;
   if (!fs.existsSync(abs)) return;
 
-  const wikiDir = path.join(brain, 'wiki');
   const slug = path.basename(abs, '.md');
   const raw = lib.readTextSafe(abs);
 
-  // Map the vault: slugs, folder-qualified names, aliases.
-  const files = lib.listFilesRecursive(wikiDir, '.md');
-  const slugs = new Set();
-  const qualified = new Set();
-  const aliases = new Set();
-  for (const f of files) {
-    slugs.add(path.basename(f, '.md'));
-    qualified.add(path.relative(wikiDir, f).split(path.sep).join('/').replace(/\.md$/, ''));
-    const fm = lib.parseFrontmatter(lib.readTextSafe(f));
-    for (const a of extractAliases(fm.aliases)) aliases.add(a.toLowerCase());
-  }
+  // The shared link inventory: wiki pages + the specs/decisions/projects records (v0.32.0).
+  const idx = lib.linkIndex(brain);
 
   // Outbound links of the touched page (code spans/fences stripped).
   const stripped = raw.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
   const targets = [...stripped.matchAll(/\[\[([^[\]]+)\]\]/g)]
     .map((m) => m[1].split(/\\?\|/)[0].split('#')[0].trim())
     .filter(Boolean);
-  const resolves = (t) =>
-    qualified.has(t) || slugs.has(t) || slugs.has(t.split('/').pop()) || aliases.has(t.toLowerCase());
-  const broken = [...new Set(targets.filter((t) => !resolves(t)))];
+  const broken = [...new Set(targets.filter((t) => !idx.resolves(t)))];
 
   // Frontmatter completeness.
   const fm = lib.parseFrontmatter(raw);
@@ -73,22 +76,8 @@ async function main() {
     if (!fm.updated) fmIssues.push('frontmatter is missing `updated:`');
   }
 
-  // Orphan check: ≥1 inbound link (by slug, qualified path, or own alias).
-  let orphan = false;
-  if (!ORPHAN_EXEMPT.has(slug)) {
-    // `\|` is a pipe escaped inside a markdown table — still a link (v0.30.0).
-    const needles = [new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(slug)}(?:\\\\?\\||#|\\])`)];
-    for (const a of extractAliases(fm.aliases)) needles.push(new RegExp(`\\[\\[${esc(a)}(?:\\\\?\\||#|\\])`, 'i'));
-    orphan = true;
-    for (const f of files) {
-      if (path.resolve(f) === abs) continue;
-      const body = lib.readTextSafe(f);
-      if (needles.some((re) => re.test(body))) {
-        orphan = false;
-        break;
-      }
-    }
-  }
+  // Orphan check: ≥1 inbound link from another wiki page or a spec/decision/project record (v0.32.0).
+  const orphan = !ORPHAN_EXEMPT.has(slug) && !idx.hasInbound({ file: abs, slug, fm });
 
   const blockers = [...fmIssues];
   if (orphan) {

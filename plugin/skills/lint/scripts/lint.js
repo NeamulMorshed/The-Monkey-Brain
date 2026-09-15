@@ -35,22 +35,13 @@ const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const extractAliases = lib.extractAliases; // shared via lib.js (v0.28.0): arrays or the quoted-string form
 
-// ---- inventory --------------------------------------------------------------
+// ---- inventory (the shared link index: wiki pages + specs/decisions/projects records, v0.32.0) ----
+const links = lib.linkIndex(brain);
+const pages = links.pages; // { file, rel, slug, raw, fm }
 const byFolder = {};
-const slugs = new Set();
-const qualified = new Set();
-const aliases = new Set();
-const pages = []; // { file, rel, slug, raw, fm }
-for (const f of files) {
-  const rel = path.relative(wikiDir, f).split(path.sep).join('/');
-  const folder = rel.includes('/') ? rel.slice(0, rel.indexOf('/')) : '(root)';
+for (const p of pages) {
+  const folder = p.rel.includes('/') ? p.rel.slice(0, p.rel.indexOf('/')) : '(root)';
   byFolder[folder] = (byFolder[folder] || 0) + 1;
-  const raw = lib.readTextSafe(f);
-  const fm = lib.parseFrontmatter(raw);
-  slugs.add(path.basename(f, '.md'));
-  qualified.add(rel.replace(/\.md$/, ''));
-  for (const a of extractAliases(fm.aliases)) aliases.add(a.toLowerCase());
-  pages.push({ file: f, rel, slug: path.basename(f, '.md'), raw, fm });
 }
 
 const issues = [];
@@ -59,8 +50,7 @@ out.push(`🐵 brain lint — mechanical scan of ${brain}`);
 out.push(`Pages: ${files.length} (${Object.entries(byFolder).map(([k, v]) => `${k} ${v}`).join(' · ')})`);
 
 // ---- broken links -----------------------------------------------------------
-const resolves = (t) =>
-  qualified.has(t) || slugs.has(t) || slugs.has(t.split('/').pop()) || aliases.has(t.toLowerCase());
+const resolves = links.resolves;
 const broken = new Map(); // target -> Set(referrers)
 for (const p of pages) {
   const stripped = p.raw.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
@@ -82,10 +72,7 @@ if (broken.size) {
 const orphans = [];
 for (const p of pages) {
   if (ORPHAN_EXEMPT.has(p.slug)) continue;
-  const needles = [new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(p.slug)}(?:\\\\?\\||#|\\])`)]; // `\|` = table-escaped pipe
-  for (const a of extractAliases(p.fm.aliases)) needles.push(new RegExp(`\\[\\[${esc(a)}(?:\\\\?\\||#|\\])`, 'i'));
-  const linked = pages.some((q) => q.file !== p.file && needles.some((re) => re.test(q.raw)));
-  if (!linked) orphans.push(p.rel);
+  if (!links.hasInbound(p)) orphans.push(p.rel); // a link from a spec, ADR or workstream counts (v0.32.0)
 }
 if (orphans.length) {
   issues.push('orphans');

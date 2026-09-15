@@ -4,8 +4,8 @@ type: decision
 status: accepted
 created: 2026-09-15
 updated: 2026-09-15
-sources: [develop-lifecycle-dogfood, develop-lifecycle-fixes]
-related: [develop-lifecycle-dogfood, develop-lifecycle-fixes]
+sources: ["[[develop-lifecycle-dogfood]]", "[[develop-lifecycle-fixes]]"]
+related: ["[[develop-lifecycle-dogfood]]", "[[develop-lifecycle-fixes]]"]
 ---
 
 # Specs claim the files their gates own via `scope:` globs

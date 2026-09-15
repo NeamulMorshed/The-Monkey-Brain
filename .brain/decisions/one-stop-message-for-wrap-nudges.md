@@ -4,8 +4,8 @@ type: decision
 status: accepted
 created: 2026-09-15
 updated: 2026-09-15
-sources: [develop-lifecycle-dogfood, develop-lifecycle-fixes]
-related: [develop-lifecycle-dogfood, develop-lifecycle-fixes, spec-scope-globs-gate-ownership]
+sources: ["[[develop-lifecycle-dogfood]]", "[[develop-lifecycle-fixes]]"]
+related: ["[[develop-lifecycle-dogfood]]", "[[develop-lifecycle-fixes]]", "[[spec-scope-globs-gate-ownership]]"]
 ---
 
 # One Stop message lists every unmet wrap item

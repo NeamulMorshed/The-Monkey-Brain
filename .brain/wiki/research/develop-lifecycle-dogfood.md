@@ -6,7 +6,7 @@ tags: [lifecycle, dogfood, hooks, skills]
 created: 2026-09-15
 updated: 2026-09-15
 sources: []
-related: [develop-lifecycle-fixes, spec-scope-globs-gate-ownership, one-stop-message-for-wrap-nudges]
+related: ["[[develop-lifecycle-fixes]]", "[[spec-scope-globs-gate-ownership]]", "[[one-stop-message-for-wrap-nudges]]"]
 ---
 
 # Develop lifecycle dogfood — research

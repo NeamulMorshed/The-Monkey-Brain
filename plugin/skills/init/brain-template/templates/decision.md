@@ -4,6 +4,7 @@ type: decision
 status: accepted          # proposed | accepted | superseded
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
+# sources / related: quoted wikilinks, e.g. ["[[page]]", "[[other-page]]"]
 sources: []               # specs / research / wiki pages that led here
 related: []
 ---

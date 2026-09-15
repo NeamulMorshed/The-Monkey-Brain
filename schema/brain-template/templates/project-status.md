@@ -9,6 +9,7 @@ pack:                     # optional domain-expertise pack governing this workst
 audit_score:              # last review/audit result, when one exists
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
+# sources / related: quoted wikilinks, e.g. ["[[page]]", "[[other-page]]"]
 related: []
 ---
 

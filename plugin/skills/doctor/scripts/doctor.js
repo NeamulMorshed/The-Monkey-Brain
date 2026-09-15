@@ -56,23 +56,15 @@ const ORPHAN_EXEMPT = new Set(['index', 'log', 'dashboard']);
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const extractAliases = lib.extractAliases; // shared via lib.js (v0.28.0): arrays or the quoted-string form
 
-const slugs = new Set(), qualified = new Set(), aliases = new Set(), pages = [];
-for (const f of wikiFiles) {
-  const rel = path.relative(wikiDir, f).split(path.sep).join('/');
-  const raw = readText(f);
-  const fm = lib.parseFrontmatter(raw);
-  slugs.add(path.basename(f, '.md'));
-  qualified.add(rel.replace(/\.md$/, ''));
-  for (const a of extractAliases(fm.aliases)) aliases.add(a.toLowerCase());
-  pages.push({ file: f, rel, slug: path.basename(f, '.md'), raw, fm });
-}
+const links = lib.linkIndex(brain); // wiki pages + specs/decisions/projects records (v0.32.0)
+const pages = links.pages;
 const listActive = (dir) =>
   lib.listFilesRecursive(path.join(brain, dir), '.md')
     .filter((f) => !/(^|[\\/])templates([\\/])/.test(f))
     .map((f) => ({ file: f, name: path.basename(f, '.md'), fm: lib.parseFrontmatter(readText(f)), raw: readText(f) }));
 
 // ---- 1. broken links --------------------------------------------------------
-const resolves = (t) => qualified.has(t) || slugs.has(t) || slugs.has(t.split('/').pop()) || aliases.has(t.toLowerCase());
+const resolves = links.resolves;
 const broken = new Set();
 for (const p of pages) {
   const stripped = p.raw.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
@@ -87,9 +79,7 @@ add(1, 'broken-links', broken.size ? 'warn' : 'ok', broken.size ? `${broken.size
 const orphans = [];
 for (const p of pages) {
   if (ORPHAN_EXEMPT.has(p.slug)) continue;
-  const needles = [new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(p.slug)}(?:\\\\?\\||#|\\])`)]; // `\|` = table-escaped pipe
-  for (const a of extractAliases(p.fm.aliases)) needles.push(new RegExp(`\\[\\[${esc(a)}(?:\\\\?\\||#|\\])`, 'i'));
-  if (!pages.some((q) => q.file !== p.file && needles.some((re) => re.test(q.raw)))) orphans.push(p.rel);
+  if (!links.hasInbound(p)) orphans.push(p.rel); // a link from a spec, ADR or workstream counts (v0.32.0)
 }
 add(2, 'orphans', orphans.length ? 'warn' : 'ok', orphans.length ? `${orphans.length}: ${orphans.slice(0, 6).join(', ')}` : 'none');
 

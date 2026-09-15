@@ -6,7 +6,7 @@ tags: [lifecycle, trigger-router, research, plan-before-build]
 created: 2026-09-15
 updated: 2026-09-15
 sources: []
-related: [develop-lifecycle-dogfood, develop-lifecycle-fixes, research-first-routing]
+related: ["[[develop-lifecycle-dogfood]]", "[[develop-lifecycle-fixes]]", "[[research-first-routing]]"]
 ---
 
 # Research-first entry to the develop lifecycle — research

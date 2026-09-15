@@ -10,7 +10,7 @@ tdd: true
 scope: [plugin/skills/**, plugin/agents/**, plugin/hooks/scripts/recall.js, plugin/hooks/scripts/lib.js, plugin/hooks/scripts/agent-track.js, plugin/hooks/scripts/graph.js, plugin/hooks/scripts/selftest.js, plugin/.claude-plugin/**, .claude-plugin/**, schema/brain-template/**, plugin/README.md, README.md, plugin/CHANGELOG.md]
 created: 2026-09-15
 updated: 2026-09-15
-related: [brain-health-audit, brain-correctness, engine-knowledge]
+related: ["[[brain-health-audit]]", "[[brain-correctness]]", "[[engine-knowledge]]"]
 ---
 
 # Token diet — spec

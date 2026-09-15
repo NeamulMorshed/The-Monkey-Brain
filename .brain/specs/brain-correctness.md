@@ -10,7 +10,7 @@ tdd: true
 scope: [plugin/hooks/scripts/lib.js, plugin/hooks/scripts/resume.js, plugin/hooks/scripts/resume-log.js, plugin/hooks/scripts/snapshot.js, plugin/hooks/scripts/guards.js, plugin/hooks/scripts/agent-track.js, plugin/hooks/scripts/wrap.js, plugin/hooks/scripts/wiki-check.js, plugin/hooks/scripts/loop.js, plugin/hooks/scripts/digest.js, plugin/hooks/scripts/selftest.js, plugin/skills/doctor/**, plugin/skills/lint/**, plugin/skills/wrap/**, plugin/agents/**, plugin/skills/init/brain-template/templates/**, schema/brain-template/templates/**, plugin/README.md, README.md, plugin/CHANGELOG.md, plugin/.claude-plugin/**, .claude-plugin/**]
 created: 2026-09-15
 updated: 2026-09-15
-related: [brain-health-audit, token-diet, engine-knowledge]
+related: ["[[brain-health-audit]]", "[[token-diet]]", "[[engine-knowledge]]"]
 ---
 
 # Brain correctness — spec

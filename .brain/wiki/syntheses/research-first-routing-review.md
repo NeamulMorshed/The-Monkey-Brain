@@ -5,8 +5,8 @@ status: active
 tags: [review, lifecycle, trigger-router, research]
 created: 2026-09-15
 updated: 2026-09-15
-sources: [research-first-routing, research-first-entry]
-related: [research-first-routing, research-first-entry, research-first-entry-is-advisory, develop-lifecycle-fixes-review]
+sources: ["[[research-first-routing]]", "[[research-first-entry]]"]
+related: ["[[research-first-routing]]", "[[research-first-entry]]", "[[research-first-entry-is-advisory]]", "[[develop-lifecycle-fixes-review]]"]
 aliases: []
 question: "Does build commit c044f3c meet every AC of research-first-routing, and is the router change sound?"
 ---

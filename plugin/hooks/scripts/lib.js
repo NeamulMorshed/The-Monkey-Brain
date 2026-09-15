@@ -291,6 +291,56 @@ function brainGitDirty(brain) {
   return { count: git.stdout.split('\n').filter((l) => l.trim()).length };
 }
 
+/** Records a [[link]] may point at besides wiki pages (v0.32.0) — the ones the skills tell the model to link. */
+const RECORD_DIRS = ['specs', 'decisions', 'projects'];
+
+/**
+ * The brain's link inventory (v0.32.0) — the one map wiki-check, lint and doctor resolve [[links]]
+ * against. Wiki pages (wiki/**) resolve by slug, folder-qualified name ("concepts/x") and alias;
+ * spec, decision and project records by slug, "specs/x"-style name and alias. Templates, sessions
+ * and raw sources are never link targets. hasInbound(page): does another wiki page or a record link
+ * to this page? — only wiki pages can be orphans, but a link from a spec or an ADR counts.
+ * Returns { pages, records, resolves(target), hasInbound(page) }; pages are { file, rel, slug, raw, fm }.
+ */
+function linkIndex(brain) {
+  const wikiDir = path.join(brain, 'wiki');
+  const pages = [];
+  const records = [];
+  const slugs = new Set();
+  const qualified = new Set();
+  const aliases = new Set();
+  for (const f of listFilesRecursive(wikiDir, '.md')) {
+    const rel = path.relative(wikiDir, f).split(path.sep).join('/');
+    const raw = readTextSafe(f);
+    const fm = parseFrontmatter(raw);
+    const slug = path.basename(f, '.md');
+    slugs.add(slug);
+    qualified.add(rel.replace(/\.md$/, ''));
+    for (const a of extractAliases(fm.aliases)) aliases.add(a.toLowerCase());
+    pages.push({ file: f, rel, slug, raw, fm });
+  }
+  for (const dir of RECORD_DIRS) {
+    for (const f of listFilesRecursive(path.join(brain, dir), '.md')) {
+      const slug = path.basename(f, '.md');
+      const raw = readTextSafe(f);
+      slugs.add(slug);
+      qualified.add(`${dir}/${slug}`);
+      for (const a of extractAliases(parseFrontmatter(raw).aliases)) aliases.add(a.toLowerCase());
+      records.push({ file: f, rel: `${dir}/${slug}`, slug, raw });
+    }
+  }
+  const resolves = (t) => qualified.has(t) || slugs.has(t) || slugs.has(String(t).split('/').pop()) || aliases.has(String(t).toLowerCase());
+  const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const hasInbound = (page) => {
+    const link = (name, flags) => new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(name)}(?:\\\\?\\||#|\\])`, flags); // `\|` = table-escaped pipe
+    const needles = [link(page.slug)];
+    for (const a of extractAliases(page.fm && page.fm.aliases)) needles.push(link(a, 'i'));
+    const self = path.resolve(page.file);
+    return [...pages, ...records].some((q) => path.resolve(q.file) !== self && needles.some((re) => re.test(q.raw)));
+  };
+  return { pages, records, resolves, hasInbound };
+}
+
 /** All files under dir (recursive), optionally filtered by extension. */
 function listFilesRecursive(dir, ext) {
   const out = [];
@@ -349,6 +399,7 @@ module.exports = {
   resumePath,
   openP0Lines,
   brainGitDirty,
+  linkIndex,
   listFilesRecursive,
   estimateTokens,
   today,

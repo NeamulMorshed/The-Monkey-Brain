@@ -8,7 +8,7 @@ pack:
 audit_score:
 created: 2026-09-15
 updated: 2026-09-15
-related: [brain-health-audit, brain-correctness, token-diet, engine-knowledge]
+related: ["[[brain-health-audit]]", "[[brain-correctness]]", "[[token-diet]]", "[[engine-knowledge]]"]
 ---
 
 # Brain hardening
@@ -18,7 +18,7 @@ Acting on [[brain-health-audit]]: three specs in order, each through plan → bu
 ## Now
 - [[brain-correctness]] — closed `done` in 0.30.0 after an independent review ([[brain-correctness-review]]): 15/15 ACs, 2 P1 + 4 P2 review findings fixed in review.
 - [[token-diet]] — closed `done` in 0.31.0 after an independent review ([[token-diet-review]]): 10/10 ACs (AC-2 amended — only `build` forks), 3 P1 + 9 P2 fixed; always-loaded bytes 26,491 → ~16,660.
-- [[engine-knowledge]] — knowledge half compiled (4 sources, 13 concepts, 6 entities); code half next.
+- [[engine-knowledge]] — built (0.32.0, selftest 513 green): one link index across records, superpowers filing, 4 sources + 13 concepts + 6 entities; in review.
 
 ## Next
 1. [[engine-knowledge]] — plan drafted (architecture, approved on the curator's word): links across records, superpowers filing, the engine compiled into its brain.

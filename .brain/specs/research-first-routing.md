@@ -10,7 +10,7 @@ tdd: true
 scope: [plugin/hooks/scripts/trigger-router.js, plugin/hooks/scripts/selftest.js, plugin/skills/plan/**, plugin/skills/research/**, plugin/skills/README.md, plugin/README.md, plugin/CHANGELOG.md, plugin/.claude-plugin/**, .claude-plugin/**, plugin/skills/init/brain-template/CLAUDE.md, schema/brain-template/CLAUDE.md]
 created: 2026-09-15
 updated: 2026-09-15
-related: [research-first-entry, develop-lifecycle-dogfood, develop-lifecycle-fixes]
+related: ["[[research-first-entry]]", "[[develop-lifecycle-dogfood]]", "[[develop-lifecycle-fixes]]"]
 ---
 
 # Research-first entry to the develop lifecycle — spec

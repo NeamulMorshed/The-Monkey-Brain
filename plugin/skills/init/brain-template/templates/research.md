@@ -5,6 +5,7 @@ status: active            # active | superseded
 tags: []
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
+# sources / related: quoted wikilinks, e.g. ["[[page]]", "[[other-page]]"]
 sources: []               # wiki sources consulted; external URLs inline below
 related: []
 ---

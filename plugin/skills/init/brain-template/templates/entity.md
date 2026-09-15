@@ -5,6 +5,7 @@ status: draft
 tags: []
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
+# sources / related: quoted wikilinks, e.g. ["[[page]]", "[[other-page]]"]
 sources: []
 related: []
 aliases: []

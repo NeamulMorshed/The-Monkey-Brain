@@ -9,7 +9,7 @@ plan_approved: false
 tdd: true
 created: 2026-09-15
 updated: 2026-09-15
-related: [develop-lifecycle-dogfood, spec-scope-globs-gate-ownership, one-stop-message-for-wrap-nudges]
+related: ["[[develop-lifecycle-dogfood]]", "[[spec-scope-globs-gate-ownership]]", "[[one-stop-message-for-wrap-nudges]]"]
 scope: [plugin/hooks/scripts/guards.js, plugin/hooks/scripts/lib.js, plugin/hooks/scripts/wrap.js, plugin/hooks/scripts/wiki-check.js, plugin/hooks/scripts/selftest.js, plugin/skills/**, plugin/README.md, plugin/CHANGELOG.md, schema/brain-template/**]
 ---
 

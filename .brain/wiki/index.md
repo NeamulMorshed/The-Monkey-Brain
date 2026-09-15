@@ -4,9 +4,9 @@ type: index
 status: active
 tags: [index, navigation, moc]
 created: 2026-09-15
-updated: 2026-09-15
-source_count: 0
-page_count: 8
+updated: 2026-09-16
+source_count: 4
+page_count: 33
 ---
 
 # 🐵 The Monkey Brain (engine) — Index
@@ -14,11 +14,11 @@ page_count: 8
 The content catalog for this brain. **Read this first** on any query to locate pages, then drill
 in. Updated on every ingest. Chronological view: [[log]]. Live tables: [[dashboard]].
 
-> **Stats:** 0 sources · 8 pages · created 2026-09-15.
+> **Stats:** 4 sources · 33 pages · created 2026-09-15.
 
-So far this brain records the engine's own develop-lifecycle runs (research, reviews, ADRs) and
-one full health audit. It holds no compiled sources yet — the engine's ROADMAP, README and hook
-architecture are the first ingest candidates ([[brain-health-audit]] finding 6).
+The engine's own knowledge base: its roadmap, README, changelog and resume history (sources),
+one page per subsystem (concepts), Claude Code and the capability plugins (entities), and the
+develop-lifecycle runs that changed it (research, reviews, ADRs).
 
 ---
 
@@ -61,6 +61,7 @@ How the engine works, one subsystem per page.
 
 ## 📐 Decisions
 - [[fork-not-switch-model-routing]] — change model by forking or dispatching, never by switching the main thread; only `build` forks (2026-09-15, amended 2026-09-16)
+- [[links-resolve-across-records]] — wikilinks resolve across wiki pages and spec, decision and project records; one shared index (2026-09-16)
 - [[research-first-entry-is-advisory]] — the lifecycle enters at research by default, as a routing default with a curator skip, not a gate (2026-09-15)
 - [[spec-scope-globs-gate-ownership]] — specs claim the files their gates own via `scope:` globs; unclaimed paths fall back to every open spec (2026-09-15)
 - [[one-stop-message-for-wrap-nudges]] — the three Stop-time reminders block once, together (2026-09-15)

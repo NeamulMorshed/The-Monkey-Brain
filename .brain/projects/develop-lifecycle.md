@@ -8,7 +8,7 @@ pack:
 audit_score: "done — 0 open findings"
 created: 2026-09-15
 updated: 2026-09-15
-related: [develop-lifecycle-dogfood, develop-lifecycle-fixes, research-first-entry, research-first-routing]
+related: ["[[develop-lifecycle-dogfood]]", "[[develop-lifecycle-fixes]]", "[[research-first-entry]]", "[[research-first-routing]]"]
 ---
 
 # Develop lifecycle

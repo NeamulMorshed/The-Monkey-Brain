@@ -1,5 +1,24 @@
 # Changelog — brain plugin
 
+## 0.32.0 — 2026-09-16 (engine knowledge: links across records, superpowers filing)
+
+Spec `specs/engine-knowledge.md`. The brain now knows the engine it lives in, and its link
+checkers agree with its own linking rules.
+
+- **One link index** — `lib.linkIndex()` is the inventory wiki-check, lint and doctor all
+  resolve `[[links]]` against: wiki pages plus the `specs/`, `decisions/` and `projects/`
+  records the skills tell the model to link. A link to a spec, an ADR or a workstream is no
+  longer "broken", and a wiki page linked only from a record is no longer an orphan. Three
+  copies of the inventory code became one.
+- **Frontmatter link form** — every template's `sources:` / `related:` shows the quoted-wikilink
+  example (`["[[page]]"]`) in a comment line that parses to nothing.
+- **superpowers filing** — `reference.md` §9 maps a brainstorming design → `wiki/research/`, a
+  written plan → the spec it implements, a debugging root cause → `wiki/`; a write under
+  `docs/superpowers/` in a brain project gets one advisory naming where it belongs.
+- **The engine compiled into its own brain** — the repo's ROADMAP, README, CHANGELOG and resume
+  history ingested as dated snapshots, with 13 subsystem concept pages and 6 entity pages
+  (knowledge only; no plugin behaviour).
+
 ## 0.31.0 — 2026-09-15 (token diet: model routing, context nudge, lighter manual and listing)
 
 Spec `specs/token-diet.md`, from the audit's token economics: every API call re-reads the
