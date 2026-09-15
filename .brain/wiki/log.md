@@ -51,3 +51,6 @@ Suite re-run: 10/10 ACs met. Live-brain probes + independent adversarial pass (o
 
 ## [2026-09-15] session | research-first routing wrapped — v0.29.0
 research → plan → build → review → wrap ran end to end for the second time today (49ec95d … 32a7789). Verified: selftest 417 ALL GREEN, both manifests --strict, spec research-first-routing done. Resume narrative rewritten; pushed; plugin reinstalled locally at 0.29.0.
+
+## [2026-09-15] build | 0.29.1 — selftest from a marketplace install
+The installed 0.29.0 cache's selftest threw ENOENT: the new AC-8 drift check read schema/brain-template/CLAUDE.md unconditionally, and marketplace installs ship only plugin/. Guarded with existsSync like the older drift check. Patch release 0.29.1; no behaviour change.

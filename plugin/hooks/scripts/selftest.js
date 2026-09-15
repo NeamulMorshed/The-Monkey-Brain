@@ -1485,7 +1485,8 @@ try {
   check('manual §4 states the entry rule: enters at research, "skip research" enters at plan (AC-8)', /enters at research/.test(devSection) && /skip research/.test(devSection));
   const pluginReadmeRow = fs.readFileSync(path.join(SKILLS, '..', 'README.md'), 'utf8').split('\n').find((l) => /trigger-router/.test(l) && /UserPromptSubmit/.test(l)) || '';
   check('README hook #2 row and skills README state research → plan → build with the skip (AC-8)', /research → plan → build/.test(pluginReadmeRow) && /skip research/i.test(pluginReadmeRow) && /skip research/i.test(rd('README.md')));
-  check('bundled manual and schema master stay identical (AC-8)', manual === fs.readFileSync(path.join(SKILLS, '..', '..', 'schema', 'brain-template', 'CLAUDE.md'), 'utf8'));
+  const schemaManual = path.join(SKILLS, '..', '..', 'schema', 'brain-template', 'CLAUDE.md');
+  if (fs.existsSync(schemaManual)) check('bundled manual and schema master stay identical (AC-8)', manual === fs.readFileSync(schemaManual, 'utf8')); // marketplace installs ship only plugin/
 
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');

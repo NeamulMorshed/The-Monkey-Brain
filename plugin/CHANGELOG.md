@@ -1,5 +1,12 @@
 # Changelog — brain plugin
 
+## 0.29.1 — 2026-09-15 (selftest runs from a marketplace install again)
+
+- `selftest.js` read `schema/brain-template/CLAUDE.md` unconditionally for the new AC-8 drift
+  check; marketplace installs ship only `plugin/`, so the installed 0.29.0 cache's selftest
+  threw ENOENT. The check now runs only when the schema master exists, like the existing
+  template-drift check. No hook or skill behaviour changed.
+
 ## 0.29.0 — 2026-09-15 (the lifecycle enters at research by default)
 
 Curator: "by default the brain should start from research for this life cycle; if a user
