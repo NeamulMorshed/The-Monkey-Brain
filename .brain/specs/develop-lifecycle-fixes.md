@@ -1,9 +1,10 @@
 ---
 title: "Spec — Develop lifecycle fixes"
 type: spec
-status: active
+status: done
 tier: feature
-phase: review
+phase: done
+audit_score: "done — 0 open findings (2 P0, 1 P1, 5 P2 found in review, all fixed + pinned; selftest 390 green)"
 plan_approved: false
 tdd: true
 created: 2026-09-15
@@ -51,7 +52,7 @@ Dogfooding the lifecycle on this repo ([[develop-lifecycle-dogfood]]) found four
 
 **Manual consistency (docs)**
 - **AC-11** ✅ `manual §4 names loop, wrap, digest and dump · manual §10 cites §4 · skills README cites the manual` — Instance manual §4 (`skills/init/brain-template/CLAUDE.md`, mirrored in `schema/brain-template/CLAUDE.md`) defines the develop lifecycle once as four stages, then names loop, wrap, digest and dump with their position relative to the stages in one short paragraph. §10 and `plugin/skills/README.md` refer to §4 instead of restating the sequence.
-- **AC-12** ✅ `selftest: ALL GREEN (372 checks) · claude plugin validate --strict ×2 passed · CHANGELOG 0.28.0 · plugin.json + marketplace.json 0.28.0` — `node plugin/hooks/scripts/selftest.js` is all green, both manifests validate with `--strict`, `plugin/CHANGELOG.md` records the change as v0.28.0, and the plugin version is bumped to match.
+- **AC-12** ✅ `selftest: ALL GREEN (390 checks after review fixes) · claude plugin validate --strict ×2 passed · CHANGELOG 0.28.0 · plugin.json + marketplace.json 0.28.0` — `node plugin/hooks/scripts/selftest.js` is all green, both manifests validate with `--strict`, `plugin/CHANGELOG.md` records the change as v0.28.0, and the plugin version is bumped to match.
 
 ## Test plan
 - AC-1..4, AC-9..10: new selftest fixtures in `plugin/hooks/scripts/selftest.js` (two-spec brains; Stop events with controlled mtimes and a scratch git repo), written before the code changes.
@@ -62,6 +63,8 @@ Dogfooding the lifecycle on this repo ([[develop-lifecycle-dogfood]]) found four
 Tier rationale: `graph.js radius` reports "touches 2 file(s) across 1 module(s) · 1 file type(s) · score 2 · suggested tier: quick". Raised to **feature** because the change alters gate behaviour that every brain relies on; the TDD gate should apply. Not architecture: no interface others depend on changes (the `scope:` field is additive and optional).
 
 Assumptions to confirm with the curator: (a) `scope:` globs rather than matching by `projects/` workstream; (b) the consolidated Stop message replaces the v0.27.0 one-check-per-Stop behaviour rather than sitting behind a flag.
+
+**Review (2026-09-15):** [[develop-lifecycle-fixes-review]] — verdict done; two P0s in the glob matcher (rewrite passes clobbered each other; unbalanced `[` threw and fail-opened every gate), one P1 (doctor/lint alias extractors), five P2 parser edge cases — all fixed in-review and pinned by selftest.
 
 **Build deviations (2026-09-15):**
 - Research finding 9 was partly wrong: the three Stop checks *did* each have a selftest (matching their reason text, not the `wrap[` label the researcher grepped). AC-10's "each check in isolation" therefore already held; the new tests cover the all-three case and the once-per-session marker. Research page corrected.

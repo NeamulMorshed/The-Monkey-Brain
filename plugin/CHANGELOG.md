@@ -29,8 +29,18 @@ things a curator tripped over, fixed:
   hand-offs, and where `/brain:loop`, `/brain:wrap`, `/brain:digest` and `/brain:dump` sit
   around them; §10, `skills/README.md` and the plugin README cite §4 instead of restating a
   different sequence.
-- Selftest 354 → 372 (gate scoping ×9 incl. frontmatter lists, consolidated Stop ×2, lifecycle
-  docs ×8; one existing frontmatter fixture re-verified).
+- **Review fixes (same release):** the first glob→regex builder ran rewrite passes that clobbered
+  each other, so `src/**/*.js` matched nothing and `src/auth/**` only one level deep — an
+  unapproved architecture spec could be bypassed by a sibling spec's literal scope. Replaced by a
+  single-pass tokenizer (`globToRegExp`) that also escapes `[`/`]` (an unbalanced bracket used to
+  throw and fail-open every gate). `lib.extractAliases` is now shared by wiki-check, doctor and
+  lint (the latter two still expected string aliases). Parser edge cases: `[0-9]+` and `[WIP] thing`
+  stay scalars, comments after inline lists and `#` inside quotes survive, quoted commas don't
+  split, a nested map no longer leaks `- item` lines into the previous key, column-0 block lists
+  parse, `bans.compile` tolerates an array from an unquoted `ban: [0-9]`, and a project directory
+  named `..x` is still inside the project.
+- Selftest 354 → 390 (gate scoping + glob semantics ×17, frontmatter lists + edge cases ×12,
+  consolidated Stop ×2, lifecycle docs ×8).
 
 ## 0.27.0 — 2026-09-15 (automatic uncommitted-changes nudge)
 

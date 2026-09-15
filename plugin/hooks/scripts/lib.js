@@ -77,10 +77,11 @@ function readTextSafe(file) {
 }
 
 /**
- * Parse simple scalar YAML frontmatter (the wiki's schema §3 subset).
+ * Parse simple YAML frontmatter (the wiki's schema §3 subset).
  * Returns {} when there is no leading --- block. Quoted strings are unquoted;
- * true/false and integers are typed; anything else (arrays, dates) stays a
- * raw string the caller can regex.
+ * true/false and integers are typed; inline `[a, "b"]` and block `- item` lists
+ * become arrays of such scalars (v0.28.0); anything else (dates, nested maps)
+ * stays a raw string the caller can regex.
  */
 function parseFrontmatter(text) {
   const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(String(text || ''));
@@ -88,15 +89,28 @@ function parseFrontmatter(text) {
   const fm = {};
   let listKey = null; // a bare `key:` that a block-style `- item` list may be filling
   for (const line of m[1].split(/\r?\n/)) {
-    const item = listKey && /^\s+-\s+(.*)$/.exec(line);
+    const item = listKey && /^\s*-\s+(.*)$/.exec(line); // indented or column-0 items (both valid YAML)
     if (item) {
       if (!Array.isArray(fm[listKey])) fm[listKey] = [];
       fm[listKey].push(scalar(item[1]));
       continue;
     }
     const kv = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(line);
-    if (!kv) continue;
+    if (!kv) {
+      listKey = null; // anything else (a nested map line, a blank) ends a pending block list
+      continue;
+    }
     let v = kv[2].trim();
+    const list = /^\[/.test(v) && /^\[[\s\S]*\]\s*(#.*)?$/.exec(v);
+    if (list) {
+      // Inline `[a, "b #c", c]` list → array of scalars (`[]` stays empty). Only when the value is
+      // exactly one bracketed list plus an optional comment: `[0-9]+` or `[WIP] thing` stay scalars.
+      v = v.slice(0, v.lastIndexOf(']') + 1);
+      listKey = null;
+      const inner = v.slice(1, -1).trim();
+      fm[kv[1]] = inner ? splitTopLevel(inner).map((x) => scalar(x)) : [];
+      continue;
+    }
     // YAML inline comment: an unquoted `#` after whitespace (templates annotate fields this way).
     if (!/^["']/.test(v)) v = v.replace(/(^|\s+)#.*$/, '').trim();
     if (v === '') {
@@ -106,15 +120,24 @@ function parseFrontmatter(text) {
       continue;
     }
     listKey = null;
-    if (/^\[.*\]$/.test(v)) {
-      // Inline `[a, "b", c]` list → array of scalars (`[]` stays empty).
-      const inner = v.slice(1, -1).trim();
-      fm[kv[1]] = inner ? inner.split(',').map((x) => scalar(x)) : [];
-      continue;
-    }
     fm[kv[1]] = scalar(v);
   }
   return fm;
+}
+
+/** Split an inline list body on commas that sit outside quotes. */
+function splitTopLevel(s) {
+  const out = [];
+  let cur = '';
+  let q = null;
+  for (const ch of s) {
+    if (q) { cur += ch; if (ch === q) q = null; continue; }
+    if (ch === '"' || ch === "'") { q = ch; cur += ch; continue; }
+    if (ch === ',') { out.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out.map((x) => x.trim()).filter((x) => x !== '');
 }
 
 /** One YAML scalar: strip quotes, coerce booleans and integers, leave everything else a string. */
@@ -126,6 +149,17 @@ function scalar(raw) {
   if (v === 'false') return false;
   if (/^-?\d+$/.test(v)) return Number(v);
   return v;
+}
+
+/**
+ * Aliases from a page's `aliases:` field — an array (v0.28.0 parser) or the older string form
+ * where only quoted entries count. Shared by wiki-check, doctor and lint.
+ */
+function extractAliases(fmAliases) {
+  if (Array.isArray(fmAliases)) return fmAliases.map((a) => String(a).trim()).filter(Boolean);
+  const out = [];
+  for (const m of String(fmAliases || '').matchAll(/"([^"]+)"|'([^']+)'/g)) out.push(m[1] || m[2]);
+  return out;
 }
 
 /** All files under dir (recursive), optionally filtered by extension. */
@@ -179,6 +213,7 @@ module.exports = {
   readJsonSafe,
   readTextSafe,
   parseFrontmatter,
+  extractAliases,
   listFilesRecursive,
   estimateTokens,
   today,

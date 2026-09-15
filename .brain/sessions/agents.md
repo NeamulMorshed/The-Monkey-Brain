@@ -21,3 +21,16 @@ sonnet = routine · main model = judgment. Doctor reads the model mix and outcom
 - [2026-09-15 06:04] ↳ done · brain:brain-researcher · on claude-sonnet-5 · 189,436 tokens · 7 turn(s)
 - [2026-09-15 06:15] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
 - [2026-09-15 06:20] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:21] general-purpose · model: (inherit) · Adversarial review of hook diff · ⛔ blocked: no explicit model
+- [2026-09-15 06:22] general-purpose · model: opus · Adversarial review of hook diff
+- [2026-09-15 06:23] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:24] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:24] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:24] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:25] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:25] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:26] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:26] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:27] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:28] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-15 06:28] ↳ done · general-purpose · on claude-opus-5 · 1,680,169 tokens · 20 turn(s)

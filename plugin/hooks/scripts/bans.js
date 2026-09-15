@@ -23,6 +23,9 @@ const SKILLS = path.join(__dirname, '..', '..', 'skills');
 /** Compile a pattern; a doubled backslash (YAML double quotes) collapses to one. */
 function compile(src) {
   if (!src) return null;
+  // An unquoted `ban: [0-9]` parses as a one-item list (v0.28.0 frontmatter); rejoin it so the
+  // character class survives. The instinct template asks for single quotes, which avoids this.
+  if (Array.isArray(src)) src = '[' + src.join(',') + ']';
   try { return new RegExp(String(src).replace(/\\\\/g, '\\'), 'i'); } catch { return null; }
 }
 

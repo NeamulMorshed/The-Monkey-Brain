@@ -30,3 +30,6 @@ Curator approved the spec as drafted ("Approve as drafted") and chose `scope:` g
 
 ## [2026-09-15] build | develop-lifecycle-fixes — AC-1…12
 Test-first: 19 selftests added red, then guards.js scope matching + outside-project skip, lib.parseFrontmatter list parsing, wiki-check alias arrays, wrap.js consolidated Stop nudge, review/wrap/build/plan SKILL hand-offs, spec template `scope:`, manual §4/§10 + both READMEs, CHANGELOG 0.28.0, version bumps. selftest 354 → 372 ALL GREEN; both manifests validate --strict. Two ADRs filed: [[spec-scope-globs-gate-ownership]], [[one-stop-message-for-wrap-nudges]]. Research finding 9 corrected (Stop checks were individually tested). Spec → phase: review.
+
+## [2026-09-15] review | develop-lifecycle-fixes
+Suite re-run (never the ticks): 12/12 ACs met. Independent adversarial pass (opus, read-only) on the hook diff found 2 P0 (glob→regex passes clobbered each other → `src/**/*.js` matched nothing and an unapproved arch spec could be bypassed; unbalanced `[` threw → fail-open), 1 P1 (doctor/lint alias extractors still string-only), 5 P2 (parser edge cases, `..odd` dir). All fixed and pinned: selftest 372 → 390 ALL GREEN. Filed [[develop-lifecycle-fixes-review]]; spec → status: done, phase: done.

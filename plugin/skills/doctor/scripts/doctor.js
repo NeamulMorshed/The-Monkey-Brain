@@ -54,7 +54,7 @@ const wikiDir = path.join(brain, 'wiki');
 const wikiFiles = lib.listFilesRecursive(wikiDir, '.md');
 const ORPHAN_EXEMPT = new Set(['index', 'log', 'dashboard']);
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const extractAliases = (a) => { const o = []; for (const m of String(a || '').matchAll(/"([^"]+)"|'([^']+)'/g)) o.push(m[1] || m[2]); return o; };
+const extractAliases = lib.extractAliases; // shared via lib.js (v0.28.0): arrays or the quoted-string form
 
 const slugs = new Set(), qualified = new Set(), aliases = new Set(), pages = [];
 for (const f of wikiFiles) {

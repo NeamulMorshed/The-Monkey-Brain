@@ -33,11 +33,7 @@ const files = lib.listFilesRecursive(wikiDir, '.md');
 const ORPHAN_EXEMPT = new Set(['index', 'log', 'dashboard']);
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-function extractAliases(fmAliases) {
-  const out = [];
-  for (const m of String(fmAliases || '').matchAll(/"([^"]+)"|'([^']+)'/g)) out.push(m[1] || m[2]);
-  return out;
-}
+const extractAliases = lib.extractAliases; // shared via lib.js (v0.28.0): arrays or the quoted-string form
 
 // ---- inventory --------------------------------------------------------------
 const byFolder = {};

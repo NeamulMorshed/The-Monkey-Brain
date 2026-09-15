@@ -126,19 +126,26 @@ function scopeMatches(scope, relProj) {
       if (relProj === g || relProj.startsWith(g + '/')) return true;
       continue;
     }
-    const re = new RegExp(
-      '^' +
-        g
-          .replace(/[.+^${}()|\\]/g, '\\$&')
-          .replace(/\*\*\//g, '(?:.*/)?')
-          .replace(/\*\*/g, '.*')
-          .replace(/\*/g, '[^/]*')
-          .replace(/\?/g, '[^/]') +
-        '$'
-    );
-    if (re.test(relProj)) return true;
+    if (globToRegExp(g).test(relProj)) return true;
   }
   return false;
+}
+
+/** One left-to-right pass over the glob, so no rewrite can touch another's output. */
+function globToRegExp(g) {
+  let out = '^';
+  for (let i = 0; i < g.length; i++) {
+    const c = g[i];
+    if (c === '*') {
+      if (g[i + 1] === '*') {
+        i++;
+        if (g[i + 1] === '/') { i++; out += '(?:.*/)?'; } // `**/` — zero or more directories
+        else out += '.*';                                  // `**` — anything, across segments
+      } else out += '[^/]*';                               // `*` — within one segment
+    } else if (c === '?') out += '[^/]';
+    else out += /[.+^${}()|[\]\\]/.test(c) ? '\\' + c : c;
+  }
+  return new RegExp(out + '$');
 }
 
 /** Recognized code extensions for the TDD gate (config/docs/styles stay free). */
@@ -266,7 +273,7 @@ async function main() {
     const isDoc = /\.(md|mdx|txt|rst)$/i.test(abs);
     // Paths outside the project root (scratch dirs, other repos) belong to no spec — never gated.
     const relProj = path.relative(path.dirname(pbrain), abs).split(path.sep).join('/');
-    const inProject = !relProj.startsWith('..') && !path.isAbsolute(relProj);
+    const inProject = relProj !== '..' && !relProj.startsWith('../') && !path.isAbsolute(relProj);
     if (inProject && fs.existsSync(specsDir) && !isDoc && !isTestPath(abs)) {
       const openSpecs = lib
         .listFilesRecursive(specsDir, '.md')

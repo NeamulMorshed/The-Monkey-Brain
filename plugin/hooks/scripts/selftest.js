@@ -189,6 +189,34 @@ try {
   check('parseFrontmatter: inline [a, b] list → array', Array.isArray(fmList.scope) && fmList.scope.length === 2 && fmList.scope[0] === 'src/auth/**' && fmList.scope[1] === 'plugin/hooks/*.js', JSON.stringify(fmList.scope));
   check('parseFrontmatter: block "- item" list → array', Array.isArray(fmList.tags) && fmList.tags.join(',') === 'alpha,beta', JSON.stringify(fmList.tags));
   check('parseFrontmatter: scalars untouched', fmList.plain === 'value' && fmList.title === 'x');
+  const fmEdge = libT.parseFrontmatter('---\nban: [0-9]+\ntitle2: [WIP] thing\nonly: [WIP]\ntags: [a, "b #c"]   # trailing comment\nquoted: ["a,b", c]\nmeta:\n  owner: bob\n  - leaked\ncol0:\n- src/ui\n- src/api\nempty:               # blank → derived\nafter: 1\n---\n');
+  check('parseFrontmatter: [0-9]+ and "[WIP] thing" stay scalars', fmEdge.ban === '[0-9]+' && fmEdge.title2 === '[WIP] thing', JSON.stringify([fmEdge.ban, fmEdge.title2]));
+  check('parseFrontmatter: a bracketed value is a list only when the whole value is the list', Array.isArray(fmEdge.only) && fmEdge.only[0] === 'WIP', JSON.stringify(fmEdge.only));
+  check('parseFrontmatter: comment after an inline list, and # inside quotes, survive', Array.isArray(fmEdge.tags) && fmEdge.tags.join('|') === 'a|b #c', JSON.stringify(fmEdge.tags));
+  check('parseFrontmatter: quoted commas do not split', Array.isArray(fmEdge.quoted) && fmEdge.quoted.join('|') === 'a,b|c', JSON.stringify(fmEdge.quoted));
+  check('parseFrontmatter: a nested map does not leak "- item" lines into the previous key', fmEdge.meta === '' , JSON.stringify(fmEdge.meta));
+  check('parseFrontmatter: column-0 "- item" block lists parse', Array.isArray(fmEdge.col0) && fmEdge.col0.join('|') === 'src/ui|src/api', JSON.stringify(fmEdge.col0));
+  check('parseFrontmatter: a bare key with a comment stays an empty string', fmEdge.empty === '' && fmEdge.after === 1, JSON.stringify(fmEdge.empty));
+  check('lib.extractAliases: array form and quoted-string form both work', libT.extractAliases(['Alpha', ' Beta ']).join('|') === 'Alpha|Beta' && libT.extractAliases('["A", \'B\']').join('|') === 'A|B');
+  // Scope glob semantics, pinned through the gate itself. Two open specs: an unapproved arch spec with
+  // ONE glob under test, and a quick spec that always claims the file (so the no-match case never falls
+  // back to "consult every spec"). Blocked ⇔ the glob under test claimed the file.
+  const probe = (glob, file) => {
+    write('.brain/specs/glob-arch.md', `---\ntitle: "Glob"\ntype: spec\ntier: architecture\nstatus: active\nplan_approved: false\ntdd: false\nscope: [${glob}]\n---\n\n- AC-1 …\n`);
+    write('.brain/specs/glob-ok.md', `---\ntitle: "Glob ok"\ntype: spec\ntier: quick\nstatus: active\nscope: [${file}]\n---\n\n- AC-1 …\n`);
+    write(file, 'a\n');
+    const gr = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: path.join(PROJ, file), old_string: 'a', new_string: 'b' } }));
+    return gr.status === 2; // blocked ⇔ glob-arch's glob claimed the file (glob-ok always claims it, so no fallback)
+  };
+  check('glob: src/**/*.js matches nested and direct children', probe('src/**/*.js', 'src/a/b.js') && probe('src/**/*.js', 'src/b.js'));
+  check('glob: src/auth/** matches two levels deep', probe('src/auth/**', 'src/auth/a/b.js'));
+  check('glob: ** matches everything', probe('**', 'any/where/x.js'));
+  check('glob: **/guards.js matches at root and nested', probe('**/guards.js', 'guards.js') && probe('**/guards.js', 'deep/guards.js'));
+  check('glob: * stays within one segment', !probe('src/*', 'src/a/b.js') && probe('src/*', 'src/a.js'));
+  check('glob: a dot is literal', !probe('a.b/*', 'aXb/c'));
+  check('glob: a bare dir claims only its subtree (src/auth ≠ src/authx)', !probe('src/auth', 'src/authx/y.js') && probe('src/auth', 'src/auth/y.js'));
+  for (const f of ['specs/glob-arch.md', 'specs/glob-ok.md', 'sessions/gate-blocks.json', 'sessions/review-required.md']) fs.rmSync(path.join(BRAIN, f), { force: true });
+  for (const d of ['src', 'any', 'deep', 'aXb', 'guards.js']) fs.rmSync(path.join(PROJ, d), { recursive: true, force: true });
   write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: architecture\nstatus: active\nplan_approved: true\ntdd: false\n---\n\n- AC-1 …\n');
   write('.brain/specs/scoped-arch.md', '---\ntitle: "Scoped arch"\ntype: spec\ntier: architecture\nstatus: active\nplan_approved: false\ntdd: false\nscope: [src/auth/**]\n---\n\n- AC-1 …\n');
   write('.brain/specs/scoped-feat.md', '---\ntitle: "Scoped feat"\ntype: spec\ntier: feature\nstatus: active\ntdd: true\nscope:\n  - src/ui\n---\n\n- AC-1 …\n');
@@ -202,6 +230,13 @@ try {
   check('unscoped path: falls back to every open spec, so the unapproved arch spec blocks (AC-3)', r.status === 2 && /scoped-arch\.md/.test(r.stderr), `status=${r.status} ${r.stderr}`);
   r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(ROOT, 'outside-project.js'), content: 'export {}' } }));
   check('a write outside the project root is never tier-gated (AC-3)', r.status === 0, `status=${r.status} ${r.stderr}`);
+  write('..odd/inside.js', 'a\n');
+  r = scopedWrite('..odd/inside.js');
+  check('a project dir named "..odd" is still inside the project (gated)', r.status === 2, `status=${r.status} ${r.stderr}`);
+  write('.brain/specs/scoped-arch.md', '---\ntitle: "Scoped arch"\ntype: spec\ntier: architecture\nstatus: active\nplan_approved: false\ntdd: false\nscope: [src/a[.js]\n---\n\n- AC-1 …\n');
+  r = scopedWrite('src/other/thing.js');
+  check('an unbalanced [ in a scope glob never throws (gate still decides, exit 0 or 2)', r.status === 2 && !/internal error/.test(r.stderr), `status=${r.status} ${r.stderr}`);
+  write('.brain/specs/scoped-arch.md', '---\ntitle: "Scoped arch"\ntype: spec\ntier: architecture\nstatus: active\nplan_approved: false\ntdd: false\nscope: [src/auth/**]\n---\n\n- AC-1 …\n');
   r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'src', 'ui', 'panel.js'), content: 'export {}' } }));
   check('scoped TDD gate: a new file in the feature spec\'s scope needs a test, naming that spec', r.status === 2 && /tdd/i.test(r.stderr) && /scoped-feat\.md/.test(r.stderr), `status=${r.status} ${r.stderr}`);
   write('.brain/specs/scoped-arch.md', '---\ntitle: "Scoped arch"\ntype: spec\ntier: architecture\nstatus: active\nplan_approved: true\ntdd: false\nscope: [src/auth/**]\n---\n\n- AC-1 …\n');
