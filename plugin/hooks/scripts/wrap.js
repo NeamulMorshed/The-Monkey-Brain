@@ -5,15 +5,15 @@
  * "Everything leaves a trace" (ROADMAP design principle 4), split by what a
  * script may own:
  *
- *   Stop (the REMINDERS): if wiki pages changed after the last log write, block
- *   the stop ONCE per session with instructions to append the log entry (or
- *   run /brain:wrap). Then, if the last logged step was build/review but no ADR
- *   was distilled to decisions/, block ONCE to prompt capturing the "why"
- *   (Phase 5 auto-distillation). Then, if .brain/ has uncommitted changes in
- *   git, block ONCE to prompt /brain:wrap or a manual commit — same check as
- *   doctor.js #7, just automatic instead of on-demand. The narrative itself
- *   belongs to the model, and the commit itself belongs to the curator — a
- *   script only notices either is missing, never writes or commits itself.
+ *   Stop (the REMINDERS): three checks, each shown at most ONCE per session —
+ *   wiki pages changed after the last log write (append the log entry, or run
+ *   /brain:wrap); the last logged step was build/review but no ADR was distilled
+ *   to decisions/ (Phase 5 auto-distillation); .brain/ has uncommitted git
+ *   changes (same check as doctor.js #7, just automatic). Since v0.28.0 all three
+ *   run on every Stop and block ONCE with every unmet item listed, so a clean
+ *   wrap never needs three Stop attempts. The narrative itself belongs to the
+ *   model, and the commit itself belongs to the curator — a script only notices
+ *   either is missing, never writes or commits itself.
  *
  *   SessionEnd (the MECHANIC): self-heal wiki/index.md frontmatter stats
  *   (source_count / page_count / updated) from the filesystem — deterministic
@@ -60,26 +60,35 @@ function newestMtimeUnder(dir) {
   return newest;
 }
 
+/**
+ * Each Stop check returns { marker, reason } when its item is unmet and not yet shown this
+ * session, else null. main() runs all three, writes every returned marker, and blocks ONCE
+ * with the reasons joined — one Stop attempt surfaces everything (v0.28.0), instead of one
+ * check per attempt.
+ */
+function sessionMarker(prefix, input) {
+  return path.join(os.tmpdir(), `${prefix}-${String(input.session_id || 'nosession').replace(/[^\w-]/g, '')}`);
+}
+
 function stopCheck(input, brain) {
-  if (input.stop_hook_active) return;
-  const marker = path.join(os.tmpdir(), `mb-wrap-${String(input.session_id || 'nosession').replace(/[^\w-]/g, '')}`);
-  if (fs.existsSync(marker)) return;
+  if (input.stop_hook_active) return null;
+  const marker = sessionMarker('mb-wrap', input);
+  if (fs.existsSync(marker)) return null;
 
   const logPath = path.resolve(path.join(brain, 'wiki', 'log.md'));
-  if (!fs.existsSync(logPath)) return;
+  if (!fs.existsSync(logPath)) return null;
   const logM = fs.statSync(logPath).mtimeMs;
   const wikiM = newestWikiMtime(path.join(brain, 'wiki'), logPath);
-  if (wikiM - logM <= GRACE_MS) return;
+  if (wikiM - logM <= GRACE_MS) return null;
 
-  fs.writeFileSync(marker, '');
-  lib.succeed({
-    decision: 'block',
+  return {
+    marker,
     reason:
       `🐵 wrap[log]: wiki pages changed after the last wiki/log.md entry — the audit trail is behind. ` +
       `Append \`## [${lib.today()}] <ingest|query|lint|session> | <what happened>\` to wiki/log.md ` +
       `(append-only), make sure index counts are current, then finish. ` +
       `(Or run /brain:wrap for the full definition-of-done. This reminder fires once per session.)`,
-  });
+  };
 }
 
 /**
@@ -91,33 +100,32 @@ function stopCheck(input, brain) {
  * session clock), matching stopCheck. Pre-v2 brains (no decisions/) opt out.
  */
 function decisionCheck(input, brain) {
-  if (input.stop_hook_active) return;
+  if (input.stop_hook_active) return null;
   const decisionsDir = path.join(brain, 'decisions');
-  if (!fs.existsSync(decisionsDir)) return;
-  const marker = path.join(os.tmpdir(), `mb-decide-${String(input.session_id || 'nosession').replace(/[^\w-]/g, '')}`);
-  if (fs.existsSync(marker)) return;
+  if (!fs.existsSync(decisionsDir)) return null;
+  const marker = sessionMarker('mb-decide', input);
+  if (fs.existsSync(marker)) return null;
 
   const logPath = path.resolve(path.join(brain, 'wiki', 'log.md'));
   const logText = lib.readTextSafe(logPath);
-  if (!logText) return;
+  if (!logText) return null;
   const heads = [...logText.matchAll(/^##\s*\[[^\]]*\]\s*([A-Za-z]+)\s*\|/gm)].map((x) => x[1].toLowerCase());
   const last = heads.length ? heads[heads.length - 1] : '';
-  if (last !== 'build' && last !== 'review') return;
+  if (last !== 'build' && last !== 'review') return null;
 
   let logM = 0;
-  try { logM = fs.statSync(logPath).mtimeMs; } catch { return; }
+  try { logM = fs.statSync(logPath).mtimeMs; } catch { return null; }
   const decM = newestMtimeUnder(decisionsDir); // 0 when empty
-  if (logM - decM <= DECIDE_GRACE_MS) return;   // an ADR is ~as fresh as the build/review
+  if (logM - decM <= DECIDE_GRACE_MS) return null; // an ADR is ~as fresh as the build/review
 
-  fs.writeFileSync(marker, '');
-  lib.succeed({
-    decision: 'block',
+  return {
+    marker,
     reason:
       `🐵 wrap[decisions]: the last logged step was \`${last}\`, but no ADR was filed to decisions/ since. ` +
       `Distill this session's key decisions — the "why", not just the "what" — into ` +
       `decisions/<slug>.md (template: templates/decision.md) so the reasoning survives every future session. ` +
       `(Or run /brain:wrap. This reminder fires once per session.)`,
-  });
+  };
 }
 
 /**
@@ -129,27 +137,36 @@ function decisionCheck(input, brain) {
  * isn't inside a git repo, or git isn't installed.
  */
 function gitCheck(input, brain) {
-  if (input.stop_hook_active) return;
-  const marker = path.join(os.tmpdir(), `mb-gitcheck-${String(input.session_id || 'nosession').replace(/[^\w-]/g, '')}`);
-  if (fs.existsSync(marker)) return;
+  if (input.stop_hook_active) return null;
+  const marker = sessionMarker('mb-gitcheck', input);
+  if (fs.existsSync(marker)) return null;
 
   let git;
   try {
     git = spawnSync('git', ['-C', brain, 'status', '--porcelain', '--', '.'], { encoding: 'utf8', timeout: 8000 });
   } catch { git = null; }
-  if (!git || git.status !== 0) return; // not a git repo, or git unavailable — silent
+  if (!git || git.status !== 0) return null; // not a git repo, or git unavailable — silent
 
   const dirty = git.stdout.split('\n').filter((l) => l.trim()).length;
-  if (!dirty) return;
+  if (!dirty) return null;
 
-  fs.writeFileSync(marker, '');
-  lib.succeed({
-    decision: 'block',
+  return {
+    marker,
     reason:
       `🐵 wrap[git]: ${dirty} uncommitted change(s) in .brain/ — the trail is written but not saved. ` +
       `Run /brain:wrap to commit with the vault's conventions (or commit it yourself). ` +
       `(This reminder fires once per session.)`,
-  });
+  };
+}
+
+/** Run every Stop check, remember each shown item for the session, block once with all of them. */
+function stopNudges(input, brain) {
+  const unmet = [stopCheck, decisionCheck, gitCheck].map((fn) => fn(input, brain)).filter(Boolean);
+  if (!unmet.length) return;
+  for (const u of unmet) {
+    try { fs.writeFileSync(u.marker, ''); } catch {}
+  }
+  lib.succeed({ decision: 'block', reason: unmet.map((u) => u.reason).join('\n\n') });
 }
 
 function refreshIndex(brain) {
@@ -203,9 +220,7 @@ async function main() {
   if (!brain) return;
   const evt = input.hook_event_name || '';
   if (evt === 'Stop') {
-    stopCheck(input, brain);   // may block+exit; otherwise fall through
-    decisionCheck(input, brain);
-    gitCheck(input, brain);
+    stopNudges(input, brain); // one block listing every unmet item, each shown once per session
   } else if (evt === 'SessionEnd') {
     refreshIndex(brain);
     reindex(brain);

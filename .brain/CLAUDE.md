@@ -125,11 +125,19 @@ Fix, log, suggest new questions/sources.
 with numbered ACs and a tier (curator approves architecture tiers) → **Build** works the
 ACs test-first → **Review** verifies and files results; decisions distill into `decisions/`.
 The spec file *is* the plan: Markdown only — no web page or artifact unless the curator asks.
+Each stage names the next: research offers `/brain:plan`, plan offers `/brain:build`, build
+offers `/brain:review`, and review either sends the spec back to `/brain:build` (blockers
+listed in the spec) or closes it `done` and offers `/brain:wrap`. A spec's `scope:` globs tell
+the gates which files it owns, so several open specs don't block each other.
 
-**Loop** (`/brain:loop`) repeats build, research or design until the brain's own criteria are
-met — every AC ✅, a stable recommendation, or no open P0 — and halts on livelock, stalls or a
-tick cap; running loops show at session start. A spec the plan gate blocks twice lands in
-`sessions/review-required.md` for the curator.
+**Around the four stages** — not stages themselves: **`/brain:loop`** repeats build, research
+or design until the brain's own criteria are met (every AC ✅, a stable recommendation, or no
+open P0) and halts on livelock, stalls or a tick cap; running loops show at session start, and
+a spec the plan gate blocks twice lands in `sessions/review-required.md` for the curator.
+**`/brain:wrap`** closes a *session* (verify, log, index, resume, commit) — run it after review
+closes a spec, or whenever you stop; it trusts a `done` spec and re-verifies only `active` ones.
+**`/brain:digest`** and **`/brain:dump`** run any time: a digest reads the brain (standup or
+weekly review), a dump files a loose note before it's lost.
 
 **Daily:** `/brain:digest` (standup; `week` for the weekly review) · `/brain:dump` (file a loose
 note where it belongs) · `/brain:dashboard` (one-page HTML overview) · `/brain:ci` (CI from the
@@ -254,11 +262,11 @@ by hand until it earns a curated entry.
 Both pipelines reuse the develop lifecycle (§4.4) — research is always filed, plans always
 carry numbered ACs, approval always gates architecture-tier code — with a domain-shaped front end.
 
-**Product:** idea → PRD → spec → build → track → wrap.
+**Product:** the §4 develop lifecycle with a PRD in front and tracking behind.
 `/brain:research` files the idea to `wiki/research/` → the `product-management` plugin drafts a
-PRD into `raw-sources/` → `/brain:ingest` compiles it → `/brain:plan` writes `specs/` with ACs →
-`/brain:build` implements → `product-tracking` plans live in `projects/` → `/brain:wrap` closes it.
-No special skill — it's the standard lifecycle composed.
+PRD into `raw-sources/` → `/brain:ingest` compiles it → then §4 as written (plan → build →
+review), with `product-tracking` plans living in `projects/`. No special skill — it's the
+standard lifecycle composed.
 
 **Game:** concept → GDD → prototype spec → build → playtest → balance. Run `/brain:game`.
 The **GDD** (`templates/gdd.md`) captures concept, MDA, core loop, progression, art direction;

@@ -86,19 +86,46 @@ function parseFrontmatter(text) {
   const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(String(text || ''));
   if (!m) return {};
   const fm = {};
+  let listKey = null; // a bare `key:` that a block-style `- item` list may be filling
   for (const line of m[1].split(/\r?\n/)) {
+    const item = listKey && /^\s+-\s+(.*)$/.exec(line);
+    if (item) {
+      if (!Array.isArray(fm[listKey])) fm[listKey] = [];
+      fm[listKey].push(scalar(item[1]));
+      continue;
+    }
     const kv = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(line);
     if (!kv) continue;
     let v = kv[2].trim();
     // YAML inline comment: an unquoted `#` after whitespace (templates annotate fields this way).
     if (!/^["']/.test(v)) v = v.replace(/(^|\s+)#.*$/, '').trim();
-    if ((/^".*"$/.test(v)) || (/^'.*'$/.test(v))) v = v.slice(1, -1);
-    else if (v === 'true') v = true;
-    else if (v === 'false') v = false;
-    else if (/^-?\d+$/.test(v)) v = Number(v);
-    fm[kv[1]] = v;
+    if (v === '') {
+      // Bare `key:` — an empty value ('') unless `- item` lines follow, which turn it into a list.
+      fm[kv[1]] = '';
+      listKey = kv[1];
+      continue;
+    }
+    listKey = null;
+    if (/^\[.*\]$/.test(v)) {
+      // Inline `[a, "b", c]` list → array of scalars (`[]` stays empty).
+      const inner = v.slice(1, -1).trim();
+      fm[kv[1]] = inner ? inner.split(',').map((x) => scalar(x)) : [];
+      continue;
+    }
+    fm[kv[1]] = scalar(v);
   }
   return fm;
+}
+
+/** One YAML scalar: strip quotes, coerce booleans and integers, leave everything else a string. */
+function scalar(raw) {
+  let v = String(raw).trim();
+  if (!/^["']/.test(v)) v = v.replace(/(^|\s+)#.*$/, '').trim();
+  if ((/^".*"$/.test(v)) || (/^'.*'$/.test(v))) return v.slice(1, -1);
+  if (v === 'true') return true;
+  if (v === 'false') return false;
+  if (/^-?\d+$/.test(v)) return Number(v);
+  return v;
 }
 
 /** All files under dir (recursive), optionally filtered by extension. */

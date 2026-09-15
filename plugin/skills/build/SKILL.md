@@ -13,8 +13,10 @@ The spec is the contract: every AC gets a test, every milestone leaves a trace.
 
 1. **Load the contract.** Read `specs/<slug>.md`. Check gate state up front:
    `architecture` tier without `plan_approved: true` → stop and ask the curator to
-   approve the plan first (the guard would block source writes anyway). Set the spec's
-   `phase: build` (and the `projects/` page's phase).
+   approve the plan first (the guard would block source writes anyway).
+   **Build never sets `plan_approved`** — only the curator's word flips it (`/brain:plan` step 4).
+   Set the spec's `phase: build` (and the `projects/` page's phase). If the spec has a
+   `## Blockers` section from a previous `/brain:review`, start from those.
 2. **Slice by AC.** Take criteria in dependency order; keep each slice small enough
    that one red→green cycle covers it.
 3. **Red → green → refactor per slice:**

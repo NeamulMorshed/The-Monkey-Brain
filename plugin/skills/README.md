@@ -108,11 +108,11 @@ packs (game design, analytics) reuse the same shape.
 
 ## Domain pipelines (Phase 7)
 
-Both pipelines reuse the develop lifecycle (research → plan → build → review) with a
-domain-shaped front end; instance manual §10 documents them.
+Both pipelines reuse the develop lifecycle exactly as instance manual §4 defines it, with a
+domain-shaped front end; manual §10 documents them.
 
-- **Product:** idea → PRD → spec → build → track → wrap — the standard lifecycle
-  composed with the `product-management` / `product-tracking` plugins. No new skill.
+- **Product:** a PRD (`product-management` plugin → `raw-sources/` → ingest) in front of
+  the §4 lifecycle, `product-tracking` plans in `projects/` behind it. No new skill.
 - **Game:** `/brain:game` — concept → **GDD** (`templates/gdd.md`: MDA, core loop,
   progression, art direction) → prototype spec (`/brain:plan`, tiered) → build →
   **playtest** (each ingested as a raw source) → **balance** (each a `decisions/`

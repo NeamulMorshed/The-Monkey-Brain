@@ -1,5 +1,37 @@
 # Changelog — brain plugin
 
+## 0.28.0 — 2026-09-15 (develop lifecycle fixes — first dogfood of the lifecycle on this repo)
+
+The engine repo now carries its own `.brain/`, and the first thing run through it was the
+develop lifecycle itself (`research → plan → build → review → wrap`, filed as
+`wiki/research/develop-lifecycle-dogfood.md` and `specs/develop-lifecycle-fixes.md`). Four
+things a curator tripped over, fixed:
+
+- **Gate scoping (`hooks/scripts/guards.js`, `lib.js`)** — a spec may declare `scope:`
+  (project-relative globs: `**` spans directories, a bare path claims itself and everything
+  beneath it). The plan and TDD gates consult only the open specs whose scope claims the
+  written path; a path no spec claims is still checked against every open spec, so brains
+  without `scope:` fields see no change. Writes outside the project root are never gated.
+  `lib.parseFrontmatter` now returns inline `[a, b]` and block `- item` lists as arrays
+  (`wiki-check.js` alias extraction updated to match). `templates/spec.md` carries a
+  commented `scope: []` line and `/brain:plan` fills it from the `graph.js radius` output.
+- **Review hand-off (`skills/review`, `wrap`, `build`)** — `/brain:review` now has two named
+  exits: any failed AC → `phase: build`, blockers listed under `## Blockers` in the spec,
+  offer `/brain:build <slug>`; all green → `status: done`, offer `/brain:wrap`. `/brain:wrap`
+  trusts a `done` spec and re-verifies only `active` ones, reporting (never resolving) a
+  disagreement. `/brain:build` states it never sets `plan_approved` and starts from the
+  spec's `## Blockers` when one exists.
+- **One Stop message (`hooks/scripts/wrap.js`)** — the three Stop-time checks (log lag,
+  missing ADR, uncommitted `.brain/`) now all run on every Stop and block once with every
+  unmet item listed, each still shown at most once per session. Previously each check exited
+  on first hit, so a clean wrap could take three Stop attempts.
+- **One lifecycle definition (instance manual §4)** — §4 now states the four stages, their
+  hand-offs, and where `/brain:loop`, `/brain:wrap`, `/brain:digest` and `/brain:dump` sit
+  around them; §10, `skills/README.md` and the plugin README cite §4 instead of restating a
+  different sequence.
+- Selftest 354 → 372 (gate scoping ×9 incl. frontmatter lists, consolidated Stop ×2, lifecycle
+  docs ×8; one existing frontmatter fixture re-verified).
+
 ## 0.27.0 — 2026-09-15 (automatic uncommitted-changes nudge)
 
 The automatic Stop hook now also reminds you when `.brain/` has uncommitted git changes,

@@ -27,6 +27,8 @@ const ORPHAN_EXEMPT = new Set(['index', 'log', 'dashboard']);
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 function extractAliases(fmAliases) {
+  // lib.parseFrontmatter already returns `[a, "b"]` and `- item` lists as arrays (v0.28.0).
+  if (Array.isArray(fmAliases)) return fmAliases.map((a) => String(a).trim()).filter(Boolean);
   const out = [];
   for (const m of String(fmAliases || '').matchAll(/"([^"]+)"|'([^']+)'/g)) out.push(m[1] || m[2]);
   return out;

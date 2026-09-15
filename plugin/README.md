@@ -127,8 +127,8 @@ packs reuse the same shape.
 ### Domain pipelines (Phase 7)
 
 Two pipelines reuse the develop lifecycle with a domain front end (instance manual
-§10). **Product** (idea → PRD → spec → build → track → wrap) is the standard
-lifecycle composed with the product plugins — no new skill. **Game** is
+§10). **Product** is the §4 lifecycle with a PRD ingested in front and product-tracking
+plans behind — no new skill. **Game** is
 **`/brain:game`**: concept → GDD (`templates/gdd.md`) → prototype spec → build →
 playtest (ingested as sources) → balance (ADRs), with engine entity pages in
 `wiki/entities/`.

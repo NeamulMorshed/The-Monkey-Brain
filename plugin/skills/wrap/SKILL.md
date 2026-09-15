@@ -13,8 +13,12 @@ the narrative belongs to you.
 ## Steps
 
 1. **Verify the work honestly.**
-   - If `.brain/specs/` has a spec this session worked against, check its numbered
-     acceptance criteria one by one and report each as met / not met.
+   - If `.brain/specs/` has a spec this session worked against: a spec `/brain:review`
+     already closed (`status: done`) is **trusted** — report its `audit_score`, don't
+     re-verify. A spec still `active` gets its numbered acceptance criteria checked one
+     by one, each reported as met / not met. If your own check disagrees with a `done`
+     spec, report the disagreement and leave the spec's status unchanged — reopening it
+     is the curator's call (via `/brain:review`).
    - If project code changed and the project has obvious checks (package scripts, test
      suite, linters), run them. Report failures with output — never paper over them.
    - **Domain-pack gate:** if the active workstream's `projects/<name>.md` names a `pack:`

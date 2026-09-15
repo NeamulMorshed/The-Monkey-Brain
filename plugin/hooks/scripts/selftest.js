@@ -182,6 +182,37 @@ try {
   check('spec tdd:false opts out of the gate', r.status === 0, `status=${r.status} stderr=${r.stderr}`);
   write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: architecture\nstatus: active\nplan_approved: true\n---\n\n- AC-1 …\n');
 
+  // Gate scoping (v0.28.0, spec develop-lifecycle-fixes AC-1..4): a spec's `scope:` globs claim the
+  // files its gates own; only matching specs are consulted, and no match falls back to every open spec.
+  const libT = require(path.join(HERE, 'lib.js'));
+  const fmList = libT.parseFrontmatter('---\ntitle: "x"\nscope: [src/auth/**, "plugin/hooks/*.js"]\ntags:\n  - alpha\n  - beta\nplain: value\n---\n');
+  check('parseFrontmatter: inline [a, b] list → array', Array.isArray(fmList.scope) && fmList.scope.length === 2 && fmList.scope[0] === 'src/auth/**' && fmList.scope[1] === 'plugin/hooks/*.js', JSON.stringify(fmList.scope));
+  check('parseFrontmatter: block "- item" list → array', Array.isArray(fmList.tags) && fmList.tags.join(',') === 'alpha,beta', JSON.stringify(fmList.tags));
+  check('parseFrontmatter: scalars untouched', fmList.plain === 'value' && fmList.title === 'x');
+  write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: architecture\nstatus: active\nplan_approved: true\ntdd: false\n---\n\n- AC-1 …\n');
+  write('.brain/specs/scoped-arch.md', '---\ntitle: "Scoped arch"\ntype: spec\ntier: architecture\nstatus: active\nplan_approved: false\ntdd: false\nscope: [src/auth/**]\n---\n\n- AC-1 …\n');
+  write('.brain/specs/scoped-feat.md', '---\ntitle: "Scoped feat"\ntype: spec\ntier: feature\nstatus: active\ntdd: true\nscope:\n  - src/ui\n---\n\n- AC-1 …\n');
+  const scopedWrite = (file) => run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: path.join(PROJ, file), old_string: 'a', new_string: 'b' } }));
+  write('src/ui/button.js', 'a\n'); write('src/auth/login.js', 'a\n'); write('src/other/thing.js', 'a\n');
+  r = scopedWrite('src/ui/button.js');
+  check('scoped: a write inside an approved spec\'s scope passes despite an unapproved arch spec elsewhere (AC-2)', r.status === 0, `status=${r.status} stderr=${r.stderr}`);
+  r = scopedWrite('src/auth/login.js');
+  check('scoped: a write inside the unapproved arch spec\'s scope is blocked by that spec (AC-2)', r.status === 2 && /scoped-arch\.md/.test(r.stderr), `status=${r.status} ${r.stderr}`);
+  r = scopedWrite('src/other/thing.js');
+  check('unscoped path: falls back to every open spec, so the unapproved arch spec blocks (AC-3)', r.status === 2 && /scoped-arch\.md/.test(r.stderr), `status=${r.status} ${r.stderr}`);
+  r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(ROOT, 'outside-project.js'), content: 'export {}' } }));
+  check('a write outside the project root is never tier-gated (AC-3)', r.status === 0, `status=${r.status} ${r.stderr}`);
+  r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'src', 'ui', 'panel.js'), content: 'export {}' } }));
+  check('scoped TDD gate: a new file in the feature spec\'s scope needs a test, naming that spec', r.status === 2 && /tdd/i.test(r.stderr) && /scoped-feat\.md/.test(r.stderr), `status=${r.status} ${r.stderr}`);
+  write('.brain/specs/scoped-arch.md', '---\ntitle: "Scoped arch"\ntype: spec\ntier: architecture\nstatus: active\nplan_approved: true\ntdd: false\nscope: [src/auth/**]\n---\n\n- AC-1 …\n');
+  r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(PROJ, 'src', 'auth', 'token.js'), content: 'export {}' } }));
+  check('scoped TDD gate: a new file in a tdd:false spec\'s scope is not gated by another spec\'s tdd:true', r.status === 0, `status=${r.status} ${r.stderr}`);
+  for (const f of ['specs/scoped-arch.md', 'specs/scoped-feat.md', 'sessions/gate-blocks.json', 'sessions/review-required.md']) fs.rmSync(path.join(BRAIN, f), { force: true });
+  fs.rmSync(path.join(PROJ, 'src', 'ui'), { recursive: true, force: true });
+  fs.rmSync(path.join(PROJ, 'src', 'auth'), { recursive: true, force: true });
+  fs.rmSync(path.join(PROJ, 'src', 'other'), { recursive: true, force: true });
+  write('.brain/specs/big-feature.md', '---\ntitle: "Big Feature"\ntier: architecture\nstatus: active\nplan_approved: true\n---\n\n- AC-1 …\n');
+
   // ---------- hook #4: wiki-check ----------
   console.log('wiki-check.js (#4 PostToolUse)');
   r = run('wiki-check.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Edit', tool_input: { file_path: path.join(BRAIN, 'wiki', 'concepts', 'a-page.md') } }));
@@ -462,6 +493,21 @@ try {
     gitb('commit', '-q', '-m', 'commit the change');
     w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}g2` }), { MONKEY_BRAIN_DIR: GB });
     check('a clean git tree stays silent', w.status === 0 && w.stdout === '', (w.stdout || '').slice(0, 200));
+
+    // Consolidated Stop nudge (v0.28.0, AC-9/10): all three unmet → ONE block listing every label.
+    fs.mkdirSync(path.join(GB, 'wiki'), { recursive: true });
+    fs.mkdirSync(path.join(GB, 'decisions'), { recursive: true });
+    const GLOG = path.join(GB, 'wiki', 'log.md');
+    fs.writeFileSync(GLOG, '---\ntitle: "Log"\n---\n\n## [2026-09-15] build | thing\nbuilt it.\n', 'utf8');
+    const gPast = new Date(Date.now() - 10 * 60 * 1000);
+    fs.utimesSync(GLOG, gPast, gPast);
+    fs.writeFileSync(path.join(GB, 'wiki', 'page.md'), '---\ntitle: "P"\ntype: concept\nupdated: 2026-09-15\n---\n\nnew page\n', 'utf8');
+    w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}c1` }), { MONKEY_BRAIN_DIR: GB });
+    out = {}; try { out = JSON.parse(w.stdout || '{}'); } catch {}
+    const creason = out.reason || '';
+    check('all three unmet → one block naming wrap[log], wrap[decisions] and wrap[git]', out.decision === 'block' && creason.includes('wrap[log]') && creason.includes('wrap[decisions]') && creason.includes('wrap[git]'), creason.slice(0, 300));
+    w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}c1` }), { MONKEY_BRAIN_DIR: GB });
+    check('consolidated nudge fires once per session (all markers set)', w.status === 0 && w.stdout === '', (w.stdout || '').slice(0, 200));
     fs.rmSync(GB, { recursive: true, force: true });
   } else {
     check('git not installed — git-uncommitted nudge test skipped', true);
@@ -1341,6 +1387,22 @@ try {
   check('recall is silent without a brain', rc.r.status === 0 && rc.r.stdout === '');
 
   // ---------- no-brain /brain:init offer (activation fallback) ----------
+  // ---------- develop-lifecycle-fixes (v0.28.0): docs the lifecycle hand-offs rely on ----------
+  console.log('develop lifecycle docs (v0.28.0 — scope:, review hand-off, wrap trust, manual §4)');
+  const rd = (rel) => fs.readFileSync(path.join(SKILLS, rel), 'utf8');
+  check('spec template carries a scope: line (AC-5)', /^scope:/m.test(rd('init/brain-template/templates/spec.md')));
+  check('/brain:plan tells the planner to fill scope: from the radius file list (AC-5)', /scope:/.test(rd('plan/SKILL.md')) && /radius/.test(rd('plan/SKILL.md')));
+  const revDoc = rd('review/SKILL.md');
+  check('/brain:review names both exits: phase: build + /brain:build on failure, /brain:wrap on success (AC-6)', /phase: build/.test(revDoc) && /\/brain:build/.test(revDoc) && /## Blockers/.test(revDoc) && /\/brain:wrap/.test(revDoc));
+  const wrapDoc = rd('wrap/SKILL.md');
+  check('/brain:wrap trusts status: done and re-verifies only active specs (AC-7)', /status: done/.test(wrapDoc) && /active/.test(wrapDoc));
+  check('/brain:build states it never sets plan_approved (AC-8)', /never sets? `?plan_approved/i.test(rd('build/SKILL.md')));
+  const manual = rd('init/brain-template/CLAUDE.md');
+  const devSection = (manual.split('### Develop')[1] || '').split(/\r?\n##+ /)[0]; // §4 Develop up to the next heading
+  check('manual §4 names loop, wrap, digest and dump relative to the four stages (AC-11)', /research → plan → build → review/.test(manual) && /\/brain:wrap/.test(devSection) && /\/brain:loop/.test(devSection) && /\/brain:digest/.test(devSection));
+  check('manual §10 cites §4 instead of restating the sequence (AC-11)', !/idea → PRD → spec → build → track → wrap/.test(manual));
+  check('skills README cites the manual instead of restating the sequence (AC-11)', !/idea → PRD → spec → build → track → wrap/.test(rd('README.md')));
+
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');
   fs.mkdirSync(PLAIN_E, { recursive: true });
@@ -1362,7 +1424,7 @@ try {
   fs.rmSync(GLOBAL_CFG, { recursive: true, force: true });
   try {
     for (const f of fs.readdirSync(os.tmpdir())) {
-      if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`)) {
+      if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`) || f.startsWith(`mb-gitcheck-st${process.pid}`)) {
         fs.rmSync(path.join(os.tmpdir(), f), { force: true });
       }
     }

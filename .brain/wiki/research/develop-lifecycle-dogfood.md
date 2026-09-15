@@ -6,7 +6,7 @@ tags: [lifecycle, dogfood, hooks, skills]
 created: 2026-09-15
 updated: 2026-09-15
 sources: []
-related: [develop-lifecycle-fixes]
+related: [develop-lifecycle-fixes, spec-scope-globs-gate-ownership, one-stop-message-for-wrap-nudges]
 ---
 
 # Develop lifecycle dogfood — research
@@ -28,7 +28,7 @@ Method: three read-only `brain-researcher` slices (skill docs + instance manual,
 ### B. What the hooks enforce (hooks slice, verified)
 7. **Plan gate and TDD gate scan every open spec, not the one the write belongs to.** `hooks/scripts/guards.js:239-258` blocks on the first open `tier: architecture` spec lacking `plan_approved: true` regardless of which file is being written; the TDD gate (`guards.js:260-272`) likewise uses `specs.find(...)` across all open specs. With one unapproved architecture spec and one approved feature spec open, a write for the approved spec is blocked. No selftest covers the two-open-specs case (`hooks/scripts/selftest.js:154-182` all use a single spec).
 8. **The three Stop-time nudges serialize into up to three separate blocks.** `hooks/scripts/wrap.js:204-208` calls `stopCheck`, `decisionCheck`, `gitCheck` in sequence and each `block()` exits the process, so a clean wrap can need three Stop attempts (log entry, then ADR, then commit). Each fires once per session via a marker file.
-9. **The wrap.js Stop checks have no selftest.** A grep for `wrap[` in selftest.js returns nothing; selftest covers plan gate (154-162, 1242-1245), TDD gate (168-182), orphan check (192-205) and comment-tolerant frontmatter parsing (991-993) only. review → build loop-back, wrap closing a spec, and loop stop conditions are also untested at hook level.
+9. **The wrap.js Stop checks are each selftested in isolation, but never together.** *(Corrected 2026-09-15 during the build: the researcher grepped for the `wrap[` label, while `selftest.js:398-463` asserts on each reason's text — log lag, missing ADR, uncommitted git — one check per Stop.)* No test covered the case where all three are unmet at once, which is exactly the case where the one-exit-per-check design costs three Stop attempts. review → build loop-back, wrap closing a spec, and loop stop conditions are also untested at hook level.
 10. **`phase` is informational only.** Read by `brain-status.js:170` and `trigger-router.js:221` for display and routing hints; no gate keys off it (`guards.js` never reads `phase`). No hook writes `tier`, `plan_approved`, `tdd`, `phase` or AC ticks; the skills do.
 11. **The trigger-router covers every stage** (`hooks/scripts/trigger-router.js`: research 141, plan 147, build 153, review 159, loop 129, wrap 45) plus a catch-all dev-intent rule (202-208) that routes to plan or, if a matching open spec exists, to build. Natural-language follow-ups mid-review that match dev-intent phrasing can re-nudge toward plan/build; slash-prefixed prompts are silent (line 240).
 

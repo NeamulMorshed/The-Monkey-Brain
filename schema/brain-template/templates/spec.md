@@ -6,6 +6,7 @@ tier: feature            # quick | feature | architecture (gate strictness, manu
 phase: plan              # plan | build | review | done
 plan_approved: false     # architecture tier: curator flips to true to open the source gate
 tdd: true                # false exempts this spec from the TDD gate
+scope: []                # project-relative globs this spec's gates own, e.g. [src/auth/**]; empty = unscoped
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 related: []

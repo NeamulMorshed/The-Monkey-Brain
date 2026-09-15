@@ -30,6 +30,11 @@ Numbered acceptance criteria, a tier, and a truthful approval field — that is 
      Use its suggestion unless you have a reason not to, and paste its "touches … score"
      line into the spec's Notes as the rationale. A wide radius means `architecture`, which
      arms the plan gate.
+   - **Scope the gates** — fill the spec's `scope:` list with the files and directories
+     from the radius output (project-relative globs, e.g. `src/auth/**`,
+     `plugin/hooks/scripts/guards.js`). The plan and TDD gates then consult this spec
+     only for writes inside that scope, so a second open spec isn't blocked by this one.
+     A write no open spec claims is still checked against every open spec.
 3. **Review with the curator.** Walk the ACs and the tier together; adjust until they
    agree this is the feature they meant.
 4. **Approval — curator-owned, never self-set:**

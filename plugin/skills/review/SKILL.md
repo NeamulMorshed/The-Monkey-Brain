@@ -48,11 +48,18 @@ A review that only lives in chat is lost. This one ends in the brain.
    - **Work the queue:** `node "${CLAUDE_SKILL_DIR}/../../hooks/scripts/instincts.js" status`
      ranks pending rules by confidence. Ask the curator about each `promote?`; only their
      yes runs `instincts.js promote <name>`. Offer `prune` for stale ones.
-5. **Close the spec honestly:** all ACs verified and no blocking findings →
-   `status: done`, `phase: done`, `audit_score: <verdict — open findings>`; otherwise it
-   stays `active` with the blockers listed. Update the `projects/` page.
+5. **Close the spec honestly — two exits, always name the next command:**
+   - **Any AC not met, or a blocking finding** → the spec stays `status: active`, set
+     `phase: build`, list every blocker under a `## Blockers` heading in the spec (AC,
+     what fails, `file:line`), and offer **`/brain:build <slug>`** — the build resumes
+     from that list, then comes back here.
+   - **Every AC verified and no blocking finding** → `status: done`, `phase: done`,
+     `audit_score: <verdict — open findings>`, and offer **`/brain:wrap`** to close the
+     session (wrap trusts a `done` spec; it does not re-verify it).
+   Update the `projects/` page's phase either way.
 6. **Bookkeeping:** append `wiki/log.md` `## [YYYY-MM-DD] review | <feature>`, offer
    commit `review: <feature>`.
 
 **Done when:** every AC has a verdict with evidence, findings are filed rather than just
-spoken, the spec's status matches reality, and log + commit are done.
+spoken, the spec's status matches reality, log + commit are done, and the curator was
+offered the next command (`/brain:build <slug>` on failure, `/brain:wrap` on success).

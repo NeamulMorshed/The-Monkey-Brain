@@ -112,6 +112,35 @@ function recordPlanBlock(brain, spec) {
   }
 }
 
+/**
+ * Does one of a spec's `scope:` globs claim this project-relative path? Globs: `**` spans
+ * directories, `*` and `?` stay within one segment; a bare path with no glob characters
+ * claims itself and everything beneath it (`src/auth` ≡ `src/auth/**`). No scope → false.
+ */
+function scopeMatches(scope, relProj) {
+  const globs = Array.isArray(scope) ? scope : typeof scope === 'string' && scope.trim() ? [scope] : [];
+  for (const g0 of globs) {
+    const g = String(g0).trim().replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+$/, '');
+    if (!g) continue;
+    if (!/[*?[\]]/.test(g)) {
+      if (relProj === g || relProj.startsWith(g + '/')) return true;
+      continue;
+    }
+    const re = new RegExp(
+      '^' +
+        g
+          .replace(/[.+^${}()|\\]/g, '\\$&')
+          .replace(/\*\*\//g, '(?:.*/)?')
+          .replace(/\*\*/g, '.*')
+          .replace(/\*/g, '[^/]*')
+          .replace(/\?/g, '[^/]') +
+        '$'
+    );
+    if (re.test(relProj)) return true;
+  }
+  return false;
+}
+
 /** Recognized code extensions for the TDD gate (config/docs/styles stay free). */
 const CODE_EXT = /\.(js|jsx|ts|tsx|mjs|cjs|py|go|rs|java|kt|rb|cs|c|h|cc|cpp|hpp|swift|php)$/i;
 
@@ -235,11 +264,19 @@ async function main() {
   if (pbrain && !abs.startsWith(pbrain + path.sep)) {
     const specsDir = path.join(pbrain, 'specs');
     const isDoc = /\.(md|mdx|txt|rst)$/i.test(abs);
-    if (fs.existsSync(specsDir) && !isDoc && !isTestPath(abs)) {
-      const specs = lib
+    // Paths outside the project root (scratch dirs, other repos) belong to no spec — never gated.
+    const relProj = path.relative(path.dirname(pbrain), abs).split(path.sep).join('/');
+    const inProject = !relProj.startsWith('..') && !path.isAbsolute(relProj);
+    if (inProject && fs.existsSync(specsDir) && !isDoc && !isTestPath(abs)) {
+      const openSpecs = lib
         .listFilesRecursive(specsDir, '.md')
         .map((f) => ({ f, fm: lib.parseFrontmatter(lib.readTextSafe(f)) }))
         .filter((s) => !['done', 'closed', 'superseded'].includes(String(s.fm.status)));
+      // Scoping (v0.28.0): a spec's `scope:` globs claim the files its gates own. When at least one
+      // open spec claims this path, only the claiming specs are consulted; otherwise every open
+      // spec is (the pre-scope behaviour, so brains without `scope:` fields see no change).
+      const claiming = openSpecs.filter((s) => scopeMatches(s.fm.scope, relProj));
+      const specs = claiming.length ? claiming : openSpecs;
 
       // 4) PLAN GATE — architecture tier needs curator approval before source writes.
       for (const s of specs) {
