@@ -6,7 +6,7 @@ tags: [index, navigation, moc]
 created: 2026-09-15
 updated: 2026-09-15
 source_count: 0
-page_count: 6
+page_count: 7
 ---
 
 # 🐵 The Monkey Brain (engine) — Index
@@ -14,7 +14,7 @@ page_count: 6
 The content catalog for this brain. **Read this first** on any query to locate pages, then drill
 in. Updated on every ingest. Chronological view: [[log]]. Live tables: [[dashboard]].
 
-> **Stats:** 0 sources · 6 pages · created 2026-09-15.
+> **Stats:** 0 sources · 7 pages · created 2026-09-15.
 
 This brain is empty. To fill it: drop a document into `raw-sources/` (or paste it in chat) and
 say **"ingest this"**. I'll write a summary, cross-link concepts, and update this index.
@@ -32,6 +32,7 @@ _None yet._
 
 ## 🔬 Syntheses
 - [[develop-lifecycle-fixes-review]] — AC-by-AC verification of the lifecycle fixes; 2 P0 / 1 P1 / 5 P2 found and fixed in review (2026-09-15)
+- [[research-first-routing-review]] — AC-by-AC verification of research-first routing; 0 P0 / 6 P1 / 4 P2 found and fixed in review (2026-09-15)
 
 ## 📐 Decisions
 - [[research-first-entry-is-advisory]] — the lifecycle enters at research by default, as a routing default with a curator skip, not a gate (2026-09-15)

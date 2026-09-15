@@ -142,7 +142,7 @@ const RULES = [
   },
   {
     re: /\bresearch\b/i,
-    not: /\b(skip|no|without|don'?t|do not) (the |any )?research\b|\bno research needed\b/i, // a skip names research without asking for it
+    not: () => SKIP_RE, // a skip names research without asking for it
     skill: 'research',
     needsBrain: true,
     what: 'research run',
@@ -214,35 +214,53 @@ const RULES = [
 
 const QUESTION_RE = /^\s*(why|what|how|explain|describe|where|when|who)\b/i;
 
-/** The curator's explicit research skip — only their own words, never inferred. */
-const SKIP_RE = /\b(skip|no|without|don'?t|do not) (the |any )?research\b|\bno research needed\b|\bjust (plan|build|fix|do|implement|write|add) (it|this|that|the)\b|\bquick fix\b|\btrivial\b/i;
+/**
+ * The curator's explicit research skip — only their own words, never inferred. Polarity-aware:
+ * "should not skip research" is not a skip, "no research paper parser" is not a skip, and
+ * "trivial" counts only as a label ("trivial: …", "this is trivial"), never inside "non-trivial".
+ */
+const SKIP_RE = new RegExp(
+  [
+    "(?<!\\b(?:not|never|don'?t|shouldn'?t|won'?t|without)\\s)\\b(?:skip|no need for|without(?: any)?|don'?t|do not)\\b[^.!?]{0,20}?\\bresearch\\b(?!\\s+(?:papers?|pages?|parsers?|tools?|modules?|sections?|reports?|teams?|data))",
+    '\\bno research\\b(?=\\s*(?:needed|required|necessary|first|please|for this|on this)?\\s*(?:[,.;:!?)]|$))',
+    '\\bjust (?:plan|build|fix|do|implement|write|add) (?:it|this|that|the)\\b',
+    '\\bquick fix\\b',
+    "(?:^\\s*|[,;:(]\\s*|\\b(?:this is|it'?s|that'?s)\\s+(?:a\\s+)?)trivial\\b(?!-)",
+  ].join('|'),
+  'i'
+);
 
 /** Words that carry no topic: common function words plus the dev verbs/nouns of the catch-all rule. */
 const STOP = new Set(('about after again against before being below between could every first other should since ' +
   'their there these think those through under until using where which while would please thing things ' +
   'maybe still really right going research spec specs brain monkey project projects current existing ' +
+  'update change remove delete support improve handle system user client server mobile simple better ' +
+  'table field value string number option make sure need want ' +
   'build implement create write develop refactor migrate integrate patch debug rewrite extend feature ' +
   'function functionality endpoint route component page screen module service class method hook handler ' +
   'script command flag button form modal schema model migration test issue error crash website backend ' +
   'frontend database login signup integration plugin skill parser pipeline dashboard validation config setting').split(/\s+/));
 
-/** Significant topic tokens of a string: ≥ 5 letters, singular-ish, not a stop word. */
+/** Significant topic tokens of a string: ≥ 5 letters, plural-stripped the same way on both sides, not a stop word. */
 function topicTokens(s) {
   const out = new Set();
   for (const w of String(s || '').toLowerCase().match(/[a-z][a-z0-9-]{4,}/g) || []) {
-    const t = w.length > 5 && w.endsWith('s') ? w.slice(0, -1) : w;
+    const t = /(?:ss|sh|ch|x)es$/.test(w) ? w.slice(0, -2) : w.length > 4 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w;
     if (!STOP.has(t) && !STOP.has(w)) out.add(t);
   }
   return out;
 }
 
-/** Slugs of wiki/research/ pages whose title, tags, aliases or slug share a topic token with the prompt. Fails open to []. */
+/**
+ * Slugs of wiki/research/ pages whose title, tags, aliases or slug share at least two topic tokens
+ * with the prompt (one shared word — "entry", "hooks" — is noise), best three first. Fails open to [].
+ */
 function relatedResearch(brain, prompt) {
   try {
     const dir = path.join(brain, 'wiki', 'research');
     if (!fs.existsSync(dir)) return [];
     const want = topicTokens(prompt);
-    if (!want.size) return [];
+    if (want.size < 2) return [];
     const hits = [];
     for (const f of lib.listFilesRecursive(dir, '.md')) {
       let head = '';
@@ -256,9 +274,11 @@ function relatedResearch(brain, prompt) {
       const slug = path.basename(f, '.md');
       const flat = (v) => (Array.isArray(v) ? v.join(' ') : String(v || ''));
       const have = topicTokens(`${slug.replace(/-/g, ' ')} ${flat(fm.title)} ${flat(fm.tags)} ${flat(fm.aliases)}`);
-      for (const t of want) if (have.has(t)) { hits.push(slug); break; }
+      let score = 0;
+      for (const t of want) if (have.has(t)) score++;
+      if (score >= 2) hits.push({ slug, score });
     }
-    return hits;
+    return hits.sort((a, b) => b.score - a.score || a.slug.localeCompare(b.slug)).slice(0, 3).map((h) => h.slug);
   } catch {
     return [];
   }
@@ -297,7 +317,7 @@ async function main() {
   const prompt = String(input.prompt || '').trim();
   if (!prompt || prompt.startsWith('/') || /\/brain:/.test(prompt)) return;
 
-  const rule = RULES.find((r) => r.re.test(prompt) && !(r.not && r.not.test(prompt)));
+  const rule = RULES.find((r) => r.re.test(prompt) && !(r.not && r.not().test(prompt)));
   if (!rule) return;
   if (rule.dev && QUESTION_RE.test(prompt)) return; // a question, not a work order
 
@@ -306,7 +326,7 @@ async function main() {
   if (rule.needsBrain && !brain) {
     const root = path.resolve(input.cwd || process.cwd());
     if (fs.existsSync(path.join(root, '.no-brain'))) return; // engine declined here
-    const next = rule.dev ? '/brain:research → /brain:plan → /brain:build' : `/brain:${rule.skill}`;
+    const next = !rule.dev ? `/brain:${rule.skill}` : SKIP_RE.test(prompt) ? '/brain:plan → /brain:build (research skipped at your word)' : '/brain:research → /brain:plan → /brain:build';
     hint =
       `🐵 trigger-router: that sounds like ${rule.what}, but this project has no .brain/ yet — ` +
       `offer /brain:init first, then continue with ${next}.`;

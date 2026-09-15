@@ -1,9 +1,10 @@
 ---
 title: "Spec — Research-first entry to the develop lifecycle"
 type: spec
-status: active
+status: done
 tier: feature
-phase: review
+phase: done
+audit_score: "done — 0 open findings (0 P0, 6 P1, 4 P2 found in review, all fixed + pinned; selftest 417 green)"
 plan_approved: false
 tdd: true
 scope: [plugin/hooks/scripts/trigger-router.js, plugin/hooks/scripts/selftest.js, plugin/skills/plan/**, plugin/skills/research/**, plugin/skills/README.md, plugin/README.md, plugin/CHANGELOG.md, plugin/.claude-plugin/**, .claude-plugin/**, plugin/skills/init/brain-template/CLAUDE.md, schema/brain-template/CLAUDE.md]
@@ -36,7 +37,7 @@ The manual says the develop lifecycle is research → plan → build → review,
 - **AC-7** ✅ `/brain:research exits early when a page already answers, handing to /brain:plan` — `/brain:research` step 2 gains an early exit: when an existing `wiki/research/` page already answers the question, cite it, add nothing, and hand to `/brain:plan` instead of re-running. Selftest asserts the wording.
 - **AC-8** ✅ `manual §4 states the entry rule · README hook #2 row + skills README say research → plan → build with the skip · bundled manual === schema master` — The instance manual §4 states the entry rule in one sentence ("A new feature request enters at research; say 'skip research' to enter at plan"); README hook #2 row and `skills/README.md` say the same; `schema/brain-template/CLAUDE.md` and the bundled copy stay identical.
 - **AC-9** ✅ `a missing wiki/research/ never throws · a research page with broken frontmatter does not crash the router (reads first 8 KB, only when the catch-all fires)` — Router cost stays bounded: related-research detection reads only `wiki/research/*.md` frontmatter (first 8 KB per file) and runs only when the catch-all rule fires, never on other prompts. A malformed or missing `wiki/research/` never throws (fail open to "no related research").
-- **AC-10** ✅ `selftest: ALL GREEN (408 checks) · claude plugin validate --strict ×2 · CHANGELOG 0.29.0 · plugin.json + marketplace.json 0.29.0` — `node plugin/hooks/scripts/selftest.js` ALL GREEN; both manifests validate `--strict`; CHANGELOG 0.29.0 entry; `plugin.json` and `marketplace.json` bumped to 0.29.0.
+- **AC-10** ✅ `selftest: ALL GREEN (417 checks after review fixes) · claude plugin validate --strict ×2 · CHANGELOG 0.29.0 · plugin.json + marketplace.json 0.29.0` — `node plugin/hooks/scripts/selftest.js` ALL GREEN; both manifests validate `--strict`; CHANGELOG 0.29.0 entry; `plugin.json` and `marketplace.json` bumped to 0.29.0.
 
 ## Test plan
 - AC-1..5, AC-9: selftest hook #2 block — fixture brain with (a) no research pages, (b) a research page whose tags overlap the prompt, (c) an open spec covering the prompt, (d) skip phrasings; assert routed skill, rule line, skip sentence, "Related research:" listing, and that a research page with broken frontmatter does not crash the router.
@@ -44,6 +45,8 @@ The manual says the develop lifecycle is research → plan → build → review,
 - AC-10: the release checklist commands.
 
 ## Notes & links
+**Review (2026-09-15):** [[research-first-routing-review]] — verdict done; 6 P1 (skip pattern polarity, `non-trivial`, two drifting skip copies, one-token citations, five-letter plurals, vacuous AC-3 tests) + 4 P2, all fixed in-review and pinned.
+
 **Build (2026-09-15):** test-first, 19 red → green. Discovery: "skip research and add X" matched the literal-`research` rule before the catch-all and routed *to* research — the research rule now carries a `not:` skip pattern (AC-2). The first draft of the router tests used `/invoke brain:research/` while the hint says "invoke the brain:research skill", so several assertions passed vacuously; fixed to the real phrase. `/brain:init --update` on this repo dropped the instance display name (defaults to the folder name) — re-run with `--name`.
 
 Tier rationale: `graph.js radius` says `touches 1 file(s) across 1 module(s) · 1 file type(s) · score 1 → quick`, but the graph only sees imports; the change alters a hook that runs on every prompt in every brain, plus four skill/doc surfaces, so `feature` (TDD gate on, selftest is the test companion) is the honest tier. No `plan_approved` needed.

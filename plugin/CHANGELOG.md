@@ -26,7 +26,8 @@ request to `/brain:plan` and research ran only when the prompt said the word (fi
 - **Docs** — instance manual §4 states the entry rule once (bundled copy and schema master
   identical); README hook #2 row and `skills/README.md` echo it. ADR
   `decisions/research-first-entry-is-advisory.md` records why this is a default, not a gate.
-- Selftest 390 → 408.
+- **Review fixes (same release):** the skip pattern is polarity-aware (`should not skip research` is not a skip; `non-trivial` and `trivial helper` are not labels; `no research paper parser` is not a skip) and shared with the literal-`research` rule so the two cannot drift; related research needs at least two shared topic words (one generic word such as `entry` or `hooks` no longer cites a page), five-letter plurals singularise, best three pages are cited; the no-brain hint honours a skip.
+- Selftest 390 → 417.
 
 ## 0.28.0 — 2026-09-15 (develop lifecycle fixes — first dogfood of the lifecycle on this repo)
 

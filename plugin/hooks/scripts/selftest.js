@@ -409,20 +409,30 @@ try {
     check(`"${phrase}" enters at brain:research, then plan, then build (AC-1)`, order && RULE_RE.test(t.ctx) && /Open specs: none/.test(t.ctx) && t.ctx.trim().endsWith(SKIP_LINE), t.ctx);
   }
   check('a missing wiki/research/ never throws (AC-9)', t.r.status === 0 && t.ctx.includes('brain:research'), `status=${t.r.status}`);
-  for (const phrase of ['skip research and add a login feature', 'add a login feature, no research needed', 'add a login feature without research', 'just build the login feature', 'quick fix: add a login button', 'trivial: add a login button']) {
+  for (const phrase of ['skip research and add a login feature', 'add a login feature, no research needed', 'add a login feature without research', 'no need for research, add a login feature', "let's skip the research phase and add a login feature", 'just build the login feature', 'quick fix: add a login button', 'trivial: add a login button', 'this is trivial, add a login button']) {
     t = routed(phrase);
     check(`"${phrase}" skips research at the curator's word (AC-2)`, t.ctx.includes('brain:plan') && !/invoke the brain:research skill/.test(t.ctx) && /skipped at the curator/.test(t.ctx) && !t.ctx.includes(SKIP_LINE), t.ctx);
   }
+  for (const phrase of ['the fix is non-trivial, add a retry handler', 'add a trivial helper function to the parser', 'no research paper parser needed, add the login button']) {
+    t = routed(phrase);
+    check(`"${phrase}" is not a skip: still enters at brain:research (AC-2)`, /invoke the brain:research skill/.test(t.ctx) && !/skipped at the curator/.test(t.ctx), t.ctx);
+  }
+  t = routed('we should not skip research here, add an auth endpoint');
+  check('"should not skip research" is not a skip: routes to research, not plan (AC-2)', t.ctx.includes('brain:research') && !/skipped at the curator/.test(t.ctx), t.ctx);
   fs.mkdirSync(RESEARCH_DIR, { recursive: true });
   write('.brain/wiki/research/payments-gateway.md', '---\ntitle: "Research — Stripe payments gateway"\ntype: research\nstatus: active\ntags: [payments, stripe]\naliases: ["checkout flow"]\n---\n\n# Payments\n');
+  write('.brain/wiki/research/settings-redesign.md', '---\ntitle: "Research — Settings page feature redesign"\ntype: research\nstatus: active\ntags: [settings, feature, hooks, pages]\n---\n\n# Settings\n');
+  write('.brain/wiki/research/entry-points.md', '---\ntitle: "Research — Entry points"\ntype: research\nstatus: active\ntags: [entry]\n---\n\n# Entry\n');
   write('.brain/wiki/research/broken.md', '---\ntitle: [unterminated\nno closing fence\n');
   t = routed('add a payments checkout feature');
-  check('related research routes to brain:plan citing the page, no new run (AC-3)', t.ctx.includes('brain:plan') && /Related research: `payments-gateway`/.test(t.ctx) && !/invoke the brain:research skill/.test(t.ctx) && t.ctx.trim().endsWith(SKIP_LINE), t.ctx);
+  check('related research (two shared topic words) routes to brain:plan citing the page, no new run (AC-3)', t.ctx.includes('brain:plan') && /Related research: `payments-gateway`/.test(t.ctx) && !/invoke the brain:research skill/.test(t.ctx) && t.ctx.trim().endsWith(SKIP_LINE), t.ctx);
+  check('a research page with broken frontmatter does not crash the router (AC-9)', t.r.status === 0 && t.ctx.length > 0 && !/broken/.test(t.ctx), `status=${t.r.status}`);
   t = routed('add a login feature');
   check('unrelated research does not match: login still enters at brain:research (AC-3)', /invoke the brain:research skill/.test(t.ctx) && !/Related research/.test(t.ctx), t.ctx);
-  t = routed('add a feature to the settings page');
-  check('dev nouns (feature, page, settings) never count as related-research overlap (AC-3)', !/Related research/.test(t.ctx), t.ctx);
-  check('a research page with broken frontmatter does not crash the router (AC-9)', t.r.status === 0 && t.ctx.length > 0, `status=${t.r.status}`);
+  t = routed('add a feature to the settings page with hooks and pages');
+  check('dev nouns (feature, page, settings, hooks, pages) never count as related-research overlap (AC-3)', !/Related research/.test(t.ctx) && /invoke the brain:research skill/.test(t.ctx), t.ctx);
+  t = routed('add a payments entry form to the checkout');
+  check('one shared generic word ("entry") is not enough to cite a page; two are (AC-3)', /Related research: `payments-gateway`/.test(t.ctx) && !/entry-points/.test(t.ctx), t.ctx);
   fs.rmSync(RESEARCH_DIR, { recursive: true, force: true });
   for (const phrase of ['why does the build fail on upload?', 'how do I add a feature flag here?', 'explain the parser module']) {
     t = routed(phrase);
@@ -433,6 +443,8 @@ try {
   fs.rmSync(path.join(PLAIN_R, '.no-brain'));
   t = routed('add a login feature', PLAIN_R);
   check('development intent without a brain suggests init, then the lifecycle from research (AC-4)', t.ctx.includes('brain:init') && t.ctx.includes('brain:research') && t.ctx.includes('brain:plan'), t.ctx);
+  t = routed('quick fix: add a login button', PLAIN_R);
+  check('development intent without a brain honours the skip: init, then plan → build (AC-2)', t.ctx.includes('brain:init') && !t.ctx.includes('brain:research') && t.ctx.includes('brain:plan'), t.ctx);
   fs.writeFileSync(path.join(PLAIN_R, '.no-brain'), '');
   write('.brain/specs/login-expiry.md', '---\ntitle: "Login expiry"\ntype: spec\nstatus: active\ntier: feature\nphase: build\n---\n\n- AC-1 …\n');
   write('.brain/specs/old-thing.md', '---\ntitle: "Old"\ntype: spec\nstatus: done\ntier: quick\n---\n\n- AC-1 …\n');
