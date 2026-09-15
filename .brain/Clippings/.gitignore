@@ -1,0 +1,5 @@
+# Staging zone for Obsidian Web Clipper drops, pre-canonicalization.
+# Canonical copies live in raw-sources/ once ingested — don't commit staging copies.
+*
+!.gitignore
+!.gitkeep

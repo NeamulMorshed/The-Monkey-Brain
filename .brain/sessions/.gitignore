@@ -1,0 +1,8 @@
+# Per-machine caches and receipts — rebuilt locally, never shared.
+graph.json
+dashboard.html
+injection-stats.json
+edit-counts.json
+health.json
+gate-blocks.json
+loops/

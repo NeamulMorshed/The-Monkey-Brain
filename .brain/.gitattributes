@@ -1,0 +1,5 @@
+# Append-only logs merge by keeping both sides' new lines (git's built-in union
+# driver), so two people logging work in parallel never conflict.
+wiki/log.md merge=union
+sessions/agents.md merge=union
+sessions/review-required.md merge=union
