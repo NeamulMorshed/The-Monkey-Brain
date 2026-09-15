@@ -1,7 +1,6 @@
 ---
-description: Take, check, or release the team work lock on the project's Monkey Brain — the whole brain or one spec — so two people don't change the same thing at once. The lock is a committed LOCK.md with an expiry; teammates see it at session start and the hooks keep their writes out of the locked scope. Use when the user says "lock the brain", "lock the <x> spec", "release the lock", "who has the lock", or before a long change on a shared brain. Requires a .brain/ (offer /brain:init when missing).
+description: Take, check or release the team work lock (a committed, expiring LOCK.md) on the whole brain or one spec, so two people don't change the same thing. Use for "lock the brain", "lock the <x> spec", "release the lock" or "who has the lock".
 argument-hint: "acquire <brain|spec-slug> [--hours N] | release | status"
-model: haiku
 effort: low
 ---
 

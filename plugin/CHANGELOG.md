@@ -1,5 +1,36 @@
 # Changelog — brain plugin
 
+## 0.31.0 — 2026-09-15 (token diet: model routing, context nudge, lighter manual and listing)
+
+Spec `specs/token-diet.md`, from the audit's token economics: every API call re-reads the
+whole context (~270k tokens on average here), and mid-session model switches caused 25 % of
+all cache writes (~163k tokens each).
+
+- **One model-routing table** in the instance manual §5 — work class → where it runs → model
+  → effort, with Haiku, Sonnet, Opus and Fable, and the rule "change model by forking or
+  dispatching, never by switching the main thread mid-session". `agent-track`, `graph.js`,
+  the skills README and `/brain:usage` cite it instead of restating their own wording.
+- **No skill switches the main thread** — a `model:` pin now always comes with
+  `context: fork`: `build`, `digest`, `usage` run as Sonnet forks, `brief`, `dashboard`,
+  `home` as Haiku forks. `research`, `ingest`, `dump`, `learn`, `init`, `ci`, `terse` and
+  `lock` lost their pins and run on the session model — so research synthesis really is on
+  the main model now, and fans out only past two independent slices.
+- **Context nudge** (`recall.js`) — past 150k tokens of context (`MONKEY_BRAIN_CONTEXT_NUDGE`,
+  `0` off) one line, once per 100k band: the size, that every call re-reads it, "wrap, then
+  /clear", and "don't switch models mid-session". Read from the transcript's last
+  main-thread `usage`; subagent usage ignored.
+- **Lighter always-loaded footprint** — the manual (15.9 KB → 9.9 KB, engine v2.1) keeps the
+  rules; plugins, MCP servers, pipelines, team mode, qmd and the command lists move to a new
+  on-demand `reference.md` that `/brain:init` creates and `--update` refreshes. Skill
+  descriptions ≤ 300 B each (9.9 KB → 6.0 KB), the repeated "Requires a .brain/" line gone.
+  Always-loaded bytes 26.5 KB → about 16.5 KB.
+- **Four bundled plugins** — `code-modernization` (15 skills + 8 agents in every request's
+  listing) moves to the `/brain:init` offer; `security-guidance` stays, marked as needing
+  Python 3.10+.
+- **Cheaper instructions** — ingest cross-links every page the source genuinely informs (no
+  "5–10+" quota); lint reasons over the flagged pages and named scope only; wrap reuses a
+  verification that already ran this session.
+
 ## 0.30.0 — 2026-09-15 (brain correctness: resume, gates, health signal, Stop nudges)
 
 A full audit of the brain (`wiki/research/brain-health-audit.md`, spec

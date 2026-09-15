@@ -1,7 +1,6 @@
 ---
-description: Add a GitHub Actions CI safety net to the project — detects Node (npm, pnpm, yarn), Python, Go, .NET and Rust, and writes .github/workflows/ci.yml running the project's own lint, typecheck, test and build steps. Never overwrites an existing workflow without asking. Use when the user says "install CI", "set up CI", "add a CI pipeline", or the doctor reports a code project with no CI.
+description: Add a GitHub Actions CI workflow from the detected stack (Node, Python, Go, .NET, Rust) running the project's own lint, test and build steps; never overwrites without asking. Use for "set up CI", "add a CI pipeline", or when doctor reports no CI.
 argument-hint: "[--force]"
-model: sonnet
 effort: low
 ---
 

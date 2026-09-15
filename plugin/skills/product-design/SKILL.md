@@ -1,5 +1,5 @@
 ---
-description: Run an industry-standard product-design process end to end — discovery, definition, ideation, design, validation — and file every artifact into the Monkey Brain. Use when the user wants to design a product, feature, or UX from the ground up; asks for personas, user journeys, JTBD, how-might-we questions, ideation/brainstorming, usability or accessibility evaluation. The first domain-expertise pack — it brings the process and the knowledge, and the brain records the decisions. Requires a .brain/ (offer /brain:init when missing).
+description: Product-design process end to end — discovery, definition, ideation, design, validation — with every artifact filed into the brain. Use for designing a product, feature or UX, personas, journeys, JTBD, how-might-we, usability or accessibility checks.
 argument-hint: "<product or feature to design>"
 effort: high
 ---

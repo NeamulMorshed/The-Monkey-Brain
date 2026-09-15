@@ -13,7 +13,7 @@
  * projects pay nothing.
  *
  * Opt-in to qmd: an empty `.qmd` marker in the brain, or MONKEY_BRAIN_QMD=1
- * (instance CLAUDE.md §8). MCP stdio transport = newline-delimited JSON-RPC
+ * (reference.md §8). MCP stdio transport = newline-delimited JSON-RPC
  * 2.0. This process must never crash a session: errors become tool errors.
  */
 'use strict';
@@ -145,7 +145,7 @@ function handle(msg, send, brain) {
       result.instructions =
         'This project has a Monkey Brain. Before substantive work, call brain_search (ranked pages + snippets) ' +
         'or brain_brief (a cited pack of at most ~2k tokens) rather than re-deriving what the project already knows. ' +
-        'Built-in full-text search; past ~100 sources, qmd adds meaning-based matches (instance CLAUDE.md §8).';
+        'Built-in full-text search; past ~100 sources, qmd adds meaning-based matches (reference.md §8).';
     }
     send({ jsonrpc: '2.0', id, result });
   } else if (method === 'tools/list') {

@@ -1,5 +1,5 @@
 ---
-description: Run the game-development pipeline in the Monkey Brain — concept to GDD to prototype spec to build to playtest to balance decisions. Use when the user wants to start a game, write a game design document (GDD), design mechanics or a core loop, spec a prototype, log a playtest, or tune game balance. Reuses the develop-lifecycle skills (plan, build, wrap) with a game-shaped front end. Requires a .brain/ (offer /brain:init when missing).
+description: Game-development pipeline — concept, GDD, prototype spec, build, playtest, balance ADRs — reusing plan, build and wrap. Use when the user starts a game, writes a GDD, designs mechanics or a core loop, logs a playtest, or tunes balance.
 argument-hint: "<game concept or current phase>"
 effort: high
 ---
@@ -15,7 +15,7 @@ decisions** are ADRs. The brain records all of it so the design compounds across
 > `/brain:research` files the idea to `wiki/research/`; the `product-management` plugin drafts
 > the PRD into `raw-sources/` → `/brain:ingest`; `/brain:plan` writes the spec; `/brain:build`
 > implements; `product-tracking` plans live in `projects/`; `/brain:wrap` closes it. No special
-> skill needed — it's the standard lifecycle. See instance manual §10.
+> skill needed — it's the standard lifecycle. See `reference.md` §10.
 
 ## The pipeline (each phase files back)
 

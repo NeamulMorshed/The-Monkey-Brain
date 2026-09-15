@@ -211,9 +211,10 @@ function radius(graph, anchors, depth = 2) {
   const tier = !files.length ? 'unknown' : score <= 3 ? 'quick' : score <= 45 ? 'feature' : 'architecture';
   const model = {
     unknown: '—',
-    quick: 'sonnet (routine work)',
-    feature: 'sonnet to build, the main model to review',
-    architecture: 'the main model to plan and review; sonnet for AC slices',
+    // The routing table itself lives in the instance manual §5; these are its tier shorthands.
+    quick: 'sonnet (routine work — manual §5)',
+    feature: 'sonnet to build, opus or fable to review (manual §5)',
+    architecture: 'opus or fable to plan and review; sonnet for AC slices (manual §5)',
   }[tier];
   const dependents = files.filter((f) => hops.get(f) > 0).sort((a, b) => hops.get(a) - hops.get(b) || a.localeCompare(b));
   return { anchors, files, dependents, hops: Object.fromEntries(hops), modules, types, score, tier, model };

@@ -1,5 +1,5 @@
 ---
-description: Definition-of-done for a Monkey Brain work session — verify the work, sync the bookkeeping (wiki log, index stats, resume narrative), and commit with the vault's conventions. Use when the user says "wrap up", "end the session", "call it a day", or after completing a milestone.
+description: Definition-of-done for a work session — verify, sync the bookkeeping (log, index, resume), commit with the vault's conventions. Use for "wrap up", "end the session", "call it a day", or after a milestone.
 argument-hint: "[one-line summary of the session]"
 effort: high
 ---
@@ -20,7 +20,9 @@ the narrative belongs to you.
      spec, report the disagreement and leave the spec's status unchanged — reopening it
      is the curator's call (via `/brain:review`).
    - If project code changed and the project has obvious checks (package scripts, test
-     suite, linters), run them. Report failures with output — never paper over them.
+     suite, linters), run them — unless the same check already ran this session after the
+     last source change (a build or review ran it): report that result instead of re-running.
+     Report failures with output — never paper over them.
    - **Domain-pack gate:** if the active workstream's `projects/<name>.md` names a `pack:`
      (e.g. `pack: product-design`), open that pack's `checklist.md`
      (`${CLAUDE_SKILL_DIR}/../<pack>/checklist.md`) and run it. Report every **open P0** with

@@ -1,7 +1,6 @@
 ---
-description: Terse output mode (Caveman-style, roughly 65% shorter) — ON by default in every session via the SessionStart hook; this skill turns it off or back on. Prose compresses; code, commands, file paths, error messages, and acceptance criteria never do. Use when the user says "terse off", "be more verbose", "normal verbosity", "be terse", "terse mode", "shorter answers", or complains about verbosity.
+description: Terse output mode (Caveman-style, ~65% shorter), on by default; this skill turns it off or on. Code, commands, paths and errors never compress. Use for "terse off", "be more verbose", "be terse", "shorter answers", or verbosity complaints.
 argument-hint: "[off]"
-model: haiku
 effort: low
 ---
 

@@ -154,7 +154,7 @@ else {
 const qmdOn = fs.existsSync(path.join(brain, '.qmd')) || process.env.MONKEY_BRAIN_QMD === '1';
 const pageCount = wikiFiles.length;
 if (qmdOn) add(10, 'semantic-index', 'ok', 'qmd semantic search enabled — SessionEnd re-indexes; verify `qmd update` ran if results feel stale');
-else if (pageCount >= 100) add(10, 'semantic-index', 'info', `built-in recall covers ${pageCount} wiki pages — qmd would add meaning-based matches (manual §8)`);
+else if (pageCount >= 100) add(10, 'semantic-index', 'info', `built-in recall covers ${pageCount} wiki pages — qmd would add meaning-based matches (reference.md §8)`);
 else add(10, 'semantic-index', 'ok', `built-in recall covers ${pageCount} wiki pages (always fresh)`);
 
 // ---- 11. WIP limits ---------------------------------------------------------

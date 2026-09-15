@@ -1,7 +1,6 @@
 ---
-description: A learning pack — spaced-repetition drills (SM-2) plus one new concept per session, compiled into the brain so what you learn compounds. Only due cards ever enter context. Use when the user says "practice <language/topic>", "drill my cards", "flashcards", "spaced repetition", or wants to learn a subject over many sessions. Requires a .brain/ (offer /brain:init when missing).
+description: Learning pack — spaced-repetition drills (SM-2) plus one new concept per session, compiled into the brain; only due cards enter context. Use for "practice <topic>", "drill my cards", "flashcards" or "spaced repetition".
 argument-hint: "<deck or topic>"
-model: sonnet
 effort: medium
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Health-check the project's Monkey Brain — a mechanical scan (broken wikilinks, orphans, frontmatter gaps, index drift, backlog, strays) followed by reasoning over contradictions and staleness, with fixes applied. Use when the user says "lint the brain/wiki", asks for a brain health check, or after a large ingest batch.
+description: Health-check the Monkey Brain wiki — a mechanical scan (broken links, orphans, frontmatter, index drift, strays), then reasoning over the flagged pages, fixes applied. Use for "lint the brain", "lint the wiki", or after a large ingest.
 argument-hint: "[scope]"
 effort: high
 ---
@@ -23,8 +23,8 @@ before you read this — its report is already in context (zero model tokens spe
      index entries.
    - *Clippings backlog* — offer `/brain:ingest clippings`.
    - *Stray root files* — 0-byte strays are Obsidian artifacts; delete them.
-2. **Reason over what a script can't see** (read the pages the scan flagged, plus any
-   scope the user named):
+2. **Reason over what a script can't see** — over the flagged pages and the named scope only
+   (never the whole wiki; the scan above already covered it):
    - **Contradictions** between pages → reconcile or flag inline
      (`> ⚠️ Contradiction: …`) and set `status:` accordingly.
    - **Stale claims** a newer source likely supersedes → update, forward-link, mark

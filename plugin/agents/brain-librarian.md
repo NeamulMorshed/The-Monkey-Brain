@@ -23,7 +23,7 @@ these are the same steps as the `/brain:ingest` skill, adapted to a batch worker
    You cannot delete files: name the `Clippings/` copy in your report for the lead to remove.
 3. **Discuss key takeaways** — skipped in batch mode; put the 3 key takeaways in your report.
 4. **Write** the source-summary page `wiki/sources/<slug>.md` from `templates/source.md`.
-5. **Compile cross-links** — create or update the concept & entity pages the source informs,
+5. **Compile cross-links** — create or update every concept & entity page the source genuinely informs (no page quota),
    with reciprocal `[[wikilinks]]`; flag contradictions inline and mark `stale` where a claim
    is superseded.
 6. **Update `wiki/index.md`** — add the new entries under the right category.

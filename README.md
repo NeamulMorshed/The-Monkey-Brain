@@ -137,7 +137,7 @@ The engine stands on three pillars:
 - `/brain:doctor` runs **19 deterministic checks** (links, orphans, staleness, budget, WIP, cache safety, CI,
   open P0s, schema drift…). Failures inject a health report into the *next* session.
 
-**25 `/brain:*` skills · 10 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
+**25 `/brain:*` skills · 10 hook events · 2 subagents · 4 bundled + 5 offered plugins · cross-platform (Node).**
 
 ---
 
@@ -150,8 +150,9 @@ Install the plugin once (this repo doubles as its own marketplace):
 /plugin install brain@monkey-brain
 ```
 
-That one install also installs and enables five capability plugins from Anthropic's official
-marketplace: github, frontend-design, superpowers, security-guidance, code-modernization.
+That one install also installs and enables four capability plugins from Anthropic's official
+marketplace: github, frontend-design, superpowers, security-guidance (needs Python 3.10+).
+`/brain:init` offers the rest, code-modernization included.
 Want every official plugin? `/plugin install brain-all@monkey-brain` — opt-in, and heavy on
 context (each enabled plugin costs tokens every turn; connectors still need your own login).
 If `/plugin` reports a missing dependency, the official marketplace isn't added yet:

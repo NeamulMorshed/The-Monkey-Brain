@@ -1,7 +1,8 @@
 ---
-description: Show real token usage for this project from Claude Code's own transcripts — per day, per model, per git branch, the subagent share, and the prompt-cache hit ratio — then explain what to change. Use when the user asks for a token report, token usage or spend, the cache-hit ratio, or why sessions feel expensive.
+description: Real token usage for this project from Claude Code's transcripts — per day, model and branch, subagent share, cache-hit ratio — and what to change. Use for a token report, token spend, the cache-hit ratio, or why sessions feel expensive.
 argument-hint: "[--days N]"
 model: sonnet
+context: fork
 effort: low
 ---
 
@@ -21,9 +22,9 @@ For a different window, re-run with `--days N` (e.g. `--days 30`) via the same s
 - **Cache-write** spikes mean the prompt prefix changed: `/clear`, compaction, enabling or
   disabling plugins or MCP servers mid-session, editing `CLAUDE.md` mid-session, or a proxy
   rewriting requests (`/brain:doctor` check 16 flags that).
-- **By model** should follow the routing policy: routine work on Sonnet, triage on Haiku,
-  judgment on the main model. A main-model share far above that means work is being done on the
-  expensive model by default.
+- **By model** should follow the routing table (manual §5): triage on Haiku, reading fan-out and
+  coding on Sonnet, judgment on Opus or Fable. A top-tier share far above that means work runs on
+  the expensive model by default; every mid-session model switch also re-writes the whole cache.
 - **Subagents** show how much fan-out costs; `.brain/sessions/agents.md` has each dispatch's
   outcome and token count.
 

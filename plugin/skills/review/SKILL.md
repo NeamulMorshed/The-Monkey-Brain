@@ -1,5 +1,5 @@
 ---
-description: Verify a built spec and review its code — AC-by-AC verification with evidence, findings filed back into the Monkey Brain (review synthesis page, ADRs, instinct candidates), and the spec closed out honestly. Use when the user says "review the changes/spec/branch/PR", after /brain:build finishes, or before merging feature work.
+description: Verify a built spec AC by AC with evidence, review its code, file the findings back (review page, ADRs, instincts) and close the spec honestly. Use for "review the changes/spec/branch/PR", after /brain:build, or before merging feature work.
 argument-hint: "[spec-slug | branch | PR#/URL | scope]"
 effort: high
 ---

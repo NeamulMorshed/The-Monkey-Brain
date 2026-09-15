@@ -110,7 +110,13 @@ function main() {
   if (!fs.existsSync(a.project)) fail(`Project path does not exist: ${a.project}`);
   const project = path.resolve(a.project);
   const brain = path.join(project, '.brain');
-  const name = a.name && a.name.trim() ? a.name.trim() : path.basename(project);
+  // --update keeps the brain's existing display name (the manual's `project:`) unless --name is given.
+  let kept = '';
+  if (a.update) {
+    try { kept = (/^project:\s*"?([^"\r\n]+?)"?\s*$/m.exec(fs.readFileSync(path.join(brain, 'CLAUDE.md'), 'utf8')) || [])[1] || ''; } catch {}
+    if (/\{\{PROJECT\}\}/.test(kept)) kept = '';
+  }
+  const name = a.name && a.name.trim() ? a.name.trim() : kept || path.basename(project);
   const date = today();
   const template = resolveTemplate();
   if (!template) fail('No brain template found (bundled copy missing and not inside the engine repo).');
@@ -139,9 +145,12 @@ function main() {
       }
     })(template);
     if (added.length) console.log(`Migrated structure, ${added.length} addition(s): ${added.join(', ')}`);
-    // Refresh the schema copies: operating manual + page templates.
-    fs.copyFileSync(path.join(template, 'CLAUDE.md'), path.join(brain, 'CLAUDE.md'));
-    expandPlaceholders(path.join(brain, 'CLAUDE.md'), name, date);
+    // Refresh the schema copies: operating manual, its on-demand reference (v0.31.0) + page templates.
+    for (const schemaFile of ['CLAUDE.md', 'reference.md']) {
+      if (!fs.existsSync(path.join(template, schemaFile))) continue;
+      fs.copyFileSync(path.join(template, schemaFile), path.join(brain, schemaFile));
+      expandPlaceholders(path.join(brain, schemaFile), name, date);
+    }
     fs.cpSync(path.join(template, 'templates'), path.join(brain, 'templates'), { recursive: true });
     for (const f of mdFilesUnder(path.join(brain, 'templates'))) expandPlaceholders(f, name, date);
     // resume.md holds live work state: add only when missing, never overwrite.

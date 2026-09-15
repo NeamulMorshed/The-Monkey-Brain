@@ -1,5 +1,5 @@
 ---
-description: Run a bounded work loop that knows when to stop — spec → build → verify until every acceptance criterion passes, research → synthesise until the recommendation stops changing, or design → critique → refine until no P0 findings remain — with tick caps, stall and livelock detection. Use when the user says "loop until done", "keep going until the tests pass", "iterate on the spec until it's green", or wants an autonomous build, research, or design cycle. Requires a .brain/ (offer /brain:init when missing).
+description: Run a bounded loop that stops on the brain's own criteria — build until every AC passes, research until the recommendation is stable, design until no P0 — with tick caps and stall and livelock halts. Use for "loop until done" or "keep going until green".
 argument-hint: "<spec|research|design> <slug>"
 effort: high
 ---

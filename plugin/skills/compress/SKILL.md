@@ -1,5 +1,5 @@
 ---
-description: Permanently rewrite an instruction or memory file (CLAUDE.md, memory notes, hub/rules pages) into a terser form with identical meaning — cutting its input-token cost in every future session (typically 40–50%). Use when the user says "compress <file>", a CLAUDE.md has grown bloated, or session-start injection feels heavy. Not for wiki knowledge pages whose wording is evidence.
+description: Permanently rewrite an instruction or memory file (CLAUDE.md, memory notes, rules pages) into a terser form with identical meaning, cutting its per-session token cost. Use for "compress <file>" or a bloated CLAUDE.md. Not for wiki pages whose wording is evidence.
 argument-hint: "<file-path>"
 effort: high
 ---

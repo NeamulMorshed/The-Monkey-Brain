@@ -211,7 +211,7 @@ async function main() {
     sections.push([1, `**🔎 Search:** semantic (qmd) enabled — query the \`brain-search\` MCP before substantive work; it surfaces pages the index doesn't.`]);
   } else {
     const upgrade = Number(idxFm.page_count || 0) >= 100
-      ? ` At ${idxFm.page_count} pages, qmd adds meaning-based matches (\`${rel}/CLAUDE.md\` §8).`
+      ? ` At ${idxFm.page_count} pages, qmd adds meaning-based matches (\`${rel}/reference.md\` §8).`
       : '';
     sections.push([1, `**🔎 Search:** \`brain_search\` / \`brain_brief\` (built-in, always fresh) — check what the brain already knows before re-deriving it.${upgrade}`]);
   }

@@ -1,7 +1,8 @@
 ---
-description: Generate a one-page HTML dashboard of the project's Monkey Brain — index stats, open specs with AC progress, running loops, workstreams, the last health report, recent log and decisions, and 7-day token usage. Self-contained (no network), written to .brain/sessions/dashboard.html. Use when the user says "dashboard", "show me the brain", or wants an overview to open or share. Requires a .brain/ (offer /brain:init when missing).
+description: One-page offline HTML dashboard of this project's Monkey Brain — index stats, open specs with AC progress, loops, health, recent log and decisions, token usage — written to .brain/sessions/. Use for "dashboard" or "show me the brain".
 argument-hint: "[--open]"
 model: haiku
+context: fork
 effort: low
 ---
 

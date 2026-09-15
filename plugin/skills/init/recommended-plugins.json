@@ -56,6 +56,7 @@
     {
       "name": "security-guidance",
       "auto_install": true,
+      "requires": "Python 3.10+ (python, python3 or py -3 on PATH)",
       "category": "security",
       "source": "official",
       "homepage": "https://claude.com/plugins/security-guidance",
@@ -79,7 +80,7 @@
     },
     {
       "name": "code-modernization",
-      "auto_install": true,
+      "auto_install": false,
       "category": "dev",
       "source": "official",
       "homepage": "https://claude.com/plugins/code-modernization",

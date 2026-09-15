@@ -1,8 +1,7 @@
 ---
-description: Scaffold a Monkey Brain instance (.brain/) into the current project — the per-project LLM wiki + memory that this plugin's hooks and skills operate on. Use when the user asks to set up / initialize / create a brain for a project, or accepts the session-start offer. Also refreshes an existing brain's schema without touching its knowledge.
+description: Scaffold a Monkey Brain (.brain/) into the current project, or refresh an existing brain's schema without touching its knowledge. Use when the user asks to set up, initialize or create a brain, or accepts the session-start offer.
 argument-hint: "[project-path] [--name <display-name>] [--update]"
 allowed-tools: Bash(node:*)
-model: sonnet
 effort: low
 ---
 
@@ -65,12 +64,12 @@ staging, `raw-sources/`, `memory/`, and `resume.md`. Once it exists, the plugin'
 - The recommended plugin set lives in `recommended-plugins.json` (next to this skill) —
   the authoritative list of capability plugins, what each auto-fires on, and which `.brain/`
   folder records its output. `scripts/plugins.js` renders it (`--verbose` for the
-  integration notes, `--json` for raw); the instance manual's §9 states the recording
+  integration notes, `--json` for raw); the brain's `reference.md` §9 states the recording
   contract. Plugins auto-activate by their own descriptions; the trigger-router nudges the
   brain's own workflows, not theirs.
 - The recommended MCP server set lives in `recommended-mcp-servers.json` (next to this
   skill) — same shape and contract as the plugin manifest, for MCP servers instead of Claude
   Code plugins. `scripts/mcp-servers.js` renders it and detects which curated servers are
-  already in this project's `.mcp.json` (`--verbose` for setup hints, `--json` for raw); the
-  instance manual's §9 states the same recording contract. The brain never calls, installs,
+  already in this project's `.mcp.json` (`--verbose` for setup hints, `--json` for raw);
+  `reference.md` §9 states the same recording contract. The brain never calls, installs,
   or configures an MCP server itself — it only recognizes what's connected.

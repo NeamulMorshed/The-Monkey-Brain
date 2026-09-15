@@ -128,8 +128,8 @@ async function main() {
   if (willBlock) {
     lib.block(
       `🐵 agent-track: pick a model for this dispatch explicitly (Agent tool \`model\` param) — ` +
-        `routing policy: haiku = classification/triage · sonnet = routine execution/research fan-out · ` +
-        `opus/main = judgment, synthesis, review. Re-dispatch with the model matching the work. ` +
+        `routing policy (manual §5): haiku = classification/triage · sonnet = routine execution, reading fan-out, coding · ` +
+        `opus or fable = judgment, synthesis, review. Re-dispatch with the model matching the work. ` +
         `(Applies to every unpinned dispatch of a main-model agent type; dispatches are logged in .brain/sessions/agents.md.)`
     );
   }

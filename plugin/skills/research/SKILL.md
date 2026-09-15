@@ -1,16 +1,16 @@
 ---
-description: Investigate a topic for the project and file the findings into the Monkey Brain — wiki first, then codebase, then web — as a wiki/research/ page with sources and a recommendation. Use when the user says "research X", asks to investigate options or approaches before building, or a plan needs evidence. Requires a .brain/ (offer /brain:init when missing).
+description: Investigate a topic and file the findings into the Monkey Brain — wiki, then codebase, then web — as a wiki/research/ page with sources and a recommendation. Use for "research X", comparing options before building, or when a plan needs evidence.
 argument-hint: "<topic or question>"
-model: sonnet
 effort: medium
 ---
 
 # /brain:research — investigate, then file it
 
-> **Fan-out (P5.5):** for a broad topic, dispatch several `brain-researcher` subagents
-> (Sonnet, read-only) in one message — one per slice (wiki / codebase / web / competitor) —
-> so they run concurrently, then synthesize their cited findings here on the main model and
-> file the single `wiki/research/` page.
+> **Fan-out:** only when the question splits into more than two independent slices (wiki /
+> codebase / web / competitor), dispatch one `brain-researcher` subagent (sonnet, read-only)
+> per slice in one message so they run concurrently; then synthesize their cited findings here
+> on the session model (opus or fable for research — manual §5) and file the single
+> `wiki/research/` page. Don't re-read what a slice already covered.
 
 Research that isn't filed evaporates. This skill runs the research step of the develop
 lifecycle (instance manual §4) and always ends with a `wiki/research/` page.

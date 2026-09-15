@@ -1,7 +1,6 @@
 ---
-description: Compile a source into the project's Monkey Brain wiki — the 8-step ingest of the knowledge SDLC. Use when the user says "ingest this", shares an article / doc / URL / paste to add to the brain, or asks to process Clippings. Requires a .brain/ instance (offer /brain:init when missing).
+description: Compile a source into the project's Monkey Brain wiki (the 8-step ingest). Use when the user says "ingest this", shares an article, doc, URL or paste to add to the brain, or asks to process Clippings.
 argument-hint: "[path | url | clippings]"
-model: sonnet
 effort: medium
 ---
 
@@ -13,7 +12,7 @@ effort: medium
 > immutable and `log.md` append-only (the hooks enforce both).
 
 The compile step of the knowledge SDLC (instance manual §4): one raw source in, a
-source-summary page plus 5–10+ cross-linked wiki pages out. Hooks enforce the
+source-summary page plus every wiki page the source genuinely informs, cross-linked, out. Hooks enforce the
 invariants — `raw-sources/` is add-only, `wiki/log.md` is append-only, and every wiki
 write is link/orphan-checked (fix flagged issues in the same turn).
 
@@ -31,8 +30,9 @@ write is link/orphan-checked (fix flagged issues in the same turn).
 4. **Write the source-summary page** at `.brain/wiki/sources/<slug>.md` using
    `.brain/templates/source.md`: frontmatter per manual §3, `raw:` relative link to the
    raw file, `origin:` URL, TL;DR, key takeaways, concepts touched, contradictions.
-5. **Compile cross-links — touch 5–10+ pages.** Create or update `concepts/` and
-   `entities/` pages the source informs (use their templates; every non-source page cites
+5. **Compile cross-links — every page the source genuinely informs** (no quota: a padding
+   page costs tokens in every later search). Create or update `concepts/` and `entities/`
+   pages (use their templates; every non-source page cites
    `sources:` provenance). Add **reciprocal** `[[wikilinks]]`. Flag conflicts inline
    (`> ⚠️ Contradiction: …`) and set the older page `status: stale` when superseded. A
    `[[link]]` to a not-yet-existing page is a legal TODO marker.

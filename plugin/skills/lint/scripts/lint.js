@@ -136,7 +136,7 @@ try {
 if (clippings) out.push(`Clippings backlog: ${clippings} unprocessed (offer /brain:ingest clippings)`);
 
 // ---- stray root files -------------------------------------------------------
-const LEGIT_ROOT = new Set(['README.md', 'CLAUDE.md', 'resume.md']);
+const LEGIT_ROOT = new Set(['README.md', 'CLAUDE.md', 'reference.md', 'resume.md', 'LOCK.md']);
 const strays = [];
 try {
   for (const e of fs.readdirSync(brain, { withFileTypes: true })) {

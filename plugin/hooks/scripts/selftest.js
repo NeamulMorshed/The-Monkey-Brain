@@ -758,21 +758,23 @@ try {
   const MODELS = new Set(['haiku', 'sonnet', 'opus']);
   const EFFORTS = new Set(['low', 'medium', 'high']);
   const routing = {
-    home: { model: 'haiku', effort: 'low' },
-    build: { model: 'sonnet', effort: 'medium' },
-    ingest: { model: 'sonnet', effort: 'medium' },
-    research: { model: 'sonnet', effort: 'medium' },
-    init: { model: 'sonnet', effort: 'low' },
-    terse: { model: 'haiku', effort: 'low' },
-    brief: { model: 'sonnet', effort: 'low' },
-    usage: { model: 'sonnet', effort: 'low' },
+    // Forked: model: + context: fork — the skill runs in a subagent; the main thread never switches (token-diet AC-2).
+    build: { model: 'sonnet', effort: 'medium', context: 'fork' },
+    digest: { model: 'sonnet', effort: 'low', context: 'fork' },
+    usage: { model: 'sonnet', effort: 'low', context: 'fork' },
+    brief: { model: 'haiku', effort: 'low', context: 'fork' },
+    dashboard: { model: 'haiku', effort: 'low', context: 'fork' },
+    home: { model: 'haiku', effort: 'low', context: 'fork' },
+    // Unpinned: the session model — a main-thread pin would re-write the whole prompt cache.
+    research: { effort: 'medium' },
+    ingest: { effort: 'medium' },
+    dump: { effort: 'medium' },
+    learn: { effort: 'medium' },
+    init: { effort: 'low' },
+    ci: { effort: 'low' },
+    terse: { effort: 'low' },
+    lock: { effort: 'low' },
     loop: { effort: 'high' },
-    digest: { model: 'sonnet', effort: 'low' },
-    dump: { model: 'sonnet', effort: 'medium' },
-    dashboard: { model: 'haiku', effort: 'low' },
-    ci: { model: 'sonnet', effort: 'low' },
-    lock: { model: 'haiku', effort: 'low' },
-    learn: { model: 'sonnet', effort: 'medium' },
     career: { effort: 'high' },
     plan: { effort: 'high' },
     review: { effort: 'high' },
@@ -791,14 +793,16 @@ try {
     const p = path.join(SKILLS, name, 'SKILL.md');
     const text = fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '';
     const model = fmGet(text, 'model');
+    const context = fmGet(text, 'context');
     const effort = fmGet(text, 'effort');
     const exp = routing[name];
     const modelOk = exp.model ? model === exp.model : model === undefined;
+    const contextOk = exp.context ? context === exp.context : context === undefined;
     const effortOk = effort === exp.effort && EFFORTS.has(effort) && (model === undefined || MODELS.has(model));
-    if (modelOk && effortOk) routingOk++;
-    else routingBad.push(`${name}(model=${model},effort=${effort})`);
+    if (modelOk && contextOk && effortOk) routingOk++;
+    else routingBad.push(`${name}(model=${model},context=${context},effort=${effort})`);
   }
-  check(`all ${Object.keys(routing).length} skills declare the expected model/effort routing`, routingOk === Object.keys(routing).length, routingBad.join(' '));
+  check(`all ${Object.keys(routing).length} skills declare the expected model/context/effort routing`, routingOk === Object.keys(routing).length, routingBad.join(' '));
   const judgmentPinned = ['plan', 'review', 'wrap', 'query', 'lint', 'compress', 'product-design', 'game', 'doctor'].filter((n) => fmGet(fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'), 'model') !== undefined);
   check('judgment skills inherit the main model (no downgrade)', judgmentPinned.length === 0, `pinned: ${judgmentPinned.join(',')}`);
 
@@ -883,7 +887,8 @@ try {
   let pjJson = {}; try { pjJson = JSON.parse(pj.stdout); } catch {}
   check('plugins.js --json emits the parseable manifest', pj.status === 0 && Array.isArray(pjJson.plugins) && pjJson.plugins.length === 9, `status=${pj.status}`);
   const tmplManual = fs.readFileSync(path.join(bundled, 'CLAUDE.md'), 'utf8');
-  check('instance manual §9 states the plugin recording contract', /##\s*9\.\s*Capability plugins/.test(tmplManual) && /records the knowledge/i.test(tmplManual), 'no §9 contract');
+  const tmplRef = fs.existsSync(path.join(bundled, 'reference.md')) ? fs.readFileSync(path.join(bundled, 'reference.md'), 'utf8') : '';
+  check('reference.md §9 states the plugin recording contract', /##\s*9\.\s*Capability plugins/.test(tmplRef) && /records the knowledge/i.test(tmplRef), 'no §9 contract');
   let pmeta = {}; try { pmeta = JSON.parse(fs.readFileSync(path.join(HERE, '..', '..', '.claude-plugin', 'plugin.json'), 'utf8')); } catch {}
   const pdeps = Array.isArray(pmeta.dependencies) ? pmeta.dependencies : [];
   const autoNames = plist.filter((p) => p.auto_install).map((p) => p.name);
@@ -918,7 +923,7 @@ try {
   mj = spawnSync(process.execPath, [MCPJS, '--json'], { encoding: 'utf8', timeout: 15000 });
   let mjJson = {}; try { mjJson = JSON.parse(mj.stdout); } catch {}
   check('mcp-servers.js --json emits the parseable manifest', mj.status === 0 && Array.isArray(mjJson.servers) && mjJson.servers.length === 5, `status=${mj.status}`);
-  check('instance manual §9 states the MCP recording contract', /MCP servers \(the connected-data layer\)/.test(tmplManual) && /Supabase, Firebase, Figma, Framer,?\s*\n?\s*Vercel/.test(tmplManual), 'no MCP subsection in §9');
+  check('reference.md §9 states the MCP recording contract', /MCP servers \(the connected-data layer\)/.test(tmplRef) && /Supabase, Firebase, Figma, Framer,?\s*\n?\s*Vercel/.test(tmplRef), 'no MCP subsection in §9');
 
   // Detection: a fixture .mcp.json with one curated + one unrecognized + the brain's own server.
   writeRel(PA, '.mcp.json', JSON.stringify({ mcpServers: { supabase: { command: 'npx' }, 'brain-search': { command: 'node' }, 'some-random-server': { command: 'npx' } } }, null, 2));
@@ -958,7 +963,7 @@ try {
   check('game skill walks GDD → prototype spec → playtest → balance ADR', /templates\/gdd\.md/.test(gameSkill) && /prototype/i.test(gameSkill) && /playtest/i.test(gameSkill) && /decisions\//.test(gameSkill), 'pipeline steps');
   const gddTmpl = fs.existsSync(path.join(bundled, 'templates', 'gdd.md')) ? fs.readFileSync(path.join(bundled, 'templates', 'gdd.md'), 'utf8') : '';
   check('GDD template ships (type: gdd, MDA + core loop)', /^type:\s*gdd/m.test(gddTmpl) && /MDA/.test(gddTmpl) && /core loop/i.test(gddTmpl), 'gdd template');
-  check('instance manual §10 documents product + game pipelines', /##\s*10\.\s*Domain pipelines/.test(tmplManual) && /Product:/.test(tmplManual) && /Game:/.test(tmplManual), 'no §10 pipelines');
+  check('reference.md §10 documents product + game pipelines', /##\s*10\.\s*Domain pipelines/.test(tmplRef) && /Product:/.test(tmplRef) && /Game:/.test(tmplRef), 'no §10 pipelines');
 
   // ---------- /brain:doctor 18-check health monitor (Phase 8 + v3 P11) ----------
   console.log('doctor.js (skill /brain:doctor — 15 health checks + health.json surfacing)');
@@ -1678,6 +1683,94 @@ try {
   const evCounts = readmes.flatMap((t) => [...t.matchAll(/(\d+) hook events/g)].map((m) => Number(m[1])));
   check(`READMEs say ${nEvents} hook events and hard-code no selftest count (AC-14)`, evCounts.length > 0 && evCounts.every((n) => n === nEvents) && readmes.every((t) => !/\(\d+ checks\)/.test(t)), `counts=${evCounts} events=${nEvents}`);
 
+  // ---------- v0.31.0 token-diet (spec token-diet AC-1…9) ----------
+  console.log('token-diet (v0.31.0 — model routing, context nudge, lighter manual and listing)');
+  const tdManual = fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'CLAUDE.md'), 'utf8');
+  const tdRefPath = path.join(SKILLS, 'init', 'brain-template', 'reference.md');
+  const tdRef = fs.existsSync(tdRefPath) ? fs.readFileSync(tdRefPath, 'utf8') : '';
+  const s5 = (tdManual.split(/^## 5\./m)[1] || '').split(/^## 6\./m)[0];
+  check('manual §5 holds the one model-routing table: haiku, sonnet, opus, fable, fork-not-switch, effort medium (AC-1)', /Model routing/.test(s5) && ['haiku', 'sonnet', 'opus', 'fable'].every((m) => s5.includes(m)) && /never by switching the main thread/.test(s5) && /context: fork/.test(s5) && /effortLevel: medium/.test(s5), s5.slice(0, 160));
+  a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: 'td1', tool_input: { subagent_type: 'general-purpose', description: 'x' } }));
+  check('agent-track, graph.js, skills README and /brain:usage cite manual §5 (AC-1)', /manual §5/.test(a.stderr) && /manual §5/.test(fs.readFileSync(path.join(HERE, 'graph.js'), 'utf8')) && /manual §5/.test(fs.readFileSync(path.join(SKILLS, 'README.md'), 'utf8')) && /manual §5/.test(fs.readFileSync(path.join(SKILLS, 'usage', 'SKILL.md'), 'utf8')), a.stderr.slice(0, 160));
+  const pinnedNoFork = fs.readdirSync(SKILLS).filter((n) => { const p = path.join(SKILLS, n, 'SKILL.md'); if (!fs.existsSync(p)) return false; const tx = fs.readFileSync(p, 'utf8'); return fmGet(tx, 'model') !== undefined && fmGet(tx, 'context') !== 'fork'; });
+  check('no skill switches the main thread: every model: pin comes with context: fork (AC-2)', pinnedNoFork.length === 0, pinnedNoFork.join(','));
+  const researchSkill = fs.readFileSync(path.join(SKILLS, 'research', 'SKILL.md'), 'utf8');
+  check('/brain:research synthesizes on the session model, fans out only past two independent slices (AC-3)', fmGet(researchSkill, 'model') === undefined && /session model/.test(researchSkill) && /more than two independent slices/.test(researchSkill) && !/main model/.test(researchSkill));
+
+  // AC-4 — context-size nudge in recall.js.
+  const CT = path.join(ROOT, 'ctx-transcripts');
+  fs.mkdirSync(CT, { recursive: true });
+  const mkTranscript = (name, ctxTokens) => {
+    const p = path.join(CT, `${name}.jsonl`);
+    fs.writeFileSync(p, [
+      JSON.stringify({ type: 'user', message: { content: 'hi' } }),
+      JSON.stringify({ type: 'assistant', isSidechain: false, message: { id: 'm1', model: 'claude-opus-5', usage: { input_tokens: 100, cache_creation_input_tokens: 900, cache_read_input_tokens: ctxTokens - 1000, output_tokens: 50 } } }),
+      JSON.stringify({ type: 'assistant', isSidechain: true, message: { id: 's1', model: 'claude-sonnet-5', usage: { input_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 999000, output_tokens: 1 } } }),
+    ].join('\n') + '\n');
+    return p;
+  };
+  const nudge = (sid, file, env) => {
+    const rr = run('recall.js', { cwd: PROJ, hook_event_name: 'UserPromptSubmit', prompt: 'ok', session_id: sid, transcript_path: file }, env);
+    let o = {}; try { o = JSON.parse(rr.stdout || '{}'); } catch {}
+    return (o.hookSpecificOutput || {}).additionalContext || '';
+  };
+  const ctxSid = `st${process.pid}ctx`;
+  check('context nudge: silent below 150k (AC-4)', nudge(ctxSid, mkTranscript('t90', 90000)) === '');
+  const n160 = nudge(ctxSid, mkTranscript('t160', 160000));
+  check('context nudge: at 160k one line — size, re-read cost, wrap then /clear, no model switch (AC-4)', /160k/.test(n160) && /re-reads/.test(n160) && /\/brain:wrap/.test(n160) && /\/clear/.test(n160) && /switch models/.test(n160), n160);
+  check('context nudge: the subagent (sidechain) usage is ignored (AC-4)', !/999k|1000k/.test(n160), n160);
+  check('context nudge: once per 100k band per session (AC-4)', nudge(ctxSid, mkTranscript('t170', 170000)) === '' && /260k/.test(nudge(ctxSid, mkTranscript('t260', 260000))));
+  check('context nudge: MONKEY_BRAIN_CONTEXT_NUDGE=0 and a missing transcript stay silent (AC-4)', nudge(`st${process.pid}ctx2`, mkTranscript('t300', 300000), { MONKEY_BRAIN_CONTEXT_NUDGE: '0' }) === '' && nudge(`st${process.pid}ctx3`, path.join(CT, 'nope.jsonl')) === '');
+
+  // AC-5 — the manual splits into CLAUDE.md + reference.md.
+  check(`manual ≤ 10,000 bytes (now ${Buffer.byteLength(tdManual)}), engine_version 2.1, pointing at reference.md (AC-5)`, Buffer.byteLength(tdManual) <= 10000 && /^engine_version: 2\.1$/m.test(tdManual) && /reference\.md/.test(tdManual));
+  check('reference.md ships in the template with §9 plugins + MCP contracts, §10 pipelines and qmd (AC-5)', /records the knowledge/i.test(tdRef) && /MCP servers \(the connected-data layer\)/.test(tdRef) && /Product:/.test(tdRef) && /Game:/.test(tdRef) && /qmd/.test(tdRef));
+  const TDP = path.join(ROOT, 'td-proj');
+  fs.mkdirSync(TDP, { recursive: true });
+  const NB2 = path.join(SKILLS, 'init', 'scripts', 'new-brain.js');
+  spawnSync(process.execPath, [NB2, '--project', TDP], { encoding: 'utf8', timeout: 20000 });
+  const tdRefP = path.join(TDP, '.brain', 'reference.md');
+  const tdCreated = fs.existsSync(tdRefP) && /records the knowledge/i.test(fs.readFileSync(tdRefP, 'utf8')) && !/\{\{PROJECT\}\}/.test(fs.readFileSync(tdRefP, 'utf8'));
+  if (fs.existsSync(tdRefP)) fs.writeFileSync(tdRefP, 'stale\n');
+  spawnSync(process.execPath, [NB2, '--project', TDP, '--update'], { encoding: 'utf8', timeout: 20000 });
+  check('/brain:init creates reference.md and --update refreshes it (AC-5)', tdCreated && fs.existsSync(tdRefP) && /records the knowledge/i.test(fs.readFileSync(tdRefP, 'utf8')));
+  const tdLint = spawnSync(process.execPath, [path.join(SKILLS, 'lint', 'scripts', 'lint.js'), '--brain', path.join(TDP, '.brain')], { encoding: 'utf8', timeout: 20000 });
+  check('lint does not flag reference.md as a stray root file (AC-5)', !/reference\.md/.test(tdLint.stdout || ''), (tdLint.stdout || '').slice(0, 300));
+  const TDN = path.join(ROOT, 'td-named');
+  fs.mkdirSync(TDN, { recursive: true });
+  spawnSync(process.execPath, [NB2, '--project', TDN, '--name', 'Named Brain (engine)'], { encoding: 'utf8', timeout: 20000 });
+  spawnSync(process.execPath, [NB2, '--project', TDN, '--update'], { encoding: 'utf8', timeout: 20000 });
+  const tdNamed = (f) => { try { return fs.readFileSync(path.join(TDN, '.brain', f), 'utf8'); } catch { return ''; } };
+  check('--update keeps the brain\'s display name when --name is not given (AC-5)', /Named Brain \(engine\)/.test(tdNamed('CLAUDE.md')) && /Named Brain \(engine\)/.test(tdNamed('reference.md')), (/^project:.*$/m.exec(tdNamed('CLAUDE.md')) || [''])[0]);
+  const MANUAL_REF = /(manual('s)?|CLAUDE\.md`?)\s+§(8|9|10)\b/;
+  const citeBad = [...['doctor', 'game', 'init'].map((n) => path.join(SKILLS, n, 'SKILL.md')), path.join(HERE, 'brain-status.js'), path.join(HERE, 'search-mcp.js'), path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), path.join(SKILLS, 'README.md')].filter((p) => MANUAL_REF.test(fs.readFileSync(p, 'utf8'))).map((p) => path.basename(path.dirname(p)) + '/' + path.basename(p));
+  check('skills, hooks and the skills README cite reference.md, not manual §8–§10 (AC-5)', citeBad.length === 0, citeBad.join(', '));
+
+  // AC-6 / AC-7 — a lighter skill listing and always-loaded footprint.
+  const descs = fs.readdirSync(SKILLS).map((n) => path.join(SKILLS, n, 'SKILL.md')).filter((p) => fs.existsSync(p)).map((p) => ({ n: path.basename(path.dirname(p)), d: (/^description:\s*(.*)$/m.exec(fs.readFileSync(p, 'utf8').split(/\r?\n---/)[0]) || [])[1] || '' }));
+  const longDescs = descs.filter((x) => Buffer.byteLength(x.d) > 300 || /Requires a \.brain/.test(x.d)).map((x) => `${x.n}(${Buffer.byteLength(x.d)})`);
+  const descTotal = descs.reduce((s, x) => s + Buffer.byteLength(x.d), 0);
+  check(`skill descriptions ≤ 300 B each, no "Requires a .brain/", total ≤ 6,500 (now ${descTotal}) (AC-6)`, descs.length === 25 && !longDescs.length && descTotal <= 6500, longDescs.join(' '));
+  const agentDescBytes = ['brain-librarian', 'brain-researcher'].reduce((s, an) => s + Buffer.byteLength((/^description:\s*(.*)$/m.exec(fs.readFileSync(path.join(HERE, '..', '..', 'agents', `${an}.md`), 'utf8')) || [])[1] || ''), 0);
+  const alwaysLoaded = Buffer.byteLength(tdManual) + descTotal + agentDescBytes;
+  check(`always-loaded bytes ${alwaysLoaded} ≤ 17,491 — 9,000 below the 0.29.1 baseline of 26,491 (AC-7)`, alwaysLoaded <= 17491);
+
+  // AC-8 — four bundled plugins.
+  const tdPlugins = JSON.parse(fs.readFileSync(path.join(SKILLS, 'init', 'recommended-plugins.json'), 'utf8')).plugins || [];
+  const tdByName = Object.fromEntries(tdPlugins.map((p) => [p.name, p]));
+  let tdMeta = {}; try { tdMeta = JSON.parse(fs.readFileSync(path.join(HERE, '..', '..', '.claude-plugin', 'plugin.json'), 'utf8')); } catch {}
+  const tdDeps = Array.isArray(tdMeta.dependencies) ? tdMeta.dependencies : [];
+  check('4 bundled plugins: code-modernization offered, security-guidance stays and notes Python 3 (AC-8)', tdDeps.length === 4 && !tdDeps.some((d) => d.name === 'code-modernization') && (tdByName['code-modernization'] || {}).auto_install === false && (tdByName['security-guidance'] || {}).auto_install === true && /Python 3/.test((tdByName['security-guidance'] || {}).requires || ''), JSON.stringify(tdDeps.map((d) => d.name)));
+  const tdRootReadme = path.join(SKILLS, '..', '..', 'README.md');
+  const tdPluginReadme = fs.readFileSync(path.join(SKILLS, '..', 'README.md'), 'utf8');
+  const tdSkillsReadme = fs.readFileSync(path.join(SKILLS, 'README.md'), 'utf8');
+  check('READMEs, reference.md and the skills README state four bundled plugins (AC-8)', /four capability-plugin/.test(tdPluginReadme) && /Four ship/.test(tdRef) && /four \(`auto_install: true`/.test(tdSkillsReadme) && (!fs.existsSync(tdRootReadme) || (/4 bundled/.test(fs.readFileSync(tdRootReadme, 'utf8')) && !/five capability plugins/.test(fs.readFileSync(tdRootReadme, 'utf8')))));
+
+  // AC-9 — cheaper instructions.
+  check('ingest cross-links every page the source genuinely informs — no "5–10+" quota (AC-9)', [path.join(SKILLS, 'ingest', 'SKILL.md'), path.join(HERE, '..', '..', 'agents', 'brain-librarian.md')].every((p) => { const tx = fs.readFileSync(p, 'utf8'); return /genuinely informs/.test(tx) && !/5–10\+/.test(tx); }) && /genuinely informs/.test(tdManual) && !/5–10\+/.test(tdManual));
+  check('/brain:lint reasons over the flagged pages and the named scope only (AC-9)', /flagged pages and the named scope/.test(fs.readFileSync(path.join(SKILLS, 'lint', 'SKILL.md'), 'utf8')));
+  check('/brain:wrap reuses a verification already run this session (AC-9)', /already ran this session/.test(fs.readFileSync(path.join(SKILLS, 'wrap', 'SKILL.md'), 'utf8')));
+
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');
   fs.mkdirSync(PLAIN_E, { recursive: true });
@@ -1699,7 +1792,7 @@ try {
   fs.rmSync(GLOBAL_CFG, { recursive: true, force: true });
   try {
     for (const f of fs.readdirSync(os.tmpdir())) {
-      if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`) || f.startsWith(`mb-gitcheck-st${process.pid}`)) {
+      if (f.startsWith(`mb-recall-st${process.pid}`) || f.startsWith(`mb-wrap-st${process.pid}`) || f.startsWith(`mb-agent-st${process.pid}`) || f.startsWith(`mb-decide-st${process.pid}`) || f.startsWith(`mb-gitcheck-st${process.pid}`) || f.startsWith(`mb-ctx-st${process.pid}`)) {
         fs.rmSync(path.join(os.tmpdir(), f), { force: true });
       }
     }

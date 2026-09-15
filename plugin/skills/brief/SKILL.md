@@ -1,7 +1,8 @@
 ---
-description: Pull a compact, cited context pack on a topic from the project's Monkey Brain — the best-matching excerpts from the top pages, capped at ~2k tokens. Use when the user says "brief me on X", "catch me up on X", or before starting work that past decisions, specs, or research may already cover. Requires a .brain/ (offer /brain:init when missing).
+description: Pull a cited context pack (at most ~2k tokens) on a topic from the project's Monkey Brain. Use when the user says "brief me on X" or "catch me up on X", or before work that past decisions, specs or research may already cover.
 argument-hint: "<topic>"
-model: sonnet
+model: haiku
+context: fork
 effort: low
 ---
 

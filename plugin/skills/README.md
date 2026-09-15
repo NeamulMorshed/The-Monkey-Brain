@@ -37,41 +37,40 @@ via `${CLAUDE_SKILL_DIR}` and are covered by `hooks/scripts/selftest.js`;
 `schema/brain-template/` stays the canonical template master
 (`new-brain.js --sync-template` refreshes the bundle; selftest fails on drift).
 
-## Model routing (Phase 5.5)
+## Model routing
 
-Each skill declares its place in the routing policy via `model:` / `effort:`
-frontmatter, so the right model does each kind of work **by default** (and the
-`effort` budget is spent only where judgment lives). Hook #7 `agent-track`
-enforces the same policy on subagent dispatches; deterministic checks already
-run in scripts at zero model cost.
+The policy is the one table in the instance manual §5 (`init/brain-template/CLAUDE.md`);
+this section only records how the skills implement it. **No skill switches the main
+thread** — prompt caches are per model, so a switch re-writes the whole context (~160k
+tokens measured per switch); a skill that pins `model:` also sets `context: fork` and runs
+as a subagent on a fresh context. Hook #7 `agent-track` requires an explicit `model` on
+every main-model agent dispatch.
 
 | Work class | Skills | Frontmatter | Why |
 | --- | --- | --- | --- |
-| **Judgment & synthesis** | `plan` · `review` · `loop` · `career` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high` (model inherits the session's main model) | architecture plans, final review, wrap verification, contradiction reconciliation, meaning-preserving compression, design reasoning, health triage — never downgraded |
-| **Routine execution** | `ingest` · `research` · `build` · `dump` · `learn` | `model: sonnet` · `effort: medium` | summaries, research reads, standard implementation — pinned to Sonnet regardless of the session model |
-| **Mechanical** | `init` · `brief` · `usage` · `digest` · `ci` | `model: sonnet` · `effort: low` | scaffolding, packs and reports run a Node script; little reasoning |
-| **Trivial** | `terse` · `dashboard` · `home` · `lock` | `model: haiku` · `effort: low` | flips an output mode; presents a page a script built |
+| **Judgment & synthesis** | `plan` · `review` · `loop` · `career` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high`, session model | plans, final review, reconciliation, compression, design — never downgraded |
+| **Session work** | `research` · `ingest` · `dump` · `learn` · `init` · `ci` · `terse` · `lock` | `effort: medium` / `low`, session model | interactive or conversation-bound; a pin here would be a main-thread switch |
+| **Forked routine** | `build` · `digest` · `usage` | `model: sonnet` · `context: fork` | test-first implementation and reports run in a Sonnet subagent |
+| **Forked trivial** | `brief` · `dashboard` · `home` | `model: haiku` · `context: fork` | a script builds the pack or page; Haiku presents it |
 
 **Parallel fan-out** (subagents in `../agents/`, run concurrently; only summaries
-return): `research` fans out to **`brain-researcher`** (Sonnet, read-only) and
-synthesizes on the main model; batch `ingest` delegates to **`brain-librarian`**
-(Sonnet) so the main session sees only log entries; `build` + `review` pair a
-Sonnet implementer with a main-model auditor. See the Agents section in
-`../README.md` and the definitions in `../agents/`.
+return): `research` fans out to **`brain-researcher`** (Sonnet, read-only) when a question
+splits into more than two independent slices, and synthesizes on the session model; batch
+`ingest` delegates to **`brain-librarian`** (Sonnet); a `build` fork is reviewed by
+`review` on a different model family. See the Agents section in `../README.md`.
 
 ## Capability plugins (Phase 6)
 
 The skills own the brain's *knowledge* workflows; **craft** (UI builds, security
 audits, PR flows, PRDs…) is done by external **capability plugins**.
-`init/recommended-plugins.json` is the authoritative set of nine: five
-(`auto_install: true` — `github`, `frontend-design`, `superpowers`,
-`security-guidance`, `code-modernization`) ship as dependencies of the brain plugin;
-`/brain:init` offers the rest (`product-tracking-skills`, `productivity`,
-`product-management`, `ui-ux-pro-max`). `init/scripts/plugins.js` renders the set
+`init/recommended-plugins.json` is the authoritative set of nine: four (`auto_install: true` — `github`,
+`frontend-design`, `superpowers`, `security-guidance`, which needs Python 3.10+) ship as
+dependencies of the brain plugin; `/brain:init` offers the rest (`code-modernization`,
+`product-tracking-skills`, `productivity`, `product-management`, `ui-ux-pro-max`). `init/scripts/plugins.js` renders the set
 (✓ = ships with brain). The contract — **plugins do the craft; the brain records the knowledge** —
 means every plugin output that is a decision, finding, or artifact is filed into a
 named `.brain/` folder by the brain's skills and hooks (the manifest maps each
-plugin to its target folder; the instance manual's §9 states the rule and the
+plugin to its target folder; the brain's `reference.md` §9 states the rule and the
 precedence chain). Plugins auto-activate by their own descriptions; the
 trigger-router only nudges the brain's own workflows.
 
@@ -109,7 +108,7 @@ packs (game design, analytics) reuse the same shape.
 ## Domain pipelines (Phase 7)
 
 Both pipelines reuse the develop lifecycle exactly as instance manual §4 defines it, with a
-domain-shaped front end; manual §10 documents them. The lifecycle enters at `research` by
+domain-shaped front end; `reference.md` §10 documents them. The lifecycle enters at `research` by
 default (the trigger-router sends development intent there); the curator says "skip research"
 to enter at `plan`.
 

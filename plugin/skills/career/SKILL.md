@@ -1,5 +1,5 @@
 ---
-description: A private career pack — case studies from real shipped work, a master CV with role-tailored variants, a skill matrix backed by evidence, and mock interviews grounded in the brain's own history. Everything lives in .brain/private/, which is never committed with the project and never indexed. Use when the user says "case study", "mock interview", "update my CV", "tailor my CV for <role>", or "skill matrix". Requires a .brain/ (offer /brain:init when missing).
+description: Private career pack in .brain/private/ (never committed or indexed) — case studies from shipped work, CV variants, an evidence-backed skill matrix, mock interviews. Use for "case study", "mock interview", "update/tailor my CV" or "skill matrix".
 argument-hint: "<case study | cv | skills | mock interview> [details]"
 effort: high
 ---

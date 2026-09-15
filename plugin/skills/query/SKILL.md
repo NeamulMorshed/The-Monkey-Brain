@@ -1,5 +1,5 @@
 ---
-description: Answer a question from the project's Monkey Brain — index-first retrieval with citations, filing novel answers back as synthesis pages so explorations compound. Use when the user asks what the brain/wiki knows, wants a comparison or overview drawn from accumulated knowledge, or says "ask the brain" / "search the brain".
+description: Answer a question from the project's Monkey Brain — index-first retrieval with citations, novel answers filed back as synthesis pages. Use when the user asks what the brain knows, wants an overview or comparison, or says "ask the brain".
 argument-hint: "<question>"
 effort: high
 ---

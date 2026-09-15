@@ -1,5 +1,5 @@
 ---
-description: Run a 19-check health report on the project's Monkey Brain — broken links, orphans, stale flags, index freshness, Clippings backlog, log gaps, uncommitted changes, hook registration, injection budget, search coverage, WIP limits, instinct-queue overflow, specs without tests, open P0 findings, schema version, cache safety, cache-hit ratio, subagent outcomes, and CI presence — then triage the fixes. Use when the user says "brain doctor", "check brain health", "is the brain healthy", or before a release/handoff.
+description: Run the 19-check health report on the project's Monkey Brain (links, orphans, index, log gaps, hooks, budget, open P0s, schema, cache, CI) and triage the fixes. Use for "brain doctor", "check brain health", "is the brain healthy", or before a release.
 argument-hint: "[--strict]"
 effort: high
 ---
@@ -31,7 +31,7 @@ info is context.
    - WIP over limit or idle projects → close/pause a workstream in `projects/`.
    - instinct-queue overflow → ask the curator to promote or drop `instincts/pending/`.
    - schema drift → offer `/brain:init --update`.
-   - past ~100 pages → offer qmd for meaning-based search (manual §8).
+   - past ~100 pages → offer qmd for meaning-based search (`reference.md` §8).
    - proxy in front of the API (#16) → confirm it passes requests through unchanged, or remove it.
    - low cache-hit ratio (#17) → `/brain:usage` for the breakdown and the likely cause.
    - subagents returning nothing (#18) → review those dispatches' prompts and models in

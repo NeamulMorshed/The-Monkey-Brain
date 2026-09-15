@@ -1,7 +1,6 @@
 ---
-description: File a quick note into the right place in the project's Monkey Brain — "dump — we decided X", a fact to remember, a next step, an idea, a link to read later, or a correction worth a rule. Classifies each part of the note and routes it (decisions/ ADR, memory/, a workstream's Next, the ideas page, Clippings/, instincts/pending/). Use when the user says "dump", "jot this down", "we decided …", or pastes loose notes to keep. Requires a .brain/ (offer /brain:init when missing).
+description: File a loose note where it belongs in the Monkey Brain — a decision as an ADR, a fact in memory/, a next step on its workstream, an idea, a link in Clippings/, a repeated correction as an instinct. Use for "dump", "jot this down", "we decided …".
 argument-hint: "<the note>"
-model: sonnet
 effort: medium
 ---
 

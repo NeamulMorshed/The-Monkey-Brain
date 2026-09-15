@@ -17,7 +17,7 @@ Acting on [[brain-health-audit]]: three specs in order, each through plan → bu
 
 ## Now
 - [[brain-correctness]] — closed `done` in 0.30.0 after an independent review ([[brain-correctness-review]]): 15/15 ACs, 2 P1 + 4 P2 review findings fixed in review.
-- [[token-diet]] — plan drafted; in build.
+- [[token-diet]] — built (0.31.0, selftest 484 green, always-loaded bytes 26,491 → 16,550); in review.
 
 ## Next
 1. [[token-diet]] — model-routing table, fork instead of pin, context nudge, manual split, description cap, dependency slimming.
