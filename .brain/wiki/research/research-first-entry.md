@@ -6,12 +6,12 @@ tags: [lifecycle, trigger-router, research, plan-before-build]
 created: 2026-09-15
 updated: 2026-09-15
 sources: []
-related: [develop-lifecycle-dogfood, develop-lifecycle-fixes, research-first-entry-spec]
+related: [develop-lifecycle-dogfood, develop-lifecycle-fixes, research-first-routing]
 ---
 
 # Research-first entry to the develop lifecycle — research
 
-> **Question:** by which paths does a curator's development request reach `/brain:research` today, and what has to change so the lifecycle starts there by default, with one explicit curator skip? · **For:** [[research-first-entry-spec]]
+> **Question:** by which paths does a curator's development request reach `/brain:research` today, and what has to change so the lifecycle starts there by default, with one explicit curator skip? · **For:** [[research-first-routing]]
 
 **Curator's decision that framed this (2026-09-15):** "it should start from research. if a user doesn't want to research then they can skip this but by default the brain should start from research for this life cycle."
 
@@ -51,4 +51,4 @@ Make research the default entry for generic development intent, with one explici
 Not recommended: a hard gate in `guards.js` that blocks spec creation without a research page. The plan-before-build hint was kept advisory in v0.24.0 for the same reason, and the curator's instruction is "by default", which a routing default plus a plan-step rule satisfies.
 
 ## Filed
-Feeds: [[research-first-entry-spec]] · Extends: [[develop-lifecycle-dogfood]] (new finding: the automated entry point skipped stage one) · Related spec: [[develop-lifecycle-fixes]]
+Feeds: [[research-first-routing]] · Extends: [[develop-lifecycle-dogfood]] (new finding: the automated entry point skipped stage one) · Related spec: [[develop-lifecycle-fixes]]
