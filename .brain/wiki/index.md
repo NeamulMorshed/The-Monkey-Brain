@@ -34,4 +34,4 @@ _None yet._
 _None yet._
 
 ## 🧪 Research
-_None yet._
+- [[develop-lifecycle-dogfood]] — does research → plan → build → review → loop → wrap work end to end on this repo; 16 cited findings, 4 fixes recommended (2026-09-15)
