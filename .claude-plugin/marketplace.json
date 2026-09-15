@@ -11,7 +11,7 @@
       "name": "brain",
       "source": "./plugin",
       "displayName": "The Monkey Brain",
-      "description": "Per-project .brain/ knowledge engine: budgeted session context injection, an enforced knowledge SDLC (ingest / query / lint / wrap), token discipline with receipts, and compounding domain expertise packs. Ships with five capability plugins from the official marketplace.",
+      "description": "Per-project .brain/ knowledge engine: budgeted session context injection, an enforced knowledge SDLC (ingest / query / lint), a gated develop lifecycle (research → plan → build → review, wrapped per session), token discipline with receipts, and compounding domain expertise packs. Ships with five capability plugins from the official marketplace.",
       "version": "0.28.0",
       "author": {
         "name": "NeamulMorshed"
