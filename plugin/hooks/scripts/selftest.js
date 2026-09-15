@@ -1687,7 +1687,7 @@ try {
 
   // ---------- v0.31.0 token-diet (spec token-diet AC-1…9) ----------
   console.log('token-diet (v0.31.0 — model routing, context nudge, lighter manual and listing)');
-  const tdManual = fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'CLAUDE.md'), 'utf8');
+  const tdManual = fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'CLAUDE.md'), 'utf8').replace(/\r\n/g, '\n'); // brains get LF (0.33.1)
   const tdRefPath = path.join(SKILLS, 'init', 'brain-template', 'reference.md');
   const tdRef = fs.existsSync(tdRefPath) ? fs.readFileSync(tdRefPath, 'utf8') : '';
   const s5 = (tdManual.split(/^## 5\./m)[1] || '').split(/^## 6\./m)[0];
@@ -1812,7 +1812,7 @@ try {
   if (fs.existsSync(tdqM)) fs.writeFileSync(tdqM, tdqText().replace(/^project:.*$/m, 'project: Plain Name # legacy'));
   spawnSync(process.execPath, [NB2, '--project', TDQ, '--update'], { encoding: 'utf8', timeout: 20000 });
   check('--update keeps an unquoted name and drops its comment (review P2)', /^project: "Plain Name"$/m.test(tdqText()), (/^project:.*$/m.exec(tdqText()) || [''])[0]);
-  const tdManualNow = fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'CLAUDE.md'), 'utf8');
+  const tdManualNow = fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'CLAUDE.md'), 'utf8').replace(/\r\n/g, '\n');
   const tdRefNow = fs.existsSync(tdRefPath) ? fs.readFileSync(tdRefPath, 'utf8') : '';
   check('manual §9 keeps the credential rule and the security-P0 wrap gate on the always-loaded path (review P2)', /touch a credential/.test(tdManualNow) && /P0s gate/.test(tdManualNow) && Buffer.byteLength(tdManualNow) <= 10000, `${Buffer.byteLength(tdManualNow)} B`);
   check('reference.md §8 documents the recall, context-nudge and model-block knobs (review P2)', /MONKEY_BRAIN_RECALL/.test(tdRefNow) && /MONKEY_BRAIN_CONTEXT_NUDGE/.test(tdRefNow) && /MONKEY_BRAIN_MODEL_BLOCK/.test(tdRefNow));
@@ -2079,6 +2079,23 @@ try {
     const driftWf = path.join(SKILLS, '..', '..', '.github', 'workflows', 'bundle-drift.yml');
     const driftText = fs.existsSync(driftWf) ? fs.readFileSync(driftWf, 'utf8') : '';
     check('a scheduled CI job checks brain-all against the live catalog (review P1)', /schedule:/.test(driftText) && /gen-brain-all\.js --check/.test(driftText));
+  }
+
+  // 0.33.1 — a Windows marketplace clone checks the template out CRLF; brains still get LF manuals.
+  const PLUG_CRLF = path.join(ROOT, 'plug-crlf');
+  fs.cpSync(path.join(SKILLS, '..'), PLUG_CRLF, { recursive: true });
+  for (const m of ['CLAUDE.md', 'reference.md']) {
+    const mp = path.join(PLUG_CRLF, 'skills', 'init', 'brain-template', m);
+    if (fs.existsSync(mp)) fs.writeFileSync(mp, fs.readFileSync(mp, 'utf8').replace(/\r?\n/g, '\r\n'));
+  }
+  const CRLF_P = path.join(ROOT, 'crlf-proj');
+  fs.mkdirSync(CRLF_P, { recursive: true });
+  const crlfRun = spawnSync(process.execPath, [path.join(PLUG_CRLF, 'skills', 'init', 'scripts', 'new-brain.js'), '--project', CRLF_P, '--name', 'Crlf Brain'], { encoding: 'utf8', timeout: 30000 });
+  const crlfManual = (() => { try { return fs.readFileSync(path.join(CRLF_P, '.brain', 'CLAUDE.md'), 'utf8'); } catch { return ''; } })();
+  check('a CRLF template checkout still scaffolds an LF manual within 10,000 bytes (0.33.1)', crlfManual.length > 0 && !crlfManual.includes('\r') && Buffer.byteLength(crlfManual) <= 10000, (crlfRun.stderr || '') + ` ${Buffer.byteLength(crlfManual)} B`);
+  if (fs.existsSync(path.join(SKILLS, '..', '..', 'bundles'))) {
+    const gattr = path.join(SKILLS, '..', '..', '.gitattributes');
+    check('the repo ships LF on every checkout (.gitattributes eol=lf) (0.33.1)', fs.existsSync(gattr) && /^\*\s+text=auto\s+eol=lf\b/m.test(fs.readFileSync(gattr, 'utf8')));
   }
 
   console.log('brain-status.js — no-brain offer');

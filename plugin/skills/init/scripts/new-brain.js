@@ -73,7 +73,9 @@ function resolveTemplate() {
 
 function expandPlaceholders(file, name, date) {
   const text = fs.readFileSync(file, 'utf8');
-  fs.writeFileSync(file, text.split('{{PROJECT}}').join(name).split('{{DATE}}').join(date), 'utf8');
+  // Always LF: a Windows git checkout of the template is CRLF, one extra byte per line of an
+  // always-loaded manual (0.33.1).
+  fs.writeFileSync(file, text.replace(/\r\n/g, '\n').split('{{PROJECT}}').join(name).split('{{DATE}}').join(date), 'utf8');
 }
 
 function mdFilesUnder(dir) {

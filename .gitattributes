@@ -1,0 +1,3 @@
+# Ship LF on every checkout. Marketplace installs are git clones: with core.autocrlf on Windows
+# every file came out CRLF, one extra byte per line of the always-loaded manual (0.33.1).
+* text=auto eol=lf

@@ -1,5 +1,13 @@
 # Changelog — brain plugin
 
+## 0.33.1 — 2026-09-16 (LF manuals on Windows)
+
+- **Scaffolded files are always LF** — a marketplace install is a git clone, and on Windows
+  (`core.autocrlf`) the template came out CRLF, so a new brain's always-loaded manual was 10,169
+  bytes against its 10,000-byte budget. `new-brain.js` now writes LF whatever the checkout, and a
+  root `.gitattributes` (`* text=auto eol=lf`) ships LF on every fresh clone. Caught by running the
+  installed cache's selftest after the 0.33.0 reinstall.
+
 ## 0.33.0 — 2026-09-16 (router misfires, dependency health, drift)
 
 Spec `specs/router-and-drift.md`, from the audit and a router probe that reproduced six
