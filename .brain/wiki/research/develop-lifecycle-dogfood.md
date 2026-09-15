@@ -6,7 +6,7 @@ tags: [lifecycle, dogfood, hooks, skills]
 created: 2026-09-15
 updated: 2026-09-15
 sources: []
-related: []
+related: [develop-lifecycle-fixes]
 ---
 
 # Develop lifecycle dogfood — research
