@@ -162,6 +162,93 @@ function extractAliases(fmAliases) {
   return out;
 }
 
+/**
+ * Is a project-relative path (as `path.relative(projectRoot, abs)` returns it) inside the project?
+ * Outside: `..`, `../…`, an absolute path, or a drive-letter path (Windows returns one across
+ * drives). A folder merely named `..odd` is inside. The one containment test for every gate (v0.30.0).
+ */
+function inProject(rel) {
+  const r = String(rel || '').split('\\').join('/');
+  return r !== '..' && !r.startsWith('../') && !r.startsWith('/') && !/^[A-Za-z]:/.test(r) && !path.isAbsolute(r);
+}
+
+/** The body of a `## heading` section (up to the next `## `), or null when the heading is absent. */
+function mdSection(text, heading) {
+  const lines = String(text || '').split(/\r?\n/);
+  const at = lines.findIndex((l) => l.startsWith(`## ${heading}`));
+  if (at < 0) return null;
+  const out = [];
+  for (let i = at + 1; i < lines.length && !/^## /.test(lines[i]); i++) out.push(lines[i]);
+  return out.join('\n').trim();
+}
+
+/** Placeholder narratives written by /brain:init's template and by the resume hook's own seed. */
+const SEED_NARRATIVE = /^_(Nothing yet\b|Auto-created by the Monkey Brain resume hook)[\s\S]*_$/;
+
+/**
+ * True when a resume.md still holds only its seed (v0.30.0): "Where we left off" is empty or a seed
+ * placeholder and "Next steps" has nothing but `- [ ] …`. The task log never counts — hooks write it.
+ * A file with neither heading is someone's own format, never a seed.
+ */
+function isSeedResume(text) {
+  const body = String(text || '').replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
+  const where = mdSection(body, 'Where we left off');
+  const next = mdSection(body, 'Next steps');
+  if (where === null && next === null) return false;
+  const whereSeed = !where || SEED_NARRATIVE.test(where);
+  const nextSeed = !next || next.split(/\r?\n/).every((l) => !l.trim() || /^\s*-\s*\[ \]\s*…\s*$/.test(l));
+  return whereSeed && nextSeed;
+}
+
+/**
+ * The project's resume file — the ONE file every reader and writer uses (v0.30.0): resume.js
+ * injects it, resume-log.js appends to it, snapshot.js copies its next steps. Candidates are
+ * <brain>/resume.md then <cwd>/resume.md; the first existing file with a real narrative wins, else
+ * the first existing file, else — only with `create`, inside a brain — the brain path; else null.
+ * Preferring a real narrative over location lets a brain seeded beside an older root resume.md
+ * recover without a migration.
+ */
+function resumePath(cwd, opts = {}) {
+  const brain = findBrainDir(cwd);
+  const candidates = [];
+  if (brain) candidates.push(path.join(brain, 'resume.md'));
+  candidates.push(path.join(path.resolve(cwd || process.cwd()), 'resume.md'));
+  const existing = candidates.filter((c) => fs.existsSync(c));
+  const real = existing.find((c) => !isSeedResume(readTextSafe(c)));
+  if (real) return real;
+  if (existing.length) return existing[0];
+  return opts.create && brain ? candidates[0] : null;
+}
+
+const CLOSED_INLINE = /(resolved|accepted|closed|fixed|✅|~~)/i;
+const CLOSING_HEADING = /\b(fixed|resolved|closed|accepted|done)\b/i;
+
+/**
+ * Open P0 findings in a markdown page (v0.30.0) — the one detector doctor #14, loops and digests
+ * share. A line mentioning P0 is closed inline (resolved / accepted / closed / fixed / ✅ / ~~) or by
+ * its section: a heading containing fixed / resolved / closed / accepted / done closes every line
+ * beneath it until the next heading of the same or higher level. "0 P0" / "no P0" are counts, not
+ * findings; fenced code is skipped. Returns the open lines.
+ */
+function openP0Lines(text) {
+  const out = [];
+  let closedAt = 0; // level of the heading that closed the current section; 0 = open
+  let fence = false;
+  for (const line of String(text || '').split(/\r?\n/)) {
+    if (/^\s*```/.test(line)) { fence = !fence; continue; }
+    if (fence) continue;
+    const h = /^(#{1,6})\s+(.*)$/.exec(line);
+    if (h) {
+      if (closedAt && h[1].length <= closedAt) closedAt = 0;
+      if (!closedAt && CLOSING_HEADING.test(h[2])) { closedAt = h[1].length; continue; }
+    }
+    if (closedAt || !/\bP0\b/.test(line)) continue;
+    if (/\b(0|no|zero)\s+P0s?\b/i.test(line) || CLOSED_INLINE.test(line)) continue;
+    out.push(line);
+  }
+  return out;
+}
+
 /** All files under dir (recursive), optionally filtered by extension. */
 function listFilesRecursive(dir, ext) {
   const out = [];
@@ -214,6 +301,11 @@ module.exports = {
   readTextSafe,
   parseFrontmatter,
   extractAliases,
+  inProject,
+  mdSection,
+  isSeedResume,
+  resumePath,
+  openP0Lines,
   listFilesRecursive,
   estimateTokens,
   today,

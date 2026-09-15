@@ -8,10 +8,10 @@
  *
  *   BLOCK-level (decision:"block" + reason → Claude must act):
  *     - missing/incomplete frontmatter (no `type:` / `updated:`, schema §3);
- *     - orphan page — no inbound [[link]] from any other wiki page (§5);
+ *     - orphan page — no inbound [[link]] from any other wiki page (§6);
  *       index/log/dashboard are exempt.
  *   ADVISORY (additionalContext → Claude verifies intent):
- *     - unresolved [[wikilinks]] — legal as deliberate TODO markers (§5),
+ *     - unresolved [[wikilinks]] — legal as deliberate TODO markers (§6),
  *       so they are reported, not blocked. Aliases and folder-qualified
  *       links resolve; code spans/fences are ignored.
  *
@@ -76,8 +76,9 @@ async function main() {
   // Orphan check: ≥1 inbound link (by slug, qualified path, or own alias).
   let orphan = false;
   if (!ORPHAN_EXEMPT.has(slug)) {
-    const needles = [new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(slug)}(?:[|#\\]])`)];
-    for (const a of extractAliases(fm.aliases)) needles.push(new RegExp(`\\[\\[${esc(a)}(?:[|#\\]])`, 'i'));
+    // `\|` is a pipe escaped inside a markdown table — still a link (v0.30.0).
+    const needles = [new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(slug)}(?:\\\\?\\||#|\\])`)];
+    for (const a of extractAliases(fm.aliases)) needles.push(new RegExp(`\\[\\[${esc(a)}(?:\\\\?\\||#|\\])`, 'i'));
     orphan = true;
     for (const f of files) {
       if (path.resolve(f) === abs) continue;
@@ -92,12 +93,12 @@ async function main() {
   const blockers = [...fmIssues];
   if (orphan) {
     blockers.push(
-      `no inbound links — every page needs ≥1 [[link]] from the graph (schema §5). ` +
+      `no inbound links — every page needs ≥1 [[link]] from the graph (schema §6). ` +
         `If this page is mid-ingest, wire it into the index/hub now, then continue`
     );
   }
   const advisory = broken.length
-    ? `unresolved [[wikilinks]] on ${rel}: ${broken.map((b) => `[[${b}]]`).join(', ')} — fine if deliberate TODO markers (schema §5); otherwise fix the slug or create the page.`
+    ? `unresolved [[wikilinks]] on ${rel}: ${broken.map((b) => `[[${b}]]`).join(', ')} — fine if deliberate TODO markers (schema §6); otherwise fix the slug or create the page.`
     : '';
 
   if (blockers.length) {

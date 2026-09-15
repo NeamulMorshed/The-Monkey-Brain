@@ -87,8 +87,8 @@ add(1, 'broken-links', broken.size ? 'warn' : 'ok', broken.size ? `${broken.size
 const orphans = [];
 for (const p of pages) {
   if (ORPHAN_EXEMPT.has(p.slug)) continue;
-  const needles = [new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(p.slug)}(?:[|#\\]])`)];
-  for (const a of extractAliases(p.fm.aliases)) needles.push(new RegExp(`\\[\\[${esc(a)}(?:[|#\\]])`, 'i'));
+  const needles = [new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(p.slug)}(?:\\\\?\\||#|\\])`)]; // `\|` = table-escaped pipe
+  for (const a of extractAliases(p.fm.aliases)) needles.push(new RegExp(`\\[\\[${esc(a)}(?:\\\\?\\||#|\\])`, 'i'));
   if (!pages.some((q) => q.file !== p.file && needles.some((re) => re.test(q.raw)))) orphans.push(p.rel);
 }
 add(2, 'orphans', orphans.length ? 'warn' : 'ok', orphans.length ? `${orphans.length}: ${orphans.slice(0, 6).join(', ')}` : 'none');
@@ -125,10 +125,15 @@ add(6, 'log-gaps', logGap ? 'warn' : 'ok', logGap ? 'sessions/ has activity newe
 
 // ---- 7. uncommitted .brain/ changes -----------------------------------------
 let git;
-try { git = spawnSync('git', ['-C', brain, 'status', '--porcelain'], { encoding: 'utf8', timeout: 8000 }); } catch { git = null; }
+try { git = spawnSync('git', ['-C', brain, 'status', '--porcelain', '--', '.'], { encoding: 'utf8', timeout: 8000 }); } catch { git = null; }
 if (!git || git.status !== 0) add(7, 'uncommitted', 'info', 'not a git repo (or git unavailable) — skipped');
 else {
-  const dirty = git.stdout.split('\n').filter((l) => l.trim()).length;
+  // Only .brain/ (the pathspec), and never the files the hooks write themselves (v0.30.0, as wrap.js).
+  const dirty = git.stdout
+    .split('\n')
+    .filter((l) => l.trim())
+    .map((l) => l.slice(3).split(' -> ').pop().replace(/^"|"$/g, ''))
+    .filter((p) => !/(^|\/)(sessions\/|resume\.md$)/.test(p)).length;
   add(7, 'uncommitted', dirty ? 'warn' : 'ok', dirty ? `${dirty} uncommitted change(s) in .brain/ — commit per §7` : 'clean');
 }
 
@@ -179,10 +184,7 @@ add(13, 'specs-without-tests', noTestPlan.length ? 'warn' : 'ok', noTestPlan.len
 // ---- 14. open P0 findings ---------------------------------------------------
 const p0 = [];
 for (const p of [...listActive('projects'), ...pages.filter((x) => x.rel.startsWith('syntheses/'))]) {
-  const raw = p.raw || '';
-  for (const line of raw.split('\n')) {
-    if (/\bP0\b/.test(line) && !/(resolved|accepted|closed|fixed|✅|~~)/i.test(line)) { p0.push(p.name || p.slug); break; }
-  }
+  if (lib.openP0Lines(p.raw || '').length) p0.push(p.name || p.slug); // section-aware (v0.30.0)
 }
 add(14, 'open-p0', p0.length ? 'crit' : 'ok', p0.length ? `${p0.length} file(s) with open P0 finding(s): ${[...new Set(p0)].join(', ')} — these gate /brain:wrap` : 'none');
 
@@ -219,7 +221,13 @@ else {
 }
 
 // ---- 18. dispatch outcomes (agents.md ledger) -------------------------------
-const outcomes = [...agentsText.matchAll(/↳ (done|empty)/g)].map((m) => m[1]).slice(-20);
+// Legacy phantom lines (Claude Code's internal forks, logged before v0.30.0) are not dispatches.
+const outcomes = agentsText
+  .split('\n')
+  .filter((l) => !/· agent · on unknown · 0 tokens · 0 turn/.test(l))
+  .map((l) => (/↳ (done|empty)/.exec(l) || [])[1])
+  .filter(Boolean)
+  .slice(-20);
 const empties = outcomes.filter((o) => o === 'empty').length;
 if (!outcomes.length) add(18, 'dispatch-outcomes', 'info', 'no subagent outcomes recorded yet');
 else add(18, 'dispatch-outcomes', outcomes.length >= 4 && empties / outcomes.length >= 0.25 ? 'warn' : 'ok', `last ${outcomes.length} dispatch(es): ${outcomes.length - empties} done · ${empties} returned nothing${empties ? ' — check those agents\' prompts and models in sessions/agents.md' : ''}`);
@@ -228,7 +236,8 @@ else add(18, 'dispatch-outcomes', outcomes.length >= 4 && empties / outcomes.len
 const stacks = ci.detect(projectRoot).map((j) => j.name);
 let workflows = [];
 try { workflows = fs.readdirSync(path.join(projectRoot, '.github', 'workflows')).filter((f) => /\.ya?ml$/i.test(f)); } catch {}
-if (!stacks.length) add(19, 'ci-presence', 'info', 'no code project detected (package.json, pyproject / requirements, go.mod, .sln / .csproj, Cargo.toml)');
+if (!stacks.length && workflows.length) add(19, 'ci-presence', 'ok', `CI present (${workflows.join(', ')})`);
+else if (!stacks.length) add(19, 'ci-presence', 'info', 'no code project detected (package.json, pyproject / requirements, go.mod, .sln / .csproj, Cargo.toml)');
 else add(19, 'ci-presence', workflows.length ? 'ok' : 'warn', workflows.length ? `${stacks.join(', ')} project with CI (${workflows.join(', ')})` : `${stacks.join(', ')} project with no CI workflow — /brain:ci installs one`);
 
 // ---- verdict + report -------------------------------------------------------

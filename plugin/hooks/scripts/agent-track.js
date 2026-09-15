@@ -4,13 +4,16 @@
  *
  * Model economics made visible (ROADMAP Phase 2 #7, feeding the P5.5 routing
  * policy): every agent dispatch inside a brain project is logged to
- * .brain/sessions/agents.md (type · model · purpose), and heavy dispatches
- * without an explicit model are blocked ONCE per session with the routing
- * table — one corrective retry, then the session is left alone.
+ * .brain/sessions/agents.md (type · model · purpose), and every heavy dispatch
+ * without an explicit model is blocked with the routing table (v0.30.0 — it
+ * used to be once per session, which let every later dispatch through).
+ * Forks are exempt: Claude Code ignores a model override on them.
  *
  * On SubagentStop (v3 P11) it appends the outcome: done/empty, the model(s)
  * that actually ran, and the real token count from the subagent's own
- * transcript — the ledger doctor check 18 reads. It never blocks a stop.
+ * transcript — the ledger doctor check 18 reads. Claude Code's internal forks
+ * (no agent type, no transcript) are not dispatches and leave no line. It
+ * never blocks a stop.
  *
  *   Routing policy: scripts = deterministic checks · haiku = classification /
  *   triage · sonnet = routine execution / research fan-out · main model =
@@ -22,7 +25,6 @@
 'use strict';
 
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
 const usage = require(path.join(__dirname, 'usage.js'));
@@ -32,7 +34,7 @@ const loops = require(path.join(__dirname, 'loop.js'));
 const VERIFYING = /\b(verif\w*|review\w*|audit\w*|critique\w*|check(s|ing)?)\b/i;
 
 /** Agent types that default to the (expensive) main model when unpinned. */
-const HEAVY_TYPES = new Set(['', 'general-purpose', 'claude', 'Plan', 'fork']);
+const HEAVY_TYPES = new Set(['', 'general-purpose', 'claude', 'Plan']);
 
 function stamp() {
   const d = new Date();
@@ -75,6 +77,9 @@ function recordOutcome(input) {
     models.add(r.model);
     tokens += r.input + r.cacheWrite + r.cacheRead + r.output;
   }
+  // SubagentStop also fires for Claude Code's internal forks: no agent type, no transcript. Not a
+  // dispatch — logging them as "done" drowned real outcomes in doctor 18's window (v0.30.0).
+  if (!input.agent_type && !seen.size) return;
   const outcome = String(input.last_assistant_message || '').trim() ? 'done' : 'empty';
   appendLog(
     brain,
@@ -110,11 +115,7 @@ async function main() {
     }
   }
 
-  const marker = path.join(
-    os.tmpdir(),
-    `mb-agent-${String(input.session_id || 'nosession').replace(/[^\w-]/g, '')}`
-  );
-  const willBlock = !model && HEAVY_TYPES.has(type) && !fs.existsSync(marker);
+  const willBlock = !model && HEAVY_TYPES.has(type);
 
   // Log first so blocked attempts leave a trace too.
   appendLog(
@@ -124,12 +125,11 @@ async function main() {
   );
 
   if (willBlock) {
-    fs.writeFileSync(marker, '');
     lib.block(
       `🐵 agent-track: pick a model for this dispatch explicitly (Agent tool \`model\` param) — ` +
         `routing policy: haiku = classification/triage · sonnet = routine execution/research fan-out · ` +
         `opus/main = judgment, synthesis, review. Re-dispatch with the model matching the work. ` +
-        `(Enforced once per session; dispatches are logged in .brain/sessions/agents.md.)`
+        `(Applies to every unpinned dispatch of a main-model agent type; dispatches are logged in .brain/sessions/agents.md.)`
     );
   }
 }

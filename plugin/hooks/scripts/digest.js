@@ -62,9 +62,7 @@ function digest(brain, opts = {}) {
   // Blocked
   const p0 = [];
   for (const d of [...projects, ...openSpecs, ...docs(brain, path.join('wiki', 'syntheses'))]) {
-    for (const line of d.raw.split('\n')) {
-      if (loops.openP0(line)) p0.push(`- ${d.name}: ${line.replace(/^\s*[-*]\s*/, '').trim().slice(0, 120)}`);
-    }
+    for (const line of lib.openP0Lines(d.raw)) p0.push(`- ${d.name}: ${line.replace(/^\s*[-*]\s*/, '').trim().slice(0, 120)}`);
   }
   const blocks = lib.readJsonSafe(path.join(brain, 'sessions', 'gate-blocks.json'), {}) || {};
   const review = Object.entries(blocks)

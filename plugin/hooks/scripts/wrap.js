@@ -37,10 +37,16 @@ const GRACE_MS = 90_000;
 /** An ADR filed within this window of the build/review log entry counts as "distilled". */
 const DECIDE_GRACE_MS = 15 * 60_000;
 
+/** Files the hooks write themselves (v0.30.0): the agent ledger, snapshots, resume.md's task log. */
+const HOOK_OWNED = /(^|\/)(sessions\/|resume\.md$)/;
+
 function newestWikiMtime(wikiDir, logPath) {
+  // index.md is skipped too: SessionEnd's refreshIndex rewrites it after the log (v0.30.0).
+  const idxPath = path.join(path.dirname(logPath), 'index.md');
   let newest = 0;
   for (const f of lib.listFilesRecursive(wikiDir, '.md')) {
-    if (path.resolve(f) === logPath) continue;
+    const abs = path.resolve(f);
+    if (abs === logPath || abs === idxPath) continue;
     try {
       const m = fs.statSync(f).mtimeMs;
       if (m > newest) newest = m;
@@ -147,7 +153,12 @@ function gitCheck(input, brain) {
   } catch { git = null; }
   if (!git || git.status !== 0) return null; // not a git repo, or git unavailable — silent
 
-  const dirty = git.stdout.split('\n').filter((l) => l.trim()).length;
+  // Porcelain lines are "XY path" (renames "XY old -> new"); hook-owned paths never nudge.
+  const dirty = git.stdout
+    .split('\n')
+    .filter((l) => l.trim())
+    .map((l) => l.slice(3).split(' -> ').pop().replace(/^"|"$/g, ''))
+    .filter((p) => !HOOK_OWNED.test(p)).length;
   if (!dirty) return null;
 
   return {

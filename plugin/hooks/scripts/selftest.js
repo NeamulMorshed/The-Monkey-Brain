@@ -606,11 +606,13 @@ try {
   console.log('agent-track.js (#7 PreToolUse Agent)');
   const asess = `st${process.pid}a1`;
   let a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: asess, tool_input: { subagent_type: 'general-purpose', description: 'research fan-out' } }));
-  check('heavy dispatch without model blocks once', a.status === 2 && /model/.test(a.stderr), `status=${a.status}`);
+  check('heavy dispatch without model blocks, naming the routing policy (not a once-per-session rule)', a.status === 2 && /model/.test(a.stderr) && !/once per session/i.test(a.stderr), `status=${a.status} ${a.stderr}`);
   a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: asess, tool_input: { subagent_type: 'general-purpose', model: 'sonnet', description: 'research fan-out' } }));
   check('explicit model passes', a.status === 0, `status=${a.status} stderr=${a.stderr}`);
   a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: asess, tool_input: { subagent_type: 'claude', description: 'still no model' } }));
-  check('block fires only once per session', a.status === 0, `status=${a.status}`);
+  check('every model-less heavy dispatch is blocked, not only the first (AC-10)', a.status === 2, `status=${a.status}`);
+  a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: asess, tool_input: { subagent_type: 'fork', description: 'forked slice' } }));
+  check('forks pass: Claude Code ignores a model override on them (AC-10)', a.status === 0, `status=${a.status} ${a.stderr}`);
   a = run('agent-track.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Agent', session_id: `st${process.pid}a2`, tool_input: { subagent_type: 'Explore', prompt: 'find the config' } }));
   check('pinned-model agent types pass unblocked', a.status === 0, `status=${a.status} stderr=${a.stderr}`);
   const agentsText = fs.readFileSync(path.join(BRAIN, 'sessions', 'agents.md'), 'utf8');
@@ -1487,6 +1489,148 @@ try {
   check('README hook #2 row and skills README state research → plan → build with the skip (AC-8)', /research → plan → build/.test(pluginReadmeRow) && /skip research/i.test(pluginReadmeRow) && /skip research/i.test(rd('README.md')));
   const schemaManual = path.join(SKILLS, '..', '..', 'schema', 'brain-template', 'CLAUDE.md');
   if (fs.existsSync(schemaManual)) check('bundled manual and schema master stay identical (AC-8)', manual === fs.readFileSync(schemaManual, 'utf8')); // marketplace installs ship only plugin/
+
+  // ---------- v0.30.0 brain-correctness (spec brain-correctness AC-1…14) ----------
+  console.log('brain-correctness (v0.30.0 — resume resolver, gate paths, health signal, Stop nudges)');
+  const libC = require(path.join(HERE, 'lib.js'));
+  const mkBrain = (dir) => {
+    fs.mkdirSync(path.join(dir, '.brain'), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.brain', 'CLAUDE.md'), '# brain\n');
+    return path.join(dir, '.brain');
+  };
+  const seedText =
+    fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'resume.md'), 'utf8').replace(/\{\{PROJECT\}\}/g, 'p').replace(/\{\{DATE\}\}/g, '2026-09-15') +
+    '- [2026-09-15 10:00] ■ session ended (exit)\n';
+  const realText = (who) => `---\ntitle: "Resume"\ntype: resume\nupdated: 2026-09-15 09:00\n---\n\n## Where we left off\n${who} narrative is real.\n\n## Next steps\n- [ ] ${who} next step\n\n## Task log (auto)\n`;
+
+  // AC-1/2 — one resolver for every resume reader and writer; a seed never asks "continue?".
+  const RB = path.join(ROOT, 'resume-both');
+  const RBB = mkBrain(RB);
+  fs.writeFileSync(path.join(RBB, 'resume.md'), seedText);
+  fs.writeFileSync(path.join(RB, 'resume.md'), realText('root'));
+  check('lib.isSeedResume: the template seed (with task-log lines) is a seed; a real narrative is not (AC-2)', typeof libC.isSeedResume === 'function' && libC.isSeedResume(seedText) && !libC.isSeedResume(realText('x')));
+  check('lib.resumePath: a real root narrative beats a seeded brain copy (AC-1)', typeof libC.resumePath === 'function' && path.resolve(libC.resumePath(RB) || '.') === path.resolve(RB, 'resume.md'), String(libC.resumePath && libC.resumePath(RB)));
+  r = run('resume.js', { cwd: RB, hook_event_name: 'SessionStart', source: 'startup' });
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  let rbCtx = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('resume.js injects the real root narrative, not the seeded brain copy (AC-1)', rbCtx.includes('root narrative is real') && !rbCtx.includes('Nothing yet'), rbCtx.slice(0, 200));
+  r = run('resume-log.js', { cwd: RB, hook_event_name: 'TaskCompleted', task: { subject: 'resolver task' } });
+  check('resume-log.js appends to the same file resume.js read (AC-1)', fs.readFileSync(path.join(RB, 'resume.md'), 'utf8').includes('resolver task') && !fs.readFileSync(path.join(RBB, 'resume.md'), 'utf8').includes('resolver task'));
+  r = run('snapshot.js', { cwd: RB, hook_event_name: 'PreCompact', trigger: 'manual' });
+  const rbSnaps = fs.existsSync(path.join(RBB, 'sessions')) ? fs.readdirSync(path.join(RBB, 'sessions')).filter((f) => f.endsWith('-precompact.md')) : [];
+  const rbSnap = rbSnaps.length ? fs.readFileSync(path.join(RBB, 'sessions', rbSnaps[0]), 'utf8') : '';
+  check('snapshot.js copies next steps from the same file (AC-1)', rbSnap.includes('root next step') && !rbSnap.includes('- [ ] …'), rbSnap.slice(0, 300));
+  fs.writeFileSync(path.join(RBB, 'resume.md'), realText('brain'));
+  r = run('resume.js', { cwd: RB, hook_event_name: 'SessionStart', source: 'startup' });
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  rbCtx = (out.hookSpecificOutput || {}).additionalContext || '';
+  check('both narratives real → the brain copy wins (AC-1)', rbCtx.includes('brain narrative is real'), rbCtx.slice(0, 200));
+  const RS = path.join(ROOT, 'resume-seed');
+  const RSB = mkBrain(RS);
+  fs.writeFileSync(path.join(RSB, 'resume.md'), seedText);
+  r = run('resume.js', { cwd: RS, hook_event_name: 'SessionStart', source: 'startup' });
+  check('a seed-only resume (even with task-log lines) injects nothing — no "continue?" question (AC-2)', r.status === 0 && r.stdout === '', (r.stdout || '').slice(0, 200));
+  const wrapSkillC = fs.readFileSync(path.join(SKILLS, 'wrap', 'SKILL.md'), 'utf8');
+  check('/brain:wrap updates the resume file the hook reported, 2–4 lines, history to the log (AC-3)', /resume file the session-start hook reported/.test(wrapSkillC) && !/in the engine\s+repo/.test(wrapSkillC) && /2–4 lines/.test(wrapSkillC) && /history[^.\n]*wiki\/log\.md/i.test(wrapSkillC));
+
+  // AC-4/5/6 — gates judge the project-relative path; one containment test; the log's updated: line.
+  const SPX = path.join(ROOT, 'specs', 'ctl');
+  const SPXB = mkBrain(SPX);
+  fs.mkdirSync(path.join(SPXB, 'specs'), { recursive: true });
+  fs.writeFileSync(path.join(SPXB, 'specs', 'arch.md'), '---\ntitle: "Arch"\ntype: spec\ntier: architecture\nstatus: active\nplan_approved: false\ntdd: false\n---\n\n- AC-1 …\n');
+  r = run('guards.js', { cwd: SPX, session_id: 'spx', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(SPX, 'src', 'core.js'), content: 'export {}' } });
+  check('a project under a parent folder named specs is still plan-gated (AC-4)', r.status === 2 && /plan/.test(r.stderr), `status=${r.status} ${r.stderr}`);
+  r = run('guards.js', { cwd: SPX, session_id: 'spx', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(SPX, 'tests', 'core.test.js'), content: 'test' } });
+  check('a test file inside that project still passes the gates (AC-4)', r.status === 0, `status=${r.status} ${r.stderr}`);
+  const ip = typeof libC.inProject === 'function' ? libC.inProject : () => null;
+  check('lib.inProject: inside, "..odd", "..", "../x", absolute and drive-letter paths (AC-5)', ip('src/a.js') === true && ip('..odd/x.js') === true && ip('..') === false && ip('../x.js') === false && ip('D:/other/x.js') === false && ip(path.resolve(ROOT, 'x.js')) === false);
+  const guardsSrc = fs.readFileSync(path.join(HERE, 'guards.js'), 'utf8');
+  check('guards: the tier gates and the learned-bans guard share lib.inProject (AC-5)', (guardsSrc.match(/lib\.inProject\(/g) || []).length >= 2 && !/relP\.startsWith\('\.\.'\)/.test(guardsSrc));
+  r = run('guards.js', evt({ hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: path.join(BRAIN, 'wiki', 'log.md'), old_string: 'updated: 2026-07-17', new_string: 'gone' } }));
+  check('the log updated: exemption needs an updated: date on both sides (AC-6)', r.status === 2 && /append-only/.test(r.stderr), `status=${r.status}`);
+
+  // AC-7 — section-aware open-P0 detection, shared by doctor, loop and digest.
+  const op = typeof libC.openP0Lines === 'function' ? libC.openP0Lines : () => ['missing'];
+  check('openP0Lines: P0 items under a "fixed" heading are closed (AC-7)', op('## Findings (most severe first, all fixed)\n1. **P0 — glob** Fix: tokenizer\n').length === 0);
+  check('openP0Lines: an open P0 under a plain heading counts (AC-7)', op('## Findings\n1. **P0 — glob** broken\n').length === 1);
+  check('openP0Lines: a lower heading stays closed, a sibling heading reopens (AC-7)', op('## Findings (all fixed)\n### P0\n- **P0 — a**\n## Open\n- P0: b\n').length === 1);
+  check('openP0Lines: "0 P0" and "no P0" never count (AC-7)', op('0 P0, 6 P1 found\nno P0 findings\n').length === 0);
+  write('.brain/wiki/syntheses/fixed-review.md', '---\ntitle: "Fixed review"\ntype: synthesis\nupdated: 2026-09-15\n---\n\n## Findings (all fixed)\n1. **P0 — x** Fix: y\n');
+  write('.brain/wiki/syntheses/open-review.md', '---\ntitle: "Open review"\ntype: synthesis\nupdated: 2026-09-15\n---\n\n## Findings\n1. **P0 — x** still open\n');
+  const p0f = finding(docFindings(ccEnv), 'open-p0');
+  check('doctor 14 ignores fixed P0s and still flags open ones (AC-7)', !/fixed-review/.test(p0f.detail || '') && /open-review/.test(p0f.detail || ''), JSON.stringify(p0f));
+  check('doctor, loop and digest share lib.openP0Lines (AC-7)', [path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), path.join(HERE, 'loop.js'), path.join(HERE, 'digest.js')].every((f) => /openP0Lines\(/.test(fs.readFileSync(f, 'utf8'))));
+  for (const f of ['wiki/syntheses/fixed-review.md', 'wiki/syntheses/open-review.md']) fs.rmSync(path.join(BRAIN, f), { force: true });
+
+  // AC-8 — no phantom ledger lines; doctor 18 ignores legacy ones.
+  const aglogBefore = fs.readFileSync(AGLOG, 'utf8');
+  ar = run('agent-track.js', { cwd: PROJ, session_id: `st${process.pid}`, hook_event_name: 'SubagentStop', agent_id: 'fork1', agent_type: '', last_assistant_message: 'internal fork result', transcript_path: path.join(ROOT, 'nope.jsonl') });
+  check('a typeless SubagentStop with no transcript records leaves no ledger line (AC-8)', ar.status === 0 && fs.readFileSync(AGLOG, 'utf8') === aglogBefore, fs.readFileSync(AGLOG, 'utf8').slice(-120));
+  const realOut = (o) => `- [x] ↳ ${o} · Explore · on claude-sonnet-5 · 10 tokens · 1 turn(s)\n`;
+  fs.writeFileSync(AGLOG, '# ledger\n' + realOut('done') + realOut('empty') + realOut('done') + realOut('empty') + '- [x] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)\n'.repeat(16), 'utf8');
+  const d18 = finding(docFindings(ccEnv), 'dispatch-outcomes');
+  check('doctor 18 ignores legacy phantom lines, so real empties still warn (AC-8)', d18.level === 'warn' && /2 done · 2 returned nothing/.test(d18.detail || ''), JSON.stringify(d18));
+  fs.writeFileSync(AGLOG, aglogBefore, 'utf8');
+
+  // AC-9 — CI detected by its workflow even when no stack is.
+  fs.mkdirSync(path.join(PROJ, '.github', 'workflows'), { recursive: true });
+  fs.writeFileSync(path.join(PROJ, '.github', 'workflows', 'selftest.yml'), 'name: selftest\n');
+  const ci9 = ciFinding();
+  check('doctor 19: no detected stack but a workflow present → ok, naming it (AC-9)', ci9.level === 'ok' && /selftest\.yml/.test(ci9.detail || ''), JSON.stringify(ci9));
+  fs.rmSync(path.join(PROJ, '.github'), { recursive: true, force: true });
+
+  // AC-11 — the Stop nudges ignore what the hooks themselves wrote.
+  if (spawnSync('git', ['--version'], { encoding: 'utf8' }).status === 0) {
+    const GB2 = path.join(ROOT, 'gitbrain2');
+    fs.mkdirSync(path.join(GB2, 'wiki'), { recursive: true });
+    fs.mkdirSync(path.join(GB2, 'sessions'), { recursive: true });
+    const g2 = (...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@x', '-c', 'init.defaultBranch=main', ...a], { cwd: GB2, encoding: 'utf8', timeout: 15000 });
+    fs.writeFileSync(path.join(GB2, 'CLAUDE.md'), '# b\n');
+    fs.writeFileSync(path.join(GB2, 'resume.md'), realText('g'));
+    fs.writeFileSync(path.join(GB2, 'sessions', 'agents.md'), '# ledger\n');
+    fs.writeFileSync(path.join(GB2, 'wiki', 'index.md'), '---\ntitle: "Index"\npage_count: 1\n---\n');
+    fs.writeFileSync(path.join(GB2, 'wiki', 'log.md'), '---\ntitle: "Log"\n---\n\n## [2026-09-15] feat | x\ny\n');
+    g2('init', '-q'); g2('add', '-A'); g2('commit', '-q', '-m', 'init');
+    fs.appendFileSync(path.join(GB2, 'sessions', 'agents.md'), '- [x] ↳ done · Explore\n');
+    fs.appendFileSync(path.join(GB2, 'resume.md'), '- [x] ■ session ended\n');
+    const gOld = new Date(Date.now() - 10 * 60 * 1000);
+    fs.utimesSync(path.join(GB2, 'wiki', 'log.md'), gOld, gOld);
+    const gNow = new Date();
+    fs.utimesSync(path.join(GB2, 'wiki', 'index.md'), gNow, gNow);
+    w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}h1` }), { MONKEY_BRAIN_DIR: GB2 });
+    check('hook-owned changes (sessions/, resume.md) and an index-only refresh never nudge (AC-11)', w.status === 0 && w.stdout === '', (w.stdout || '').slice(0, 300));
+    fs.writeFileSync(path.join(GB2, 'wiki', 'page.md'), '---\ntitle: "P"\ntype: concept\nupdated: 2026-09-15\n---\n\nreal work\n');
+    w = run('wrap.js', evt({ hook_event_name: 'Stop', session_id: `st${process.pid}h2` }), { MONKEY_BRAIN_DIR: GB2 });
+    out = {}; try { out = JSON.parse(w.stdout || '{}'); } catch {}
+    check('a real wiki page newer than the log still nudges wrap[log] and wrap[git] (AC-11)', /wrap\[log\]/.test(out.reason || '') && /wrap\[git\]/.test(out.reason || ''), (w.stdout || '').slice(0, 300));
+    fs.rmSync(GB2, { recursive: true, force: true });
+  } else {
+    check('git not installed — hook-owned-files nudge test skipped', true);
+  }
+
+  // AC-12 — a table-escaped link is an inbound link.
+  write('.brain/wiki/concepts/table-linked.md', '---\ntitle: "Table linked"\ntype: concept\nupdated: 2026-09-15\n---\n\nbody\n');
+  write('.brain/wiki/concepts/table-hub.md', '---\ntitle: "Hub"\ntype: concept\nupdated: 2026-09-15\n---\n\n| Page | Note |\n| --- | --- |\n| [[table-linked\\|Table]] | x |\n');
+  r = run('wiki-check.js', evt({ hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: path.join(BRAIN, 'wiki', 'concepts', 'table-linked.md') } }));
+  out = {}; try { out = JSON.parse(r.stdout || '{}'); } catch {}
+  check('a table-escaped [[slug\\|Alias]] link counts as inbound (AC-12)', r.status === 0 && out.decision !== 'block', r.stdout);
+  for (const f of ['wiki/concepts/table-linked.md', 'wiki/concepts/table-hub.md']) fs.rmSync(path.join(BRAIN, f), { force: true });
+
+  // AC-13 — the librarian can do what it is told.
+  const libr = fs.readFileSync(path.join(HERE, '..', '..', 'agents', 'brain-librarian.md'), 'utf8');
+  const librTools = (/^tools:\s*(.+)$/m.exec(libr.split(/\r?\n---/)[0]) || [])[1] || '';
+  check('brain-librarian: no Skill call it cannot make, WebFetch for URLs, all 8 ingest steps inline (AC-13)', !/via the Skill tool/i.test(libr) && /\bWebFetch\b/.test(librTools) && /^8\. /m.test(libr), `tools=${librTools}`);
+
+  // AC-14 — section references and README counts match reality.
+  const specTpl = fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'templates', 'spec.md'), 'utf8');
+  check('spec template cites manual §5 for tiers (AC-14)', /manual §5/.test(specTpl) && !/manual §6/.test(specTpl));
+  const wcSrc = fs.readFileSync(path.join(HERE, 'wiki-check.js'), 'utf8');
+  const lintSrc = fs.readFileSync(path.join(SKILLS, 'lint', 'scripts', 'lint.js'), 'utf8');
+  check('wiki-check and lint cite §6 for TODO markers and orphans (AC-14)', !/§5/.test(wcSrc) && /§6/.test(wcSrc) && !/§5/.test(lintSrc));
+  const nEvents = Object.keys(JSON.parse(fs.readFileSync(path.join(HERE, '..', 'hooks.json'), 'utf8')).hooks).length;
+  const readmes = [path.join(SKILLS, '..', 'README.md'), path.join(SKILLS, '..', '..', 'README.md')].filter((p) => fs.existsSync(p)).map((p) => fs.readFileSync(p, 'utf8'));
+  const evCounts = readmes.flatMap((t) => [...t.matchAll(/(\d+) hook events/g)].map((m) => Number(m[1])));
+  check(`READMEs say ${nEvents} hook events and hard-code no selftest count (AC-14)`, evCounts.length > 0 && evCounts.every((n) => n === nEvents) && readmes.every((t) => !/\(\d+ checks\)/.test(t)), `counts=${evCounts} events=${nEvents}`);
 
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');

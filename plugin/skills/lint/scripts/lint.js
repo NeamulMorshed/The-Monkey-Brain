@@ -82,14 +82,14 @@ if (broken.size) {
 const orphans = [];
 for (const p of pages) {
   if (ORPHAN_EXEMPT.has(p.slug)) continue;
-  const needles = [new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(p.slug)}(?:[|#\\]])`)];
-  for (const a of extractAliases(p.fm.aliases)) needles.push(new RegExp(`\\[\\[${esc(a)}(?:[|#\\]])`, 'i'));
+  const needles = [new RegExp(`\\[\\[(?:[^\\]]*/)?${esc(p.slug)}(?:\\\\?\\||#|\\])`)]; // `\|` = table-escaped pipe
+  for (const a of extractAliases(p.fm.aliases)) needles.push(new RegExp(`\\[\\[${esc(a)}(?:\\\\?\\||#|\\])`, 'i'));
   const linked = pages.some((q) => q.file !== p.file && needles.some((re) => re.test(q.raw)));
   if (!linked) orphans.push(p.rel);
 }
 if (orphans.length) {
   issues.push('orphans');
-  out.push(`\nORPHANS (no inbound links, §5): ${orphans.join(', ')}`);
+  out.push(`\nORPHANS (no inbound links, §6): ${orphans.join(', ')}`);
 } else out.push('Orphans: none');
 
 // ---- frontmatter gaps -------------------------------------------------------

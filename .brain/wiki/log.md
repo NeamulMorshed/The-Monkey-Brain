@@ -60,3 +60,6 @@ Curator asked for a full review of the brain: standard, hooks, plugins, MCP, tok
 
 ## [2026-09-15] plan | brain-correctness
 Spec drafted from [[brain-health-audit]]: 15 ACs — one resume resolver + silent seed (AC-1…3), gates on project-relative paths + shared containment + log `updated:` check (AC-4…6), section-aware P0, phantom-free dispatch ledger, CI-by-workflow (AC-7…9), per-dispatch model block (AC-10), Stop nudges skip hook-owned files (AC-11), table-link orphans, librarian tools, § references and README counts (AC-12…14), release 0.30.0 (AC-15). Tier architecture (graph radius score 108, via lib.js). plan_approved: true on the curator's word: "do all of these one by one, on your own". Workstream projects/brain-hardening.md created.
+
+## [2026-09-15] build | brain-correctness — AC-1…14
+Test-first: 19 red → green, selftest 417 → 447 ALL GREEN. New `lib` helpers `resumePath`, `isSeedResume`, `inProject`, `openP0Lines`, `mdSection`; resume.js / resume-log.js / snapshot.js share the resolver; guards judge project-relative test paths; agent-track blocks per dispatch and skips fork phantoms; wrap nudges skip hook-owned files; doctor #7/#14/#18/#19 fixed; table-escaped links; librarian inline steps + WebFetch; § refs and README counts. Deviations in the spec Notes. CHANGELOG + manifests 0.30.0. Live doctor on this brain: 0 critical. Spec → phase: review.

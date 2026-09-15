@@ -19,14 +19,6 @@ const fs = require('fs');
 const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
 
-function findResume(cwd, brain) {
-  const candidates = [];
-  if (brain) candidates.push(path.join(brain, 'resume.md'));
-  candidates.push(path.join(path.resolve(cwd || process.cwd()), 'resume.md'));
-  for (const c of candidates) if (fs.existsSync(c)) return c;
-  return null;
-}
-
 function section(text, heading) {
   const re = new RegExp(`^## ${heading}[^\\n]*$`, 'im');
   const m = re.exec(text);
@@ -61,10 +53,10 @@ async function main() {
     'Context was about to be compacted; this file preserves the live working state.',
   ];
 
-  const resumeFile = findResume(input.cwd, brain);
+  const resumeFile = lib.resumePath(input.cwd); // the same file resume.js injects (v0.30.0)
   if (resumeFile) {
     const resume = lib.readTextSafe(resumeFile);
-    const next = section(resume, 'Next steps');
+    const next = lib.isSeedResume(resume) ? '' : section(resume, 'Next steps');
     if (next) out.push('', '## Open next steps (from resume.md)', next);
     const tail = section(resume, 'Task log')
       .split(/\r?\n/)

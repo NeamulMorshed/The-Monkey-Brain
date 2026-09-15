@@ -63,7 +63,8 @@ function gatherNewText(ti) {
 /** Append-only rule for one edit pair. */
 function editIsAppendOnly(oldS, newS) {
   if (String(newS).includes(String(oldS))) return true; // pure insertion
-  return /^updated:\s*["']?\d{4}-\d{2}-\d{2}["']?$/.test(String(oldS).trim()); // frontmatter bump
+  const bump = /^updated:\s*["']?\d{4}-\d{2}-\d{2}["']?$/;
+  return bump.test(String(oldS).trim()) && bump.test(String(newS).trim()); // frontmatter date bump — a date on both sides
 }
 
 /** Is this path a test file (by directory or by naming convention)? */
@@ -273,8 +274,9 @@ async function main() {
     const isDoc = /\.(md|mdx|txt|rst)$/i.test(abs);
     // Paths outside the project root (scratch dirs, other repos) belong to no spec — never gated.
     const relProj = path.relative(path.dirname(pbrain), abs).split(path.sep).join('/');
-    const inProject = relProj !== '..' && !relProj.startsWith('../') && !path.isAbsolute(relProj);
-    if (inProject && fs.existsSync(specsDir) && !isDoc && !isTestPath(abs)) {
+    // Test paths are judged inside the project: a parent folder named specs/ or tests/ above the
+    // project root must never switch the gates off (v0.30.0).
+    if (lib.inProject(relProj) && fs.existsSync(specsDir) && !isDoc && !isTestPath(relProj)) {
       const openSpecs = lib
         .listFilesRecursive(specsDir, '.md')
         .map((f) => ({ f, fm: lib.parseFrontmatter(lib.readTextSafe(f)) }))
@@ -320,7 +322,7 @@ async function main() {
   // 6) LEARNED BANS — block-level bans on project files outside the brain.
   if (pbrain && !abs.startsWith(pbrain + path.sep)) {
     const relP = path.relative(path.dirname(pbrain), abs).split(path.sep).join('/');
-    if (!relP.startsWith('..')) {
+    if (lib.inProject(relP)) {
       const hit = bans.findMatches(newText, relP, bans.loadBans(pbrain).filter((b) => b.enforce === 'block'))[0];
       if (hit) {
         lib.block(

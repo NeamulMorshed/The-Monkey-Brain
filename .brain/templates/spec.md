@@ -2,7 +2,7 @@
 title: "Spec — <Feature>"
 type: spec
 status: draft            # draft | active | done | superseded
-tier: feature            # quick | feature | architecture (gate strictness, manual §6)
+tier: feature            # quick | feature | architecture (gate strictness, manual §5)
 phase: plan              # plan | build | review | done
 plan_approved: false     # architecture tier: curator flips to true to open the source gate
 tdd: true                # false exempts this spec from the TDD gate

@@ -1,5 +1,35 @@
 # Changelog — brain plugin
 
+## 0.30.0 — 2026-09-15 (brain correctness: resume, gates, health signal, Stop nudges)
+
+A full audit of the brain (`wiki/research/brain-health-audit.md`, spec
+`specs/brain-correctness.md`) found the brain giving itself wrong signals. Fixed:
+
+- **One resume file** — `lib.resumePath()` is the single resolver for `resume.js`,
+  `resume-log.js` and `snapshot.js`: `<brain>/resume.md` then `./resume.md`, the first with a
+  real narrative wins. A brain seeded beside an older root `resume.md` no longer shadows it.
+  `lib.isSeedResume()` keeps `resume.js` silent on a seed — no more "continue from these notes?"
+  about an empty template. `/brain:wrap` updates the file the hook reported, 2–4 lines.
+- **Gates judge the project-relative path** — `guards.js` called `isTestPath` on the absolute
+  path, so a project stored under any `specs/` or `tests/` folder had its plan and TDD gates
+  silently off. One containment test, `lib.inProject()`, now serves the tier gates and the
+  learned-bans guard (cross-drive paths never trigger a ban). The log's `updated:` exemption
+  needs a date on both sides.
+- **Trustworthy health signal** — `lib.openP0Lines()` is section-aware (a "fixed / resolved /
+  closed / accepted / done" heading closes its items; "0 P0" is a count) and is shared by doctor
+  #14, loops and digests, so fixed review findings no longer raise a critical every session.
+  `agent-track` no longer logs Claude Code's internal forks as dispatches, and doctor #18
+  ignores the legacy phantom lines. Doctor #19 recognises an existing workflow; doctor #7 counts
+  only `.brain/` and skips hook-owned files.
+- **Model block per dispatch** — every model-less dispatch of a main-model agent type is
+  blocked, not only the first per session; forks pass (Claude Code ignores their model).
+- **Stop nudges ignore the hooks' own writes** — `wrap[git]` skips `sessions/` and
+  `resume.md`; `wrap[log]` skips `index.md`, which SessionEnd rewrites after the log.
+- **Smaller fixes** — table-escaped `[[slug\|Alias]]` links count as inbound (wiki-check, lint,
+  doctor); `brain-librarian` lists the 8 ingest steps inline and has `WebFetch` instead of a
+  Skill call it could not make; § references (tiers §5, conventions §6) and README counts
+  (10 hook events, no hard-coded selftest count) match reality.
+
 ## 0.29.1 — 2026-09-15 (selftest runs from a marketplace install again)
 
 - `selftest.js` read `schema/brain-template/CLAUDE.md` unconditionally for the new AC-8 drift

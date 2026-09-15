@@ -82,7 +82,7 @@ The engine stands on three pillars:
 - Ships with a browsable **Obsidian** vault: graph view, Dataview dashboard, Marp deck.
 
 **🛡️ Enforcement, not just advice**
-- **9 lifecycle hook events (11 scripts)** enforce rules the model can't "forget."
+- **10 lifecycle hook events (11 scripts)** enforce rules the model can't "forget."
 - Hard gates: **secrets** blocking, **raw-sources immutability**, **append-only log**, a
   **plan gate** (architecture tier) and a **TDD gate** (feature+ tiers).
 - **Self-healing wiki checks** repair broken links / orphans in the same turn.
@@ -137,7 +137,7 @@ The engine stands on three pillars:
 - `/brain:doctor` runs **19 deterministic checks** (links, orphans, staleness, budget, WIP, cache safety, CI,
   open P0s, schema drift…). Failures inject a health report into the *next* session.
 
-**25 `/brain:*` skills · 9 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
+**25 `/brain:*` skills · 10 hook events · 2 subagents · 5 bundled + 4 offered plugins · cross-platform (Node).**
 
 ---
 
@@ -273,7 +273,7 @@ v2 adds **record layers** for the development lifecycle: `specs/`, `projects/`, 
 
 - **25 skills** (`/brain:*`) — the knowledge SDLC, the develop lifecycle, token discipline, the
   product-design pack, the game pipeline, and doctor.
-- **9 lifecycle hook events (11 scripts)** — the enforcement + automation layer (Node, stdlib-only,
+- **10 lifecycle hook events (11 scripts)** — the enforcement + automation layer (Node, stdlib-only,
   one runtime on Windows/macOS/Linux).
 - **2 Sonnet subagents** — `brain-librarian` (batch ingest) and `brain-researcher` (read-only
   research fan-out) run routine/parallel work in isolated context windows.

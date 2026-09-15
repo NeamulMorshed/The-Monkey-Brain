@@ -3,7 +3,7 @@ title: "Brain hardening — status"
 type: project
 status: active
 tier: architecture
-phase: plan
+phase: review
 pack:
 audit_score:
 created: 2026-09-15

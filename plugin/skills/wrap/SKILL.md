@@ -36,9 +36,11 @@ the narrative belongs to you.
      (a build or review usually does), distill the **why** into
      `decisions/<slug>.md` (template `templates/decision.md`) so the reasoning
      survives. The wrap hook nudges once when a build/review session filed none.
-3. **Update the resume pointer** (`.brain/resume.md`, or root `resume.md` in the engine
-   repo): rewrite **"Where we left off"** (2–4 lines) and **"Next steps"** (add new boxes,
-   tick finished ones). Leave **"Task log (auto)"** alone — hooks own it. Bump `updated:`.
+3. **Update the resume pointer** — the resume file the session-start hook reported (one per
+   project: the brain copy, unless only a root `resume.md` holds a real narrative). Rewrite
+   **"Where we left off"** in 2–4 lines and **"Next steps"** (add new boxes, tick finished ones).
+   The history of what happened belongs in `wiki/log.md`, not in the resume narrative.
+   Leave **"Task log (auto)"** alone — hooks own it. Bump `updated:`.
 4. **Commit** with the vault conventions — one commit per logical step that isn't
    committed yet (`ingest:` / `query:` / `lint:` / `session:` / `feat:` / `schema:`).
    Show what will be staged, then commit. Never commit `Clippings/` staging drops.

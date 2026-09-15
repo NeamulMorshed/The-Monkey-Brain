@@ -54,17 +54,13 @@ _Auto-created by the Monkey Brain resume hook. Update this narrative when wrappi
 ${HEADING}
 `;
 
+/** The shared resume file (lib.resumePath, v0.30.0); seeded inside a brain when none exists yet. */
 function locate(cwd) {
-  const brain = lib.findBrainDir(cwd);
-  const inBrain = brain ? path.join(brain, 'resume.md') : null;
-  if (inBrain && fs.existsSync(inBrain)) return inBrain;
-  const inRoot = path.join(path.resolve(cwd || process.cwd()), 'resume.md');
-  if (fs.existsSync(inRoot)) return inRoot;
-  if (inBrain) {
-    fs.writeFileSync(inBrain, seed(path.basename(path.dirname(brain))), 'utf8');
-    return inBrain;
+  const file = lib.resumePath(cwd, { create: true });
+  if (file && !fs.existsSync(file)) {
+    fs.writeFileSync(file, seed(path.basename(path.dirname(path.dirname(file)))), 'utf8');
   }
-  return null;
+  return file;
 }
 
 function appendToTaskLog(file, line) {

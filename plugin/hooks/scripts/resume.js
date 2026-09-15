@@ -7,9 +7,10 @@
  * whether to continue from those notes. Fires only on fresh contexts
  * (startup / clear) — on resume/compact the context already survives.
  *
- * Lookup order: <brain>/resume.md (via .brain discovery), then ./resume.md in
- * the project root — the feature works even in projects without a brain.
- * No file → silent no-op. Own budget (default 1200 tokens,
+ * The file is lib.resumePath() — the same one resume-log.js writes and
+ * snapshot.js reads: <brain>/resume.md or ./resume.md, whichever holds a real
+ * narrative (brain copy first). Works in projects without a brain too.
+ * No file, or only a seed → silent no-op. Own budget (default 1200 tokens,
  * MONKEY_BRAIN_RESUME_BUDGET): the task log is trimmed to its last lines
  * first, then narrative is hard-truncated with a pointer to the file — the
  * ask-directive is never dropped. Any internal error → silent exit 0.
@@ -22,15 +23,6 @@ const lib = require(path.join(__dirname, 'lib.js'));
 
 const BUDGET = Number(process.env.MONKEY_BRAIN_RESUME_BUDGET || 1200);
 const TAIL_LINES = 5;
-
-function findResume(cwd) {
-  const brain = lib.findBrainDir(cwd);
-  const candidates = [];
-  if (brain) candidates.push(path.join(brain, 'resume.md'));
-  candidates.push(path.join(path.resolve(cwd || process.cwd()), 'resume.md'));
-  for (const c of candidates) if (fs.existsSync(c)) return c;
-  return null;
-}
 
 /** Split a markdown body into { heading, text } chunks on '## ' headings. */
 function splitSections(body) {
@@ -45,11 +37,13 @@ function splitSections(body) {
 async function main() {
   const input = await lib.readStdinJson();
   if (input.source && !['startup', 'clear'].includes(input.source)) return;
-  const file = findResume(input.cwd);
+  const file = lib.resumePath(input.cwd);
   if (!file) return;
 
   const raw = lib.readTextSafe(file);
-  if (!raw.trim()) return;
+  // A seed (template placeholder + hook-written task log) is nothing to resume: stay silent
+  // rather than ask "continue from these notes?" about notes that do not exist (v0.30.0).
+  if (!raw.trim() || lib.isSeedResume(raw)) return;
   const fm = lib.parseFrontmatter(raw);
   const body = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
   const rel = (path.relative(path.resolve(input.cwd || process.cwd()), file) || 'resume.md')

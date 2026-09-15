@@ -32,7 +32,7 @@ const TYPES = {
   research: 'research → synthesise',
   design: 'design → critique → refine',
 };
-const openP0 = (line) => /\bP0\b/.test(line) && !/(resolved|accepted|closed|fixed|✅|~~)/i.test(line);
+const openP0 = (line) => lib.openP0Lines(line).length > 0; // one line, no section context
 const loopsDir = (brain) => path.join(brain, 'sessions', 'loops');
 const loopFile = (brain, id) => path.join(loopsDir(brain), `${id}.json`);
 const hash = (s) => crypto.createHash('sha1').update(String(s)).digest('hex').slice(0, 12);
@@ -81,7 +81,7 @@ function measure(brain, loop) {
     const label = !text ? 'no page yet' : recommended ? 'recommendation drafted' : 'page drafted';
     return { metric: pageHash, pageHash, label, met: recommended && pageHash === prev };
   }
-  const open = text.split('\n').filter(openP0).length;
+  const open = lib.openP0Lines(text).length; // section-aware: a "fixed" heading closes its items
   return { metric: -open, label: `${open} open P0`, met: !!text && open === 0 };
 }
 

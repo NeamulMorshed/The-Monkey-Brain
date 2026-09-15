@@ -29,7 +29,7 @@ skills deterministically.
 plugin/
 ├── .claude-plugin/plugin.json   # manifest (name: brain)              ✅ Phase 1
 ├── hooks/
-│   ├── hooks.json               # registers 9 hook events             ✅ Phase 2+5
+│   ├── hooks.json               # registers 10 hook events            ✅ Phase 2+5
 │   └── scripts/                 # Node runtime (stdlib-only): lib,
 │                                #   #1 brain-status (+ decisions +
 │                                #     injection receipts), #2 trigger-
@@ -38,7 +38,7 @@ plugin/
 │                                #   #6 wrap (+ decision nudge + qmd
 │                                #     re-index), #7 agent-track,
 │                                #   #8 resume+resume-log; search-mcp;
-│                                #   selftest (158 checks)             ✅
+│                                #   selftest                          ✅
 ├── skills/                      # /brain:* skills                     ✅ Phase 3 complete
 │   ├── init/                    #   + bundled brain-template + scaffold script
 │   │                            #   + recommended-plugins.json + plugins.js  ✅ Phase 6
@@ -175,7 +175,7 @@ wraps it.
   `claude plugin validate . --strict` (marketplace).
 - Test before committing: `node hooks/scripts/selftest.js` — builds a temp
   `.brain` fixture and drives every hook and skill script with synthetic
-  events (158 checks), and checks skill routing frontmatter + agent definitions.
+  events, and checks skill routing frontmatter + agent definitions.
 - **Template bundling:** `schema/brain-template/` is the canonical master;
   `skills/init/brain-template/` is the copy that ships with installs. Selftest
   fails on drift — refresh with
