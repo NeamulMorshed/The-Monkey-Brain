@@ -48,3 +48,6 @@ Test-first (19 red → green, selftest 390 → 408). trigger-router: catch-all e
 
 ## [2026-09-15] review | research-first-routing
 Suite re-run: 10/10 ACs met. Live-brain probes + independent adversarial pass (opus): 0 P0, 6 P1 (`trivial` matched inside `non-trivial`; "should not skip research" read as a skip; two drifting copies of the skip pattern so "no need for research" routed *to* research; one shared token cited a page; five-letter plurals escaped the stop-list; two AC-3 assertions vacuous), 4 P2 (no-brain hint ignored the skip; unbounded citation list; "no research paper parser" and "trivial-looking" read as skips). All fixed and pinned: selftest 408 → 417. Filed [[research-first-routing-review]]; spec → done.
+
+## [2026-09-15] session | research-first routing wrapped — v0.29.0
+research → plan → build → review → wrap ran end to end for the second time today (49ec95d … 32a7789). Verified: selftest 417 ALL GREEN, both manifests --strict, spec research-first-routing done. Resume narrative rewritten; pushed; plugin reinstalled locally at 0.29.0.

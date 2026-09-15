@@ -1,10 +1,34 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-15 08:30
+updated: 2026-09-15 10:15
 ---
 
 ## Where we left off
+**2026-09-15 — plugin v0.29.0 on `main`, pushed, installed locally; selftest 417.** Curator asked why
+the brain "doesn't start from the research" and decided: "by default the brain should start from
+research for this life cycle; if a user doesn't want to research they can skip this." Ran the
+lifecycle on it end to end. `/brain:research` (2 researcher slices →
+`.brain/wiki/research/research-first-entry.md`): research fired only on the literal word or
+idea-validation phrases; the v0.24.0 plan-before-build catch-all routed everything to plan; the
+router read specs but never `wiki/research/`; `/brain:plan` only *offered* research. `/brain:plan`
+→ `specs/research-first-routing.md` (feature tier, 10 ACs, approved as drafted). `/brain:build`
+(19 red → green): the catch-all enters at `brain:research`, cites related research from
+`wiki/research/` frontmatter and routes to plan, open spec → build unchanged, curator skip
+phrases enter at plan and also suppress the literal-`research` rule; plan step 1 is a rule (quick
+exempt); research early-exits when a page already answers; manual §4 states the entry rule. ADR
+`research-first-entry-is-advisory` (default, not a gate). `/brain:review` (independent opus pass
++ live-brain probes): 0 P0, 6 P1, 4 P2 — skip polarity (`non-trivial`, "should not skip"),
+two drifting skip copies, one-token citations, five-letter plurals, vacuous tests — all fixed and
+pinned. Spec closed `done`. Earlier today: v0.28.0 (gate scoping, one Stop message, review
+hand-off) went through the same lifecycle; see the entry below.
+
+- [x] Push v0.29.0 and reinstall locally (done in this wrap; restart Claude Code to run the 0.29.0 hooks).
+- [ ] Watch the research-first default in real sessions: does the model follow the hint, and do the
+  skip phrases cover how the curator actually talks? Add phrasings to `SKIP_RE` as they appear.
+- [ ] Doctor/lint check 1 counts wiki `[[links]]` to `decisions/` and `specs/` as broken — spec it.
+- [ ] Dogfood debts still open: PR-review mode on a real PR; MCP registry on a real `.mcp.json`.
+
 **2026-09-15 — plugin v0.28.0 on `main`, six commits (52b7157 → edb0500), selftest 390, both
 manifests `--strict`.** First run of the develop lifecycle *on this repo*: curator chose
 "dogfood the lifecycle itself" and had `/brain:init` scaffold a `.brain/` here (the engine repo
