@@ -5,7 +5,7 @@ updated: 2026-09-15 10:15
 ---
 
 ## Where we left off
-**2026-09-15 — plugin v0.29.0 on `main`, pushed, installed locally; selftest 417.** Curator asked why
+**2026-09-15 — plugin v0.29.1 on `main`, pushed, installed locally; selftest 417.** Curator asked why
 the brain "doesn't start from the research" and decided: "by default the brain should start from
 research for this life cycle; if a user doesn't want to research they can skip this." Ran the
 lifecycle on it end to end. `/brain:research` (2 researcher slices →
@@ -23,7 +23,9 @@ two drifting skip copies, one-token citations, five-letter plurals, vacuous test
 pinned. Spec closed `done`. Earlier today: v0.28.0 (gate scoping, one Stop message, review
 hand-off) went through the same lifecycle; see the entry below.
 
-- [x] Push v0.29.0 and reinstall locally (done in this wrap; restart Claude Code to run the 0.29.0 hooks).
+- [x] Push v0.29.0 and reinstall locally — the installed cache's selftest then threw ENOENT (the new AC-8 drift
+  check read `schema/`, which marketplace installs don't ship); guarded and shipped as **0.29.1**, cache selftest
+  green. Restart Claude Code to run the 0.29.1 hooks.
 - [ ] Watch the research-first default in real sessions: does the model follow the hint, and do the
   skip phrases cover how the curator actually talks? Add phrasings to `SKIP_RE` as they appear.
 - [ ] Doctor/lint check 1 counts wiki `[[links]]` to `decisions/` and `specs/` as broken — spec it.
