@@ -33,3 +33,6 @@ Test-first: 19 selftests added red, then guards.js scope matching + outside-proj
 
 ## [2026-09-15] review | develop-lifecycle-fixes
 Suite re-run (never the ticks): 12/12 ACs met. Independent adversarial pass (opus, read-only) on the hook diff found 2 P0 (glob→regex passes clobbered each other → `src/**/*.js` matched nothing and an unapproved arch spec could be bypassed; unbalanced `[` threw → fail-open), 1 P1 (doctor/lint alias extractors still string-only), 5 P2 (parser edge cases, `..odd` dir). All fixed and pinned: selftest 372 → 390 ALL GREEN. Filed [[develop-lifecycle-fixes-review]]; spec → status: done, phase: done.
+
+## [2026-09-15] session | lifecycle dogfood wrapped — v0.28.0
+research → plan → build → review → wrap all ran on this repo and each left its commit (52b7157 … edb0500). Verified: selftest 390 ALL GREEN, both manifests --strict, spec develop-lifecycle-fixes done. Resume narrative rewritten; pushed to origin/main. Next: reinstall the plugin locally so the running hooks are 0.28.0; spec the doctor/lint link-scope gap.

@@ -1,10 +1,36 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-15 05:30
+updated: 2026-09-15 08:30
 ---
 
 ## Where we left off
+**2026-09-15 — plugin v0.28.0 on `main`, six commits (52b7157 → edb0500), selftest 390, both
+manifests `--strict`.** First run of the develop lifecycle *on this repo*: curator chose
+"dogfood the lifecycle itself" and had `/brain:init` scaffold a `.brain/` here (the engine repo
+had none). `/brain:research` (3 researcher slices, 16 cited findings →
+`.brain/wiki/research/develop-lifecycle-dogfood.md`) found the lifecycle is 4 stages + utilities,
+that the plan/TDD gates scanned every open spec, that review named no successor, that the Stop
+nudges serialised, and that the manual defined the lifecycle twice. `/brain:plan` wrote
+`specs/develop-lifecycle-fixes.md` (feature tier, 12 ACs; curator approved as drafted, chose
+`scope:` globs over workstream matching). `/brain:build` went test-first (red 15 → green):
+spec `scope:` globs scope the gates (unclaimed paths fall back to every spec; outside-project
+writes never gated), `lib.parseFrontmatter` returns lists as arrays, `wrap.js` blocks once
+with every unmet item, review/wrap/build/plan SKILL hand-offs, manual §4 is the single
+definition. `/brain:review` (independent opus adversarial pass) found **2 P0** in the glob
+matcher (rewrite passes clobbered each other → `src/**/*.js` matched nothing and an unapproved
+arch spec could be bypassed; unbalanced `[` threw and fail-opened every gate), 1 P1
+(doctor/lint alias extractors), 5 P2 parser edge cases — all fixed in-review and pinned. Two
+ADRs, a review synthesis, the spec closed `done`. The lifecycle worked; the fixes are the
+first things it tripped over.
+
+- [x] Push v0.28.0 (done in this wrap).
+- [ ] Reinstall the plugin locally so the running hooks pick up v0.28.0 (the session ran on the
+  cached 0.27.0 hooks — e.g. the old TDD gate blocked a scratch-dir write).
+- [ ] Doctor/lint check 1 counts wiki `[[links]]` to `decisions/` and `specs/` as broken (they
+  only know `wiki/` slugs) — spec it via the lifecycle (`/brain:plan doctor-link-scope`).
+- [ ] Dogfood debts still open: PR-review mode on a real PR; MCP registry on a real `.mcp.json`.
+
 **2026-09-15 — plugin v0.27.0, built on `main`, not yet committed.** Curator asked "when will
 the brain ask for a commit/push?" — answer was: only on-demand (`/brain:doctor` check 7) or
 inside `/brain:wrap` itself; the automatic Stop hook never checked git at all. Curator agreed
@@ -16,7 +42,7 @@ blocks ONCE per session pointing at `/brain:wrap` or a manual commit, and stays 
 `git commit`/`git push` itself, same "brain records, curator acts" boundary as `pr.js` and the
 MCP registry. Zero changes to `doctor.js` or any other hook. Selftest **350 → 354**.
 
-- [ ] Commit + push v0.27.0 (holding for the curator's go-ahead — not committed automatically).
+- [x] Commit + push v0.27.0 (committed b6b3698; pushed with v0.28.0 on 2026-09-15).
 
 **2026-09-15 — plugin v0.26.0, built on `main`, committed (`05a1c58`), pushed to `origin/main`.**
 Curator asked for **gh-based PR review integration**. Extended `/brain:review` rather than adding a new skill:
@@ -138,3 +164,6 @@ validate --strict` passes. Full history: `ROADMAP.md` → Execution status + Ses
 - [2026-09-15 03:50] ■ session ended (prompt_input_exit)
 - [2026-09-15 03:55] ■ session ended (other)
 - [2026-09-15 04:13] ■ session ended (other)
+- [2026-09-15 05:32] ■ session ended (prompt_input_exit)
+- [2026-09-15 05:39] ■ session ended (clear)
+- [2026-09-15 05:57] ■ session ended (other)
