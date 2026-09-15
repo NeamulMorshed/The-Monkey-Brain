@@ -760,11 +760,12 @@ try {
   const routing = {
     // Forked: model: + context: fork — the skill runs in a subagent; the main thread never switches (token-diet AC-2).
     build: { model: 'sonnet', effort: 'medium', context: 'fork' },
-    digest: { model: 'sonnet', effort: 'low', context: 'fork' },
-    usage: { model: 'sonnet', effort: 'low', context: 'fork' },
-    brief: { model: 'haiku', effort: 'low', context: 'fork' },
-    dashboard: { model: 'haiku', effort: 'low', context: 'fork' },
-    home: { model: 'haiku', effort: 'low', context: 'fork' },
+    // Reports and packs whose work is a `!` script run inline: a fork would only add a subagent bootstrap (review P1-3).
+    digest: { effort: 'low' },
+    usage: { effort: 'low' },
+    brief: { effort: 'low' },
+    dashboard: { effort: 'low' },
+    home: { effort: 'low' },
     // Unpinned: the session model — a main-thread pin would re-write the whole prompt cache.
     research: { effort: 'medium' },
     ingest: { effort: 'medium' },
@@ -1770,6 +1771,54 @@ try {
   check('ingest cross-links every page the source genuinely informs — no "5–10+" quota (AC-9)', [path.join(SKILLS, 'ingest', 'SKILL.md'), path.join(HERE, '..', '..', 'agents', 'brain-librarian.md')].every((p) => { const tx = fs.readFileSync(p, 'utf8'); return /genuinely informs/.test(tx) && !/5–10\+/.test(tx); }) && /genuinely informs/.test(tdManual) && !/5–10\+/.test(tdManual));
   check('/brain:lint reasons over the flagged pages and the named scope only (AC-9)', /flagged pages and the named scope/.test(fs.readFileSync(path.join(SKILLS, 'lint', 'SKILL.md'), 'utf8')));
   check('/brain:wrap reuses a verification already run this session (AC-9)', /already ran this session/.test(fs.readFileSync(path.join(SKILLS, 'wrap', 'SKILL.md'), 'utf8')));
+  // Review fixes (wiki/syntheses/token-diet-review.md) — each pins a probe the reviewer ran.
+  const nsid = `st${process.pid}ctxr`;
+  const seq = [nudge(nsid, mkTranscript('r160', 160000)), nudge(nsid, mkTranscript('r40', 40000)), nudge(nsid, mkTranscript('r170', 170000))];
+  check('context nudge: after a compaction below the threshold it re-fires on the next crossing (review P1-1)', /160k/.test(seq[0]) && seq[1] === '' && /170k/.test(seq[2]), JSON.stringify(seq.map((s) => s.slice(0, 40))));
+  const shr = [nudge(`${nsid}b`, mkTranscript('r330', 330000)), nudge(`${nsid}b`, mkTranscript('r180', 180000))];
+  check('context nudge: a context that shrank by 40 %+ yet is still large nudges again (review P1-1)', /330k/.test(shr[0]) && /180k/.test(shr[1]), JSON.stringify(shr.map((s) => s.slice(0, 40))));
+  const staleSid = `st${process.pid}ctxs`;
+  const staleMarker = path.join(os.tmpdir(), `mb-ctx-${staleSid}`);
+  fs.writeFileSync(staleMarker, '5:700000');
+  const staleT = new Date(Date.now() - 13 * 3600 * 1000);
+  fs.utimesSync(staleMarker, staleT, staleT);
+  check('context nudge: a marker older than 12 h (a resumed session) is ignored (review P1-1)', /160k/.test(nudge(staleSid, mkTranscript('r160b', 160000))));
+  check('context nudge: an unparseable or empty MONKEY_BRAIN_CONTEXT_NUDGE falls back to 150k (review P2)', /160k/.test(nudge(`${nsid}e1`, mkTranscript('r160c', 160000), { MONKEY_BRAIN_CONTEXT_NUDGE: 'abc' })) && /160k/.test(nudge(`${nsid}e2`, mkTranscript('r160d', 160000), { MONKEY_BRAIN_CONTEXT_NUDGE: '' })));
+  const slashRun = run('recall.js', { cwd: PROJ, hook_event_name: 'UserPromptSubmit', prompt: '/brain:wrap', session_id: `${nsid}sl`, transcript_path: mkTranscript('r300', 300000) });
+  let slashOut = ''; try { slashOut = (JSON.parse(slashRun.stdout || '{}').hookSpecificOutput || {}).additionalContext || ''; } catch {}
+  check('context nudge: fires on slash commands too (review P2)', /300k/.test(slashOut), slashOut);
+  const synth = path.join(CT, 'rsynth.jsonl');
+  fs.writeFileSync(synth, [JSON.stringify({ type: 'assistant', isSidechain: false, message: { id: 'a', model: 'claude-opus-5', usage: { input_tokens: 100, cache_creation_input_tokens: 900, cache_read_input_tokens: 159000, output_tokens: 5 } } }), JSON.stringify({ type: 'assistant', isSidechain: false, message: { id: 'b', model: '<synthetic>', usage: { input_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, output_tokens: 0 } } })].join('\n') + '\n');
+  check('context nudge: a trailing <synthetic> zero-usage entry is skipped (review P2)', /160k/.test(nudge(`${nsid}sy`, synth)));
+  const buildSkill = fs.readFileSync(path.join(SKILLS, 'build', 'SKILL.md'), 'utf8');
+  check('only build forks; brief, digest, usage, dashboard and home run unpinned (review P1-3)', fmGet(buildSkill, 'context') === 'fork' && ['brief', 'digest', 'usage', 'dashboard', 'home'].every((n) => { const tx = fs.readFileSync(path.join(SKILLS, n, 'SKILL.md'), 'utf8'); return fmGet(tx, 'model') === undefined && fmGet(tx, 'context') === undefined; }));
+  check('the forked build gets the active instincts injected and returns blockers instead of asking (review P1-3)', /instincts\.js" active/.test(buildSkill) && !/stop and ask the curator/.test(buildSkill));
+  write('.brain/instincts/active/no-console-log.md', '---\ntitle: "Instinct — no console.log"\ntype: instinct\nstatus: active\n---\n\n# No console.log\n\n**Rule:** never leave console.log in shipped code.\n');
+  const ia = spawnSync(process.execPath, [path.join(HERE, 'instincts.js'), 'active', '--brain', BRAIN], { encoding: 'utf8', timeout: 15000 });
+  check('instincts.js active prints each active rule on one line (review P1-3)', ia.status === 0 && /no-console-log: never leave console\.log in shipped code\./.test(ia.stdout || ''), (ia.stdout || '') + (ia.stderr || ''));
+  fs.rmSync(path.join(BRAIN, 'instincts', 'active', 'no-console-log.md'), { force: true });
+  const shipTable = fs.existsSync(tdRootReadme) ? (fs.readFileSync(tdRootReadme, 'utf8').split('**Ship automatically**')[1] || '').split('**Offered')[0] : '';
+  check('no README section still ships five plugins or code-modernization (review P1-2)', !/Five\s*\(`auto_install/.test(tdPluginReadme) && (!fs.existsSync(tdRootReadme) || ((shipTable.match(/^\| \[/gm) || []).length === 4 && !/code-modernization/.test(shipTable))), shipTable.slice(0, 200));
+  check('/brain:init step 1 says --update refreshes reference.md (review P1-2)', /reference\.md/.test(fs.readFileSync(path.join(SKILLS, 'init', 'SKILL.md'), 'utf8').split('2. **Pick the display name')[0]));
+  const TDQ = path.join(ROOT, 'td-quoted');
+  fs.mkdirSync(TDQ, { recursive: true });
+  spawnSync(process.execPath, [NB2, '--project', TDQ], { encoding: 'utf8', timeout: 20000 });
+  const tdqM = path.join(TDQ, '.brain', 'CLAUDE.md');
+  if (fs.existsSync(tdqM)) fs.writeFileSync(tdqM, fs.readFileSync(tdqM, 'utf8').replace(/^project:.*$/m, "project: 'Solo Brain'"));
+  const tdqUp = spawnSync(process.execPath, [NB2, '--project', TDQ, '--update'], { encoding: 'utf8', timeout: 20000 });
+  const tdqText = () => { try { return fs.readFileSync(tdqM, 'utf8'); } catch { return ''; } };
+  check('--update keeps a single-quoted name and says it refreshed reference.md (review P2)', /^project: "Solo Brain"$/m.test(tdqText()) && /reference\.md/.test(tdqUp.stdout || ''), (/^project:.*$/m.exec(tdqText()) || [''])[0] + ' | ' + (tdqUp.stdout || '').trim());
+  if (fs.existsSync(tdqM)) fs.writeFileSync(tdqM, tdqText().replace(/^project:.*$/m, 'project: Plain Name # legacy'));
+  spawnSync(process.execPath, [NB2, '--project', TDQ, '--update'], { encoding: 'utf8', timeout: 20000 });
+  check('--update keeps an unquoted name and drops its comment (review P2)', /^project: "Plain Name"$/m.test(tdqText()), (/^project:.*$/m.exec(tdqText()) || [''])[0]);
+  const tdManualNow = fs.readFileSync(path.join(SKILLS, 'init', 'brain-template', 'CLAUDE.md'), 'utf8');
+  const tdRefNow = fs.existsSync(tdRefPath) ? fs.readFileSync(tdRefPath, 'utf8') : '';
+  check('manual §9 keeps the credential rule and the security-P0 wrap gate on the always-loaded path (review P2)', /touch a credential/.test(tdManualNow) && /P0s gate/.test(tdManualNow) && Buffer.byteLength(tdManualNow) <= 10000, `${Buffer.byteLength(tdManualNow)} B`);
+  check('reference.md §8 documents the recall, context-nudge and model-block knobs (review P2)', /MONKEY_BRAIN_RECALL/.test(tdRefNow) && /MONKEY_BRAIN_CONTEXT_NUDGE/.test(tdRefNow) && /MONKEY_BRAIN_MODEL_BLOCK/.test(tdRefNow));
+  const plugRoot = path.join(SKILLS, '..');
+  const staleRefs = [];
+  (function walkRefs(d) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const q = path.join(d, e.name); if (e.isDirectory()) walkRefs(q); else if (/\.(js|md)$/.test(e.name) && !/^(CHANGELOG\.md|selftest\.js)$/.test(e.name) && MANUAL_REF.test(fs.readFileSync(q, 'utf8'))) staleRefs.push(path.relative(plugRoot, q)); } })(plugRoot);
+  check('no file in plugin/ cites manual §8–§10 any more (review P2)', staleRefs.length === 0, staleRefs.join(', '));
 
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');

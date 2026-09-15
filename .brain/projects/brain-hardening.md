@@ -17,7 +17,8 @@ Acting on [[brain-health-audit]]: three specs in order, each through plan → bu
 
 ## Now
 - [[brain-correctness]] — closed `done` in 0.30.0 after an independent review ([[brain-correctness-review]]): 15/15 ACs, 2 P1 + 4 P2 review findings fixed in review.
-- [[token-diet]] — built (0.31.0, selftest 484 green, always-loaded bytes 26,491 → 16,550); in review.
+- [[token-diet]] — closed `done` in 0.31.0 after an independent review ([[token-diet-review]]): 10/10 ACs (AC-2 amended — only `build` forks), 3 P1 + 9 P2 fixed; always-loaded bytes 26,491 → ~16,660.
+- [[engine-knowledge]] — knowledge half compiled (4 sources, 13 concepts, 6 entities); code half next.
 
 ## Next
 1. [[engine-knowledge]] — plan drafted (architecture, approved on the curator's word): links across records, superpowers filing, the engine compiled into its brain.

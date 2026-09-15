@@ -113,7 +113,7 @@ function main() {
   // --update keeps the brain's existing display name (the manual's `project:`) unless --name is given.
   let kept = '';
   if (a.update) {
-    try { kept = (/^project:\s*"?([^"\r\n]+?)"?\s*$/m.exec(fs.readFileSync(path.join(brain, 'CLAUDE.md'), 'utf8')) || [])[1] || ''; } catch {}
+    try { kept = String(require(path.join(__dirname, '..', '..', '..', 'hooks', 'scripts', 'lib.js')).parseFrontmatter(fs.readFileSync(path.join(brain, 'CLAUDE.md'), 'utf8')).project || ''); } catch {}
     if (/\{\{PROJECT\}\}/.test(kept)) kept = '';
   }
   const name = a.name && a.name.trim() ? a.name.trim() : kept || path.basename(project);
@@ -162,7 +162,7 @@ function main() {
       console.log('Added resume.md (new in schema).');
     }
     registry.register(project, name);
-    console.log(`Refreshed schema in ${brain} for '${name}' (knowledge left untouched).`);
+    console.log(`Refreshed schema (CLAUDE.md, reference.md, templates/) in ${brain} for '${name}' (knowledge left untouched).`);
     return;
   }
 

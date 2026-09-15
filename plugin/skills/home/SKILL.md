@@ -1,8 +1,6 @@
 ---
 description: One dashboard across every Monkey Brain project on this machine — health, open specs, loops, token usage per project and combined. Use for "show all my brains", "dashboard for all projects" or "monkey brain home". Needs no .brain/ here.
 argument-hint: "[--days N] [--open]"
-model: haiku
-context: fork
 effort: low
 ---
 

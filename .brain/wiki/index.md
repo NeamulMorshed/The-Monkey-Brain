@@ -23,20 +23,44 @@ architecture are the first ingest candidates ([[brain-health-audit]] finding 6).
 ---
 
 ## 📥 Sources
-_None yet._
+Dated snapshots (2026-09-16) of the engine's own documents.
+- [[engine-roadmap]] — `ROADMAP.md`: phases 1–9, v3 (P10–P17), post-v3 work, design principles, the execution tracker
+- [[engine-readme]] — root `README.md`: what the engine is, quickstart, features, the plugin set
+- [[engine-changelog]] — `plugin/CHANGELOG.md`: every release, what changed and why
+- [[engine-resume-history]] — the root `resume.md` narratives up to 0.29.1, before the resume moved into the brain
 
 ## 🧠 Concepts
-_None yet._
+How the engine works, one subsystem per page.
+- [[session-injection]] — `brain-status.js`: the budgeted session-start status block, terse rules, receipts
+- [[resume-system]] — `resume.js` / `resume-log.js` / `snapshot.js` and the one resume resolver
+- [[stop-nudges]] — `wrap.js`: the one Stop message (log · decisions · git) and SessionEnd self-heal
+- [[trigger-router]] — `trigger-router.js`: prompt → `/brain:*` routing, research-first entry, skip phrases
+- [[recall-and-search]] — `search.js`, `search-mcp.js`, `recall.js`: BM25 recall, `brain_brief`, the context nudge
+- [[model-routing]] — the manual §5 table, `agent-track.js`, fork-not-switch, the outcome ledger
+- [[plan-and-tdd-gates]] — `guards.js`: plan gate, TDD gate, scope globs, raw-sources and log guards, secrets
+- [[instincts-and-bans]] — `instincts.js`, `instinct-track.js`, `bans.js`: learned rules and enforced patterns
+- [[team-lock]] — `lock.js`: the committed, expiring `LOCK.md`
+- [[wiki-self-healing]] — `wiki-check.js` + `lint.js`: links, orphans, frontmatter, the shared link index
+- [[doctor-health-checks]] — `doctor.js`: the 19 checks and `sessions/health.json`
+- [[bounded-loops]] — `loop.js`: build / research / design loops that know when to stop
+- [[develop-lifecycle-stages]] — research → plan → build → review → wrap, the gates and hand-offs
 
 ## 🏷️ Entities
-_None yet._
+- [[claude-code]] — the host: hooks, skills, subagents, plugins, MCP, prompt caching
+- [[github-plugin]] — bundled capability plugin: PRs, issues, CI (its MCP needs a token)
+- [[frontend-design-plugin]] — bundled capability plugin: UI builds
+- [[superpowers-plugin]] — bundled capability plugin: brainstorming, TDD, debugging, plans
+- [[security-guidance-plugin]] — bundled capability plugin: security patterns and review (needs Python 3.10+)
+- [[code-modernization-plugin]] — offered capability plugin: legacy discovery and migration
 
 ## 🔬 Syntheses
 - [[develop-lifecycle-fixes-review]] — AC-by-AC verification of the lifecycle fixes; 2 P0 / 1 P1 / 5 P2 found and fixed in review (2026-09-15)
 - [[research-first-routing-review]] — AC-by-AC verification of research-first routing; 0 P0 / 6 P1 / 4 P2 found and fixed in review (2026-09-15)
 - [[brain-correctness-review]] — AC-by-AC verification of brain correctness (0.30.0); 0 P0 / 2 P1 / 4 P2 found, fixed in review (2026-09-15)
+- [[token-diet-review]] — AC-by-AC verification of the token diet (0.31.0); 0 P0 / 3 P1 / 9 P2, fixed in review; only `build` forks (2026-09-16)
 
 ## 📐 Decisions
+- [[fork-not-switch-model-routing]] — change model by forking or dispatching, never by switching the main thread; only `build` forks (2026-09-15, amended 2026-09-16)
 - [[research-first-entry-is-advisory]] — the lifecycle enters at research by default, as a routing default with a curator skip, not a gate (2026-09-15)
 - [[spec-scope-globs-gate-ownership]] — specs claim the files their gates own via `scope:` globs; unclaimed paths fall back to every open spec (2026-09-15)
 - [[one-stop-message-for-wrap-nudges]] — the three Stop-time reminders block once, together (2026-09-15)

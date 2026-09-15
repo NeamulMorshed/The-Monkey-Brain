@@ -1,10 +1,10 @@
 ---
 title: "Spec — Token diet: model routing, context nudge, lighter manual and skill listing"
 type: spec
-status: active
+status: done
 tier: feature
-phase: review
-audit_score:
+phase: done
+audit_score: "done — 0 open findings (0 P0, 3 P1, 9 P2 found in review; all fixed and pinned except one tracked in router-and-drift; selftest 501 green)"
 plan_approved: false
 tdd: true
 scope: [plugin/skills/**, plugin/agents/**, plugin/hooks/scripts/recall.js, plugin/hooks/scripts/lib.js, plugin/hooks/scripts/agent-track.js, plugin/hooks/scripts/graph.js, plugin/hooks/scripts/selftest.js, plugin/.claude-plugin/**, .claude-plugin/**, schema/brain-template/**, plugin/README.md, README.md, plugin/CHANGELOG.md]
@@ -48,7 +48,7 @@ Tokens go where the brain does not look ([[brain-health-audit]], "Token & contex
 - **AC-9** ✅ `ingest cross-links every page the source genuinely informs — no "5–10+" quota` · `/brain:lint reasons over the flagged pages and the named scope only` · `/brain:wrap reuses a verification already run this session` — Ingest cross-links "every page the source genuinely informs" (skill, manual, librarian — no "5–10+" quota); `/brain:lint`'s reasoning pass covers flagged pages and the named scope, not the whole wiki; `/brain:wrap` reuses a verification already run this session after the last source change instead of re-running it.
 
 **Release**
-- **AC-10** — selftest ALL GREEN; both manifests `--strict`; CHANGELOG and manifests `0.31.0`; this repo's brain refreshed with `new-brain.js --update` (manual v2.1 + `reference.md`). *(Build evidence: selftest ALL GREEN; both manifests `--strict`; 0.31.0 in both manifests and the CHANGELOG; `.brain/CLAUDE.md` engine_version 2.1 + `.brain/reference.md` present. Left for the reviewer to re-run.)*
+- **AC-10** ✅ reviewer re-ran: selftest 501 ALL GREEN · `--strict` ×2 · 0.31.0 · this brain at engine v2.1 with reference.md — selftest ALL GREEN; both manifests `--strict`; CHANGELOG and manifests `0.31.0`; this repo's brain refreshed with `new-brain.js --update` (manual v2.1 + `reference.md`). *(Build evidence: selftest ALL GREEN; both manifests `--strict`; 0.31.0 in both manifests and the CHANGELOG; `.brain/CLAUDE.md` engine_version 2.1 + `.brain/reference.md` present. Left for the reviewer to re-run.)*
 
 ## Test plan
 Selftest, red first: AC-1 manual table + four citing surfaces; AC-2 the routing table in selftest rewritten + a rule check "model ⇒ context: fork"; AC-3 research SKILL text; AC-4 fixture transcripts at 90k / 160k / 260k and a missing path through `recall.js`, band marker per session; AC-5 manual size, pointer lines, `reference.md` in the template, init create + `--update` refresh, the §9/§10 contract checks moved to `reference.md`; AC-6 description sizes; AC-7 byte sum; AC-8 the existing deps-vs-manifest check plus a "4 bundled" text check; AC-9 three text checks; AC-10 the release run by the reviewer.
@@ -61,4 +61,5 @@ Selftest, red first: AC-1 manual table + four citing surfaces; AC-2 the routing 
 - AC-8 revised before build (2026-09-15): the curator installed Python ("I have installed python"), so `security-guidance` — the security net the manual's P0 gate relies on — stays a bundled dependency; only `code-modernization` is demoted. The audit had proposed demoting both.
 - The context nudge lives in `recall.js` (already a per-prompt hook) rather than a new script: no new hook process per prompt, and no new file for the TDD gate.
 - **Build (2026-09-15):** 21 checks red first, then green; selftest 463 → 485 ALL GREEN (one more pinned in-build, below — written alongside its fix, so it never ran red first). Always-loaded bytes 26,491 → 16,550. ADR [[fork-not-switch-model-routing]].
+- **Review (2026-09-16):** [[token-diet-review]] — 0 P0, 3 P1, 9 P2. **AC-2 amended in review:** only `build` forks; `brief`, `digest`, `usage`, `dashboard` and `home` run unpinned (a fork adds a subagent bootstrap and cannot see the conversation, for no gain when a `!` script does the work). selftest 485 → 501.
 - **Build deviations:** (1) the build ran on the main model without re-invoking `/brain:build`, whose `model: sonnet` pin (pre-AC-2) would have been exactly the mid-session switch this spec removes. (2) Running `new-brain.js --update` on this repo renamed the brain to its folder name — `--update` ignored the existing `project:` name. Fixed and pinned (`--update keeps the brain's display name…`). (3) `lint.js` also whitelists `LOCK.md` at the brain root (the team lock lives there). (4) Doc accuracy beyond the ACs: plugin README hook rows 2/7/8 and the install paragraph.

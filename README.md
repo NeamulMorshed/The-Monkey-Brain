@@ -420,13 +420,13 @@ skills and hooks.
 | [github](https://claude.com/plugins/github) | PR / issue / CI work | `wiki/syntheses/`, `projects/` |
 | [frontend-design](https://claude.com/plugins/frontend-design) | any UI build | `decisions/`, `projects/` |
 | [superpowers](https://claude.com/plugins/superpowers) | build / debug phases | `wiki/`, `instincts/pending/` |
-| [security-guidance](https://claude.com/plugins/security-guidance) | auth / crypto / input-handling code | `wiki/syntheses/`, `projects/` (P0s gate wrap) |
-| [code-modernization](https://claude.com/plugins/code-modernization) | legacy refactors | `wiki/research/` |
+| [security-guidance](https://claude.com/plugins/security-guidance) (needs Python 3.10+) | auth / crypto / input-handling code | `wiki/syntheses/`, `projects/` (P0s gate wrap) |
 
 **Offered, not forced** — `/brain:init` suggests these when they fit the project; you approve each install:
 
 | Plugin | Fires on | Files into |
 | --- | --- | --- |
+| [code-modernization](https://claude.com/plugins/code-modernization) | legacy refactors | `wiki/research/` |
 | [product-tracking-skills](https://claude.com/plugins/product-tracking-skills) | product / metrics work | `projects/` |
 | [productivity](https://claude.com/plugins/productivity) | standup / planning triggers | `sessions/` |
 | [product-management](https://claude.com/plugins/product-management) | PRD / roadmap requests | `raw-sources/` → ingested |

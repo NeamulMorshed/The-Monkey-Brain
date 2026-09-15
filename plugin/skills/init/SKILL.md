@@ -16,8 +16,8 @@ staging, `raw-sources/`, `memory/`, and `resume.md`. Once it exists, the plugin'
 
 1. **Resolve the target.** Project root = the argument path if given, else the git root of
    the cwd (fall back to cwd). If `.brain/` already exists there, don't recreate — confirm
-   with the user and use `--update` (refreshes `CLAUDE.md` + `templates/` only, never
-   touches wiki/raw-sources/memory).
+   with the user and use `--update` (refreshes `CLAUDE.md`, `reference.md` and `templates/`,
+   keeps the display name, never touches wiki/raw-sources/memory).
 2. **Pick the display name.** Default is the project folder name; use `--name` if the user
    stated one. Ask only if the folder name is cryptic.
 3. **Run the scaffold:**

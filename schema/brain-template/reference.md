@@ -47,6 +47,10 @@ Past ~100 sources, add meaning-based matches:
 `brain-search` then hands off to qmd (its `query` / `get` tools, deferred by Tool Search), and
 the session-end hook keeps that index fresh.
 
+**Knobs:** `MONKEY_BRAIN_RECALL=0` turns first-prompt recall off; `MONKEY_BRAIN_CONTEXT_NUDGE`
+sets the context-size nudge threshold in tokens (default 150000, `0` off);
+`MONKEY_BRAIN_MODEL_BLOCK=0` lifts the per-dispatch model block (manual §5).
+
 ---
 
 ## 9. Capability plugins & MCP servers (the craft layer)

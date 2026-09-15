@@ -9,6 +9,7 @@
  * before running `promote`.
  *
  *   node instincts.js status
+ *   node instincts.js active           each active rule on one line (injected into forked skills)
  *   node instincts.js promote <name>   pending → active (the hooks then enforce its ban)
  *   node instincts.js prune <name>     pending → pruned/ (kept for the record)
  *   node instincts.js test <file>      which active bans would fire on this file
@@ -45,6 +46,16 @@ function read(brain, dir) {
     if (isNaN(born)) { try { born = fs.statSync(f).mtimeMs; } catch { born = Date.now(); } }
     return { name: path.basename(f, '.md'), fm, confidence: confidence(raw, fm), ageDays: Math.floor((Date.now() - born) / DAY) };
   });
+}
+
+/** Each active rule on one line — forked skills miss the session-start block, so they inject this. */
+function activeRules(brain) {
+  const rows = lib.listFilesRecursive(path.join(brain, 'instincts', 'active'), '.md').map((f) => {
+    const raw = lib.readTextSafe(f);
+    const rule = (/\*\*Rule:\*\*\s*(.+)/.exec(raw) || [])[1] || lib.parseFrontmatter(raw).title || '';
+    return `- ${path.basename(f, '.md')}: ${String(rule).trim()}`;
+  });
+  return rows.length ? rows.join('\n') : '- none yet';
 }
 
 function status(brain) {
@@ -105,6 +116,7 @@ function main() {
   const [cmd, arg] = argv.filter((a, n) => !(a === '--brain' || argv[n - 1] === '--brain'));
   try {
     if (!cmd || cmd === 'status') console.log(status(brain));
+    else if (cmd === 'active') console.log(activeRules(brain));
     else if (cmd === 'promote') console.log(`Promoted → ${move(brain, arg, 'pending', 'active', 'active')} — its rule injects every session${read(brain, 'active').some((x) => x.name === arg && x.fm.ban) ? ' and its ban is enforced on writes' : ''}.`);
     else if (cmd === 'prune') console.log(`Pruned → ${move(brain, arg, 'pending', 'pruned', 'pruned')}.`);
     else if (cmd === 'test' && arg) console.log(test(brain, arg));

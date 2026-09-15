@@ -106,11 +106,11 @@ from Claude Code's transcripts — per day, model and branch, plus the cache-hit
 
 The skills own the brain's knowledge workflows; **craft** is done by external
 capability plugins. `skills/init/recommended-plugins.json` is the authoritative
-set of nine, each mapped to the `.brain/` folder its output is filed into. Five
+set of nine, each mapped to the `.brain/` folder its output is filed into. Four
 (`auto_install: true` — github, frontend-design, superpowers, security-guidance,
-code-modernization) are **dependencies of this plugin**, installed and enabled with
-it; `/brain:init` offers the other four (product-tracking-skills, productivity,
-product-management, ui-ux-pro-max) model-driven via `/plugin`, never silently.
+which needs Python 3.10+) are **dependencies of this plugin**, installed and enabled
+with it; `/brain:init` offers the other five (code-modernization, product-tracking-skills,
+productivity, product-management, ui-ux-pro-max) model-driven via `/plugin`, never silently.
 `skills/init/scripts/plugins.js` renders the set (✓ = ships with brain). The
 contract — **plugins do the craft; the brain records the knowledge** — is stated in
 the brain's `reference.md` §9 with the precedence chain.
@@ -128,7 +128,7 @@ packs reuse the same shape.
 
 ### Domain pipelines (Phase 7)
 
-Two pipelines reuse the develop lifecycle with a domain front end (instance manual
+Two pipelines reuse the develop lifecycle with a domain front end (`reference.md`
 §10). **Product** is the §4 lifecycle with a PRD ingested in front and product-tracking
 plans behind — no new skill. **Game** is
 **`/brain:game`**: concept → GDD (`templates/gdd.md`) → prototype spec → build →

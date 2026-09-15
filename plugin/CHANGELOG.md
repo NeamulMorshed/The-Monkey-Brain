@@ -11,15 +11,15 @@ all cache writes (~163k tokens each).
   dispatching, never by switching the main thread mid-session". `agent-track`, `graph.js`,
   the skills README and `/brain:usage` cite it instead of restating their own wording.
 - **No skill switches the main thread** — a `model:` pin now always comes with
-  `context: fork`: `build`, `digest`, `usage` run as Sonnet forks, `brief`, `dashboard`,
-  `home` as Haiku forks. `research`, `ingest`, `dump`, `learn`, `init`, `ci`, `terse` and
-  `lock` lost their pins and run on the session model — so research synthesis really is on
+  `context: fork`, and only `build` forks (Sonnet, with the active instincts injected via
+  `instincts.js active`); `research`, `ingest`, `dump`, `learn`, `init`, `ci`, `terse`, `lock`,
+  `brief`, `digest`, `usage`, `dashboard` and `home` lost their pins and run on the session model — so research synthesis really is on
   the main model now, and fans out only past two independent slices.
 - **Context nudge** (`recall.js`) — past 150k tokens of context (`MONKEY_BRAIN_CONTEXT_NUDGE`,
   `0` off) one line, once per 100k band: the size, that every call re-reads it, "wrap, then
   /clear", and "don't switch models mid-session". Read from the transcript's last
   main-thread `usage`; subagent usage ignored.
-- **Lighter always-loaded footprint** — the manual (15.9 KB → 9.9 KB, engine v2.1) keeps the
+- **Lighter always-loaded footprint** — the manual (15.6 KB → 10.0 KB, engine v2.1) keeps the
   rules; plugins, MCP servers, pipelines, team mode, qmd and the command lists move to a new
   on-demand `reference.md` that `/brain:init` creates and `--update` refreshes. Skill
   descriptions ≤ 300 B each (9.9 KB → 6.0 KB), the repeated "Requires a .brain/" line gone.
@@ -27,6 +27,13 @@ all cache writes (~163k tokens each).
 - **Four bundled plugins** — `code-modernization` (15 skills + 8 agents in every request's
   listing) moves to the `/brain:init` offer; `security-guidance` stays, marked as needing
   Python 3.10+.
+- **Review fixes** (`wiki/syntheses/token-diet-review.md`) — the context nudge resets below the
+  threshold (after `/compact`), nudges again when context shrank 40 %+ yet is still large,
+  ignores markers older than 12 h, fires on slash commands, skips synthetic entries and falls
+  back to 150k on an unparseable setting; `--update` keeps a single-quoted, unquoted or
+  commented `project:` name and says it refreshed `reference.md`; the credential rule and the
+  security-P0 wrap gate stay in the always-loaded manual; the knobs are documented in
+  `reference.md` §8; the README's "ships automatically" table lists four plugins.
 - **Cheaper instructions** — ingest cross-links every page the source genuinely informs (no
   "5–10+" quota); lint reasons over the flagged pages and named scope only; wrap reuses a
   verification that already ran this session.

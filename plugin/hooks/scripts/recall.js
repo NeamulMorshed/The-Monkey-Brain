@@ -10,9 +10,12 @@
  *
  * Context nudge (token-diet AC-4): every API call re-reads the whole context, so past ~150k
  * tokens a wrap + /clear at the next milestone is the biggest saving there is. The hook reads
- * the last main-thread `usage` in transcript_path (input + cache-read + cache-write) and adds
- * one line once per 100k band per session. MONKEY_BRAIN_CONTEXT_NUDGE sets the threshold
- * (0 disables). No transcript, or below the threshold → nothing.
+ * the last real main-thread `usage` in transcript_path (input + cache-read + cache-write) and
+ * adds one line once per 100k band per session — also on slash commands. The band marker resets
+ * when context drops below the threshold (after /compact), a context that shrank by 40 %+ yet is
+ * still large nudges again, and a marker older than 12 h (a resumed session) is ignored.
+ * MONKEY_BRAIN_CONTEXT_NUDGE sets the threshold in tokens (0 or a negative disables; empty or
+ * unparseable → the 150k default). No transcript, or below the threshold → nothing.
  *
  * No brain → silent. Any error → silent exit 0.
  */
@@ -24,52 +27,72 @@ const path = require('path');
 const lib = require(path.join(__dirname, 'lib.js'));
 const { search, terms } = require(path.join(__dirname, 'search.js'));
 
-const NUDGE_AT = Number(process.env.MONKEY_BRAIN_CONTEXT_NUDGE ?? 150000);
+const NUDGE_RAW = process.env.MONKEY_BRAIN_CONTEXT_NUDGE;
+const NUDGE_AT = NUDGE_RAW === undefined || NUDGE_RAW.trim() === '' || !Number.isFinite(Number(NUDGE_RAW)) ? 150000 : Number(NUDGE_RAW);
 const BAND = 100000;
-const TAIL_BYTES = 512 * 1024;
+const WINDOW = 512 * 1024;
+const STALE_MS = 12 * 3600 * 1000;
 
 const sid = (input) => String(input.session_id || 'nosession').replace(/[^\w-]/g, '');
 
-/** Context size of the session's last main-thread API call, from the transcript's tail; 0 when unknown. */
-function contextTokens(file) {
-  if (!file) return 0;
-  let text = '';
-  try {
-    const fd = fs.openSync(file, 'r');
-    try {
-      const size = fs.fstatSync(fd).size;
-      const len = Math.min(size, TAIL_BYTES);
-      const buf = Buffer.alloc(len);
-      fs.readSync(fd, buf, 0, len, size - len);
-      text = buf.toString('utf8');
-    } finally {
-      fs.closeSync(fd);
-    }
-  } catch {
-    return 0;
-  }
+/** The last real main-thread context size in a chunk of transcript: skips subagents, synthetic and zero-usage entries. */
+function lastMainUsage(text) {
   const lines = text.split('\n');
   for (let i = lines.length - 1; i >= 0; i--) {
     if (!lines[i].includes('"usage"')) continue;
     let j;
     try { j = JSON.parse(lines[i]); } catch { continue; }
-    if (j.type !== 'assistant' || j.isSidechain || !j.message || !j.message.usage) continue;
+    if (j.type !== 'assistant' || j.isSidechain || !j.message || !j.message.usage || j.message.model === '<synthetic>') continue;
     const u = j.message.usage;
-    return (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
+    const total = (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
+    if (total > 0) return total;
   }
   return 0;
 }
 
-/** One line once per 100k band past the threshold, per session; '' otherwise. */
+/** Context size of the session's last main-thread API call, from the transcript's tail; 0 when unknown. */
+function contextTokens(file) {
+  if (!file) return 0;
+  try {
+    const fd = fs.openSync(file, 'r');
+    try {
+      const size = fs.fstatSync(fd).size;
+      for (const win of [WINDOW, 2 * WINDOW]) { // a huge trailing tool result can fill the first window
+        const len = Math.min(size, win);
+        const buf = Buffer.alloc(len);
+        fs.readSync(fd, buf, 0, len, size - len);
+        const tokens = lastMainUsage(buf.toString('utf8'));
+        if (tokens || len === size) return tokens;
+      }
+    } finally {
+      fs.closeSync(fd);
+    }
+  } catch {}
+  return 0;
+}
+
+/** One line per 100k band past the threshold, per session (see the header); '' otherwise. */
 function contextNudge(input) {
   if (!(NUDGE_AT > 0)) return '';
   const tokens = contextTokens(input.transcript_path);
-  if (tokens < NUDGE_AT) return '';
-  const band = Math.floor((tokens - NUDGE_AT) / BAND);
   const marker = path.join(os.tmpdir(), `mb-ctx-${sid(input)}`);
-  const seen = lib.readTextSafe(marker).trim();
-  if (seen !== '' && Number(seen) >= band) return '';
-  try { fs.writeFileSync(marker, String(band)); } catch {}
+  if (tokens < NUDGE_AT) {
+    // Below the threshold (a fresh session, or after /compact): forget the band, so the next crossing nudges.
+    if (tokens > 0) { try { fs.rmSync(marker, { force: true }); } catch {} }
+    return '';
+  }
+  const band = Math.floor((tokens - NUDGE_AT) / BAND);
+  let seenBand = -1;
+  let seenTokens = 0;
+  try {
+    if (Date.now() - fs.statSync(marker).mtimeMs < STALE_MS) {
+      const [b, t] = lib.readTextSafe(marker).trim().split(':').map(Number);
+      if (Number.isFinite(b)) { seenBand = b; seenTokens = Number.isFinite(t) ? t : 0; }
+    }
+  } catch {}
+  const shrank = seenTokens > 0 && tokens < seenTokens * 0.6; // compacted, yet still large
+  if (band <= seenBand && !shrank) return '';
+  try { fs.writeFileSync(marker, `${band}:${tokens}`); } catch {}
   return (
     `🐵 context ≈ ${Math.round(tokens / 1000)}k tokens — every API call re-reads all of it. ` +
     `At the next milestone run /brain:wrap, then /clear: the resume file carries the state. ` +
@@ -100,13 +123,15 @@ function recall(input, prompt, brain) {
 async function main() {
   const input = await lib.readStdinJson();
   const prompt = String(input.prompt || '').trim();
-  if (!prompt || prompt.startsWith('/')) return;
+  if (!prompt) return;
   const brain = lib.findBrainDir(input.cwd);
   if (!brain) return;
 
-  const notes = [contextNudge(input), recall(input, prompt, brain)].filter(Boolean);
-  if (!notes.length) return;
-  lib.succeed({ hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: notes.join('\n\n') } });
+  const notes = [contextNudge(input)];
+  if (!prompt.startsWith('/')) notes.push(recall(input, prompt, brain)); // recall skips slash commands; the nudge does not
+  const text = notes.filter(Boolean).join('\n\n');
+  if (!text) return;
+  lib.succeed({ hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: text } });
 }
 
 main().then(() => process.exit(0)).catch(() => process.exit(0));

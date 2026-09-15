@@ -49,9 +49,8 @@ every main-model agent dispatch.
 | Work class | Skills | Frontmatter | Why |
 | --- | --- | --- | --- |
 | **Judgment & synthesis** | `plan` · `review` · `loop` · `career` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high`, session model | plans, final review, reconciliation, compression, design — never downgraded |
-| **Session work** | `research` · `ingest` · `dump` · `learn` · `init` · `ci` · `terse` · `lock` | `effort: medium` / `low`, session model | interactive or conversation-bound; a pin here would be a main-thread switch |
-| **Forked routine** | `build` · `digest` · `usage` | `model: sonnet` · `context: fork` | test-first implementation and reports run in a Sonnet subagent |
-| **Forked trivial** | `brief` · `dashboard` · `home` | `model: haiku` · `context: fork` | a script builds the pack or page; Haiku presents it |
+| **Session work** | `research` · `ingest` · `dump` · `learn` · `init` · `ci` · `terse` · `lock` · `brief` · `digest` · `usage` · `dashboard` · `home` | `effort: medium` / `low`, session model | interactive, or a `!` script does the work — a pin would be a main-thread switch and a fork only adds a subagent bootstrap |
+| **Forked coding** | `build` | `model: sonnet` · `context: fork` | long test-first implementation in a Sonnet subagent; the active instincts are injected, blockers returned |
 
 **Parallel fan-out** (subagents in `../agents/`, run concurrently; only summaries
 return): `research` fans out to **`brain-researcher`** (Sonnet, read-only) when a question

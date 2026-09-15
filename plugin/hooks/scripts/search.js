@@ -6,7 +6,7 @@
  * projects/, memory/) — never raw-sources/, Clippings/, templates, or the
  * index/log hubs, so every hit is a compiled page with provenance. Rebuilt from
  * the files on every call: it can't go stale, and a few hundred pages index in
- * well under a second. qmd (instance manual §8) stays the opt-in vector upgrade.
+ * well under a second. qmd (reference.md §8) stays the opt-in vector upgrade.
  *
  *   node search.js "<query>" [--limit N] [--json] [--brain DIR]
  *   node search.js --brief "<topic>" [--budget TOKENS] [--brain DIR]

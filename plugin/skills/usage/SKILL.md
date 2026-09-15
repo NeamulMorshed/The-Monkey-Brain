@@ -1,8 +1,6 @@
 ---
 description: Real token usage for this project from Claude Code's transcripts — per day, model and branch, subagent share, cache-hit ratio — and what to change. Use for a token report, token spend, the cache-hit ratio, or why sessions feel expensive.
 argument-hint: "[--days N]"
-model: sonnet
-context: fork
 effort: low
 ---
 

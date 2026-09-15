@@ -1,8 +1,6 @@
 ---
 description: Standup or weekly review from the Monkey Brain — what's blocked, what got done (log and commits), what's in flight — filed to sessions/. Use for "standup", "daily brief", "what did we do yesterday" or "weekly review".
 argument-hint: "[week]"
-model: sonnet
-context: fork
 effort: low
 ---
 

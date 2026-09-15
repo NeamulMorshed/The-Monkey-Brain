@@ -186,6 +186,8 @@ the map. Past ~100 sources, qmd adds meaning-based search ([reference.md](refere
 **Plugins do the craft; the brain records the knowledge** — every decision, finding or
 durable artifact a plugin or MCP server produces is filed into a `.brain/` folder. The
 per-plugin mapping, the precedence chain and the MCP contract: [reference.md](reference.md).
+I never install an MCP server, run its setup command or touch a credential; open security
+P0s gate `/brain:wrap`.
 
 ## 10. Domain pipelines
 

@@ -8,13 +8,18 @@ effort: medium
 
 # /brain:build — work the spec, test-first
 
-The spec is the contract: every AC gets a test, every milestone leaves a trace.
+The spec is the contract: every AC gets a test, every milestone leaves a trace. This skill runs
+as a forked Sonnet subagent (manual §5): it cannot see the conversation or ask the curator, so
+read what you need from the files and return with any blocker instead of waiting.
+
+**The brain's learned rules (active instincts) — always apply:**
+!`node "${CLAUDE_SKILL_DIR}/../../hooks/scripts/instincts.js" active`
 
 ## Steps
 
 1. **Load the contract.** Read `specs/<slug>.md`. Check gate state up front:
-   `architecture` tier without `plan_approved: true` → stop and ask the curator to
-   approve the plan first (the guard would block source writes anyway).
+   `architecture` tier without `plan_approved: true` → stop and return: the curator
+   must approve the plan first (the guard would block source writes anyway).
    **Build never sets `plan_approved`** — only the curator's word flips it (`/brain:plan` step 4).
    Set the spec's `phase: build` (and the `projects/` page's phase). If the spec has a
    `## Blockers` section from a previous `/brain:review`, start from those.
@@ -35,7 +40,8 @@ The spec is the contract: every AC gets a test, every milestone leaves a trace.
 5. **Bookkeeping per milestone:** append `wiki/log.md`
    `## [YYYY-MM-DD] build | <feature> — AC-n…m` and commit `build: <feature> — <slice>`
    per logical step.
-6. **Hand off:** all ACs green → set `phase: review` and offer `/brain:review`.
+6. **Hand off:** all ACs green → set `phase: review` and return, naming `/brain:review` as the
+   next step.
 
 **Done when:** every AC has a passing test (or an honestly recorded exception), the
 spec reflects reality, and the trail — log entries plus commits — shows how it got there.

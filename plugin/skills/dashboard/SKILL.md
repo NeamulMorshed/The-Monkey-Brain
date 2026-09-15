@@ -1,8 +1,6 @@
 ---
 description: One-page offline HTML dashboard of this project's Monkey Brain — index stats, open specs with AC progress, loops, health, recent log and decisions, token usage — written to .brain/sessions/. Use for "dashboard" or "show me the brain".
 argument-hint: "[--open]"
-model: haiku
-context: fork
 effort: low
 ---
 
