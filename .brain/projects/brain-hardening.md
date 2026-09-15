@@ -20,8 +20,8 @@ Acting on [[brain-health-audit]]: three specs in order, each through plan → bu
 - [[token-diet]] — built (0.31.0, selftest 484 green, always-loaded bytes 26,491 → 16,550); in review.
 
 ## Next
-1. [[token-diet]] — model-routing table, fork instead of pin, context nudge, manual split, description cap, dependency slimming.
-2. [[engine-knowledge]] — compile the engine into its brain, link resolution across records, superpowers filing, router fixes, docs drift.
+1. [[engine-knowledge]] — plan drafted (architecture, approved on the curator's word): links across records, superpowers filing, the engine compiled into its brain.
+2. [[router-and-drift]] — router misfires, doctor dependency health, docs drift (bundle, `schema/`, bootstrap), marker pruning.
 
 ## Blockers / risks
 - Every change touches hooks that run in every brain; the selftest suite is the safety net and runs on 3 OS × 2 Node in CI.
