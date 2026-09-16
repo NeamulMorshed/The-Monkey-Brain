@@ -224,3 +224,5 @@ sonnet = routine · main model = judgment. Doctor reads the model mix and outcom
 - [2026-09-16 03:43] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
 - [2026-09-16 03:43] ↳ done · general-purpose · on claude-fable-5-1 · 1,156,317 tokens · 11 turn(s)
 - [2026-09-16 03:51] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-16 04:06] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
+- [2026-09-16 07:38] general-purpose · model: (inherit) · adversarial review of the router · ⛔ blocked: no explicit model
