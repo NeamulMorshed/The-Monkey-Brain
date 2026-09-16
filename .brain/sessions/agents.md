@@ -226,3 +226,4 @@ sonnet = routine · main model = judgment. Doctor reads the model mix and outcom
 - [2026-09-16 03:51] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
 - [2026-09-16 04:06] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
 - [2026-09-16 07:38] general-purpose · model: (inherit) · adversarial review of the router · ⛔ blocked: no explicit model
+- [2026-09-16 07:53] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)

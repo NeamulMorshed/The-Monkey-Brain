@@ -1,7 +1,7 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-16 12:00
+updated: 2026-09-16 23:25
 ---
 
 ## Where we left off
@@ -13,13 +13,16 @@ Workstream `brain-hardening` → done. `brain-all` is 0.14.1 (294/294) and a wee
 CI job watches the catalog. 0.33.1: scaffolded manuals are always LF (a Windows clone made them
 CRLF, over the 10 KB budget) — caught by the installed cache's selftest. 0.33.2: design phrasings
 ("design the onboarding user flow", "redesign the checkout ux") reach `/brain:product-design`,
-found by a 128-probe independent test of the installed plugin; selftest 589.
+found by a 128-probe independent test of the installed plugin. 0.33.3: CI had been red for five
+pushes (example-brain slug collisions); fixed, `/brain:wrap` now checks CI; run 35127534491 green on
+all 6 jobs, selftest 590.
 
 ## Next steps
 - [ ] Curator: set `GITHUB_PERSONAL_ACCESS_TOKEN` or disable the github plugin — doctor #20 warns until then.
-- [ ] Restart Claude Code after the reinstall so the hooks run 0.33.0 (the old session ran 0.29.1 hooks).
+- [ ] Restart Claude Code after the reinstall and reinstall 0.33.3 so the hooks run the current version (the old session ran 0.29.1 hooks).
 - [ ] Watch the weekly `bundle-drift` job; a router misfire seen in a real session gets a selftest case before its fix.
 
 ## Task log (auto)
 - [2026-09-15 11:17] ■ session ended (other)
 - [2026-09-15 22:33] ■ session ended (clear)
+- [2026-09-16 07:54] ■ session ended (clear)
