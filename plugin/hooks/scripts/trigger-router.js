@@ -174,7 +174,7 @@ const RULES = [
     what: 'code/spec review',
   },
   {
-    re: /\bproduct[- ]design\b|\bdesign (a |the |my |this )?(product|ux|user experience|user flow|interface|screen|app)\b|\b(create|make|write|build) (a |some )?personas?\b|\buser journey\b|\bjourney map\b|\bhow[- ]might[- ]we\b|\busability (test|study|testing)\b|\bheuristic eval|\baccessibility (audit|pass|review)\b/i,
+    re: /\bproduct[- ]design\b|\b(?:re)?design(?:ing)? (?:a |an |the |my |our |this )?(?:(?!(?:for|to|in|on|with|of|from|about|into|that|which|and)\b)[\w-]+ ){0,3}(?:product|ux|user experience|user flows?|interface|screens?|app|onboarding|checkout|navigation)\b|\b(create|make|write|build) (a |some )?personas?\b|\buser journey\b|\bjourney map\b|\bhow[- ]might[- ]we\b|\busability (test|study|testing)\b|\bheuristic eval|\baccessibility (audit|pass|review)\b/i,
     skill: 'product-design',
     needsBrain: true,
     what: 'product-design process',

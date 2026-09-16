@@ -1,5 +1,13 @@
 # Changelog — brain plugin
 
+## 0.33.2 — 2026-09-16 (design phrasings reach product-design)
+
+- **Router** — the design rule now allows an adjective between the article and the noun and
+  recognises "redesign": "design the onboarding user flow", "design the onboarding screen" and
+  "redesign the checkout ux" reach `/brain:product-design` instead of falling through silently,
+  while "design the database schema" stays development work. Found by an independent end-to-end
+  test of the installed plugin (128 probes across hooks, router, gates, wiki, skills, MCP).
+
 ## 0.33.1 — 2026-09-16 (LF manuals on Windows)
 
 - **Scaffolded files are always LF** — a marketplace install is a git clone, and on Windows

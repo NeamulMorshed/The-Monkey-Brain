@@ -2098,6 +2098,21 @@ try {
     check('the repo ships LF on every checkout (.gitattributes eol=lf) (0.33.1)', fs.existsSync(gattr) && /^\*\s+text=auto\s+eol=lf\b/m.test(fs.readFileSync(gattr, 'utf8')));
   }
 
+  // 0.33.2 — the design rule missed an adjective between the article and the noun, and "redesign".
+  for (const [p, want] of [
+    ['design the onboarding user flow', 'product-design'],
+    ['design the onboarding screen', 'product-design'],
+    ['redesign the checkout ux', 'product-design'],
+    ['design a new signup screen', 'product-design'],
+    ['design the user flow', 'product-design'],
+    ['design a user journey', 'product-design'],
+    ['design the database schema for billing', 'research'],
+    ['design the caching layer', 'research'],
+  ]) {
+    rq = rt(p);
+    check(`"${p}" → brain:${want} (0.33.2)`, want === 'research' ? !/brain:product-design/.test(rq.ctx) : /brain:product-design/.test(rq.ctx), rq.ctx.slice(0, 120));
+  }
+
   console.log('brain-status.js — no-brain offer');
   const PLAIN_E = path.join(ROOT, 'plain-e');
   fs.mkdirSync(PLAIN_E, { recursive: true });
