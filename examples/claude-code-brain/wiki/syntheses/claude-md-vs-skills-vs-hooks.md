@@ -4,8 +4,8 @@ type: synthesis
 status: active
 tags: [claude-code, comparison, extensions, decision-guide]
 created: 2026-06-17
-updated: 2026-07-17
-sources: ["[[extend-claude-code]]", "[[context-window]]"]
+updated: 2026-09-16
+sources: ["[[extend-claude-code]]", "[[context-window-docs]]"]
 related: ["[[claude-md]]", "[[skills]]", "[[hooks]]", "[[subagents]]", "[[agent-teams]]", "[[mcp]]", "[[rules]]"]
 aliases: ["skill-vs-subagent", "claude-md-vs-skills", "claude-md-vs-rules-vs-skills", "subagent-vs-agent-team", "mcp-vs-skill", "hook-vs-skill", "extension comparison"]
 question: "When should I use CLAUDE.md vs a skill vs a hook (and the other extension features)?"
@@ -74,4 +74,4 @@ enforcement. Hook *output* lands in context as text Claude reads.
 - **Hook + MCP** — post-edit hook posts a Slack notification.
 
 ## Sources
-- [[extend-claude-code]], [[context-window]]
+- [[extend-claude-code]], [[context-window-docs]]

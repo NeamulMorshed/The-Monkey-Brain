@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, extension, skills, workflow]
 created: 2026-06-17
-updated: 2026-07-17
-sources: ["[[extend-claude-code]]", "[[context-window]]", "[[skills-authoring-guide]]", "[[caveman-readme]]", "[[ui-ux-pro-max-readme]]"]
+updated: 2026-09-16
+sources: ["[[extend-claude-code]]", "[[context-window-docs]]", "[[skills-authoring-guide]]", "[[caveman-readme]]", "[[ui-ux-pro-max-readme]]"]
 related: ["[[skill-authoring]]", "[[claude-md]]", "[[subagents]]", "[[hooks]]", "[[mcp]]", "[[plugins]]", "[[claude-md-vs-skills-vs-hooks]]"]
 aliases: ["skill"]
 ---
@@ -40,4 +40,4 @@ Bundled into [[plugins]] for distribution (e.g. [[frontend-design]], [[superpowe
 cross-agent portability format).
 
 ## Sources
-- [[extend-claude-code]], [[context-window]], [[skills-authoring-guide]], [[caveman-readme]], [[ui-ux-pro-max-readme]]
+- [[extend-claude-code]], [[context-window-docs]], [[skills-authoring-guide]], [[caveman-readme]], [[ui-ux-pro-max-readme]]

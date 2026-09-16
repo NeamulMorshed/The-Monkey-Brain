@@ -4,7 +4,7 @@ type: source
 status: active
 tags: [claude-code, skills, authoring, reference]
 created: 2026-06-17
-updated: 2026-06-17
+updated: 2026-09-16
 raw: "../../raw-sources/Skills authoring guide.md"
 origin: "https://code.claude.com/docs/en/skills"
 related: ["[[skills]]", "[[skill-authoring]]", "[[subagents]]", "[[hooks]]"]
@@ -50,7 +50,7 @@ injection, and running a skill in a forked [[subagents|subagent]].
 
 ## Contradictions / notes
 > No contradictions. **Confirms and sources** the previously-asserted skill compaction caps
-> (5k/skill, 25k total) which had come from [[context-window]] — now traced to their primary doc.
+> (5k/skill, 25k total) which had come from [[context-window-docs]] — now traced to their primary doc.
 
 ## Pages updated on ingest
 - [[index]], [[skills]], [[skill-authoring]], [[subagents]], [[hooks]], [[compaction]], [[plugins]]

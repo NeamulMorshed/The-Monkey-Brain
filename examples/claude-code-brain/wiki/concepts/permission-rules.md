@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, permissions, config]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[permission-modes]]", "[[permissions-reference]]"]
+updated: 2026-09-16
+sources: ["[[permission-modes-docs]]", "[[permissions-reference]]"]
 related: ["[[permission-modes]]", "[[settings-precedence]]", "[[read-only-commands]]", "[[auto-mode]]", "[[protected-paths]]", "[[hooks]]"]
 aliases: ["allow rules", "deny rules", "ask rules", "permission rule syntax"]
 ---
@@ -47,4 +47,4 @@ hook]] (which can block before rules even run, but cannot bypass deny/ask) — s
 [[claude-md-vs-skills-vs-hooks]]. The same syntax powers a hook's `if` filter — see [[hook-events]].
 
 ## Sources
-- [[permission-modes]], [[permissions-reference]]
+- [[permission-modes-docs]], [[permissions-reference]]

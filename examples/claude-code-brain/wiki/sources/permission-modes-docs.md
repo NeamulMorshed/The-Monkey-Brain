@@ -4,7 +4,7 @@ type: source
 status: active
 tags: [claude-code, permissions, safety, config]
 created: 2026-06-17
-updated: 2026-06-17
+updated: 2026-09-16
 raw: "../../raw-sources/Choose a permission mode.md"
 origin: "https://code.claude.com/docs/en/permission-modes"
 related: ["[[permission-modes]]", "[[auto-mode]]", "[[protected-paths]]"]
@@ -44,7 +44,7 @@ allow/ask/deny rules, with a set of always-protected paths.
 - [[claude-code]] — parent product
 
 ## Contradictions / notes
-> None within the corpus. Cross-links to [[context-window]]: conversational boundaries in
+> None within the corpus. Cross-links to [[context-window-docs]]: conversational boundaries in
 > auto mode can be **lost on compaction** — a real interaction worth noting.
 
 ## Pages updated on ingest

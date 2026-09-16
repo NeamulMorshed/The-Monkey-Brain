@@ -1,5 +1,14 @@
 # Changelog — brain plugin
 
+## 0.33.3 — 2026-09-16 (CI green is part of done)
+
+- **/brain:wrap checks CI** — it runs the repo workflow `run:` steps locally and, after a push,
+  checks the pushed commit run (`gh run list` / `gh run view --log-failed`); red CI means not
+  done. Five pushes (0.33.0 wrap → 0.33.2) went red on a CI-only step while every wrap reported clean.
+- **Example brain lints clean again** — the stricter slug-collision lint (0.32.0) failed on two
+  source summaries sharing a name with their concepts; they are now `context-window-docs` and
+  `permission-modes-docs`, with provenance links retargeted.
+
 ## 0.33.2 — 2026-09-16 (design phrasings reach product-design)
 
 - **Router** — the design rule now allows an adjective between the article and the noun and

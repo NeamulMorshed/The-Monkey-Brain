@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, permissions, safety]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[permission-modes]]"]
+updated: 2026-09-16
+sources: ["[[permission-modes-docs]]"]
 related: ["[[permission-modes]]", "[[auto-mode]]", "[[permission-rules]]"]
 aliases: ["protected paths"]
 ---
@@ -38,4 +38,4 @@ configs (`.npmrc`, `.yarnrc`, `bunfig.toml`…), `.pre-commit-config.yaml`, `.mc
 > protected.
 
 ## Sources
-- [[permission-modes]]
+- [[permission-modes-docs]]

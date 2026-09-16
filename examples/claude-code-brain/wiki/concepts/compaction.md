@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, context, compaction]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[context-window]]"]
+updated: 2026-09-16
+sources: ["[[context-window-docs]]"]
 related: ["[[context-window]]", "[[claude-md]]", "[[skills]]", "[[rules]]", "[[memory]]", "[[auto-mode]]"]
 aliases: ["compact", "/compact"]
 ---
@@ -34,4 +34,4 @@ demand via `/compact [focus]`.
   that stated them — use a deny [[permission-rules|rule]] for a hard guarantee.
 
 ## Sources
-- [[context-window]]
+- [[context-window-docs]]

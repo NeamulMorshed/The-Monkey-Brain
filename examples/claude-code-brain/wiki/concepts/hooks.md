@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, extension, hooks, automation]
 created: 2026-06-17
-updated: 2026-07-17
-sources: ["[[extend-claude-code]]", "[[context-window]]", "[[hooks-reference]]"]
+updated: 2026-09-16
+sources: ["[[extend-claude-code]]", "[[context-window-docs]]", "[[hooks-reference]]"]
 related: ["[[skills]]", "[[mcp]]", "[[permission-rules]]", "[[hook-events]]", "[[claude-md-vs-skills-vs-hooks]]"]
 aliases: ["hook"]
 ---
@@ -57,4 +57,4 @@ plugin/component scopes; inspect with `/hooks`; kill all with `{"disableAllHooks
 (managed hooks can't be overridden).
 
 ## Sources
-- [[extend-claude-code]], [[context-window]], [[hooks-reference]]
+- [[extend-claude-code]], [[context-window-docs]], [[hooks-reference]]

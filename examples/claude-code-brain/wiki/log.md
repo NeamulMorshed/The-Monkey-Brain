@@ -32,13 +32,13 @@ Founding pattern. Source → [[sources/llm-wiki]]. Spawned [[llm-wiki-pattern]],
 [[obsidian-ecosystem]], [[dataview]], [[search-tooling]]. Touched: 12 pages.
 
 ## [2026-06-17] ingest | Choose a Permission Mode
-Source → [[sources/permission-modes]]. Spawned/updated [[permission-modes]], [[auto-mode]],
+Source → [[permission-modes-docs]]. Spawned/updated [[permission-modes]], [[auto-mode]],
 [[plan-mode]], [[protected-paths]], [[permission-rules]], [[claude-code]]. Flagged
 cross-source dependency: auto-mode conversational boundaries can be lost on [[compaction]].
 Touched: 7 pages.
 
 ## [2026-06-17] ingest | Explore the Context Window
-Source → [[sources/context-window]]. Spawned/updated [[context-window]], [[compaction]],
+Source → [[context-window-docs]]. Spawned/updated [[context-window]], [[compaction]],
 [[subagents]], [[claude-md]], [[skills]], [[mcp]], [[hooks]], [[rules]], [[memory]].
 Reinforced the auto-mode/compaction dependency. Touched: 10 pages.
 
@@ -188,3 +188,11 @@ back into the instance instead of shipping frozen-at-publish data). Added a *v2 
 branch to the [[index]] mindmap (Caveman, ui-ux-pro-max). This completes the research step
 (P9.2) of the engine's `ROADMAP.md` v0.2 — next: Phase 1 plugin skeleton. Vault now 15 sources
 / 66 pages. Touched: 2 pages.
+
+## [2026-09-16] lint | Slug collisions resolved by rename
+The folder-qualified workaround from the 2026-06-17 lint no longer holds: a bare link to a shared
+basename reaches two pages, and the stricter lint now fails on it. Renamed the two source
+summaries to [[context-window-docs]] and [[permission-modes-docs]]; `sources:` provenance,
+*Sources* sections and doc-specific cross-links now point at them, while bare
+[[context-window]] and [[permission-modes]] mean the concepts only. Vault still 15 sources /
+66 pages. Touched: 21 pages.

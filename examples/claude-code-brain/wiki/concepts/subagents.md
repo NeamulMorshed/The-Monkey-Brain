@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, extension, subagents, context]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[extend-claude-code]]", "[[context-window]]", "[[subagents-guide]]"]
+updated: 2026-09-16
+sources: ["[[extend-claude-code]]", "[[context-window-docs]]", "[[subagents-guide]]"]
 related: ["[[built-in-subagents]]", "[[agent-teams]]", "[[skills]]", "[[skill-authoring]]", "[[context-window]]", "[[auto-mode]]", "[[skill-vs-subagent]]", "[[subagent-vs-agent-team]]"]
 aliases: ["subagent"]
 ---
@@ -47,4 +47,4 @@ Compare [[skill-vs-subagent]] and [[subagent-vs-agent-team]]; scale up to [[agen
 subagents need to talk to each other.
 
 ## Sources
-- [[extend-claude-code]], [[context-window]], [[subagents-guide]]
+- [[extend-claude-code]], [[context-window-docs]], [[subagents-guide]]

@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, extension, context, config]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[extend-claude-code]]", "[[context-window]]"]
+updated: 2026-09-16
+sources: ["[[extend-claude-code]]", "[[context-window-docs]]"]
 related: ["[[claude-md]]", "[[skills]]", "[[compaction]]", "[[claude-md-vs-skills-vs-hooks]]"]
 aliases: ["rules", "path-scoped rules"]
 ---
@@ -27,4 +27,4 @@ matching file is read again. For must-persist rules, drop `paths:` or move to th
 CLAUDE.md.
 
 ## Sources
-- [[extend-claude-code]], [[context-window]]
+- [[extend-claude-code]], [[context-window-docs]]

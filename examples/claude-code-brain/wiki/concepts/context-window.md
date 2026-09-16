@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, context, tokens]
 created: 2026-06-17
-updated: 2026-07-17
-sources: ["[[context-window]]", "[[extend-claude-code]]", "[[caveman-readme]]"]
+updated: 2026-09-16
+sources: ["[[context-window-docs]]", "[[extend-claude-code]]", "[[caveman-readme]]"]
 related: ["[[compaction]]", "[[subagents]]", "[[claude-md]]", "[[skills]]", "[[mcp]]", "[[hooks]]", "[[memory]]", "[[rules]]"]
 aliases: ["context", "context window"]
 ---
@@ -37,4 +37,4 @@ and content that never appears in your terminal. Default ~200K tokens.
 At the limit, [[compaction]] summarizes history automatically.
 
 ## Sources
-- [[context-window]], [[extend-claude-code]], [[caveman-readme]]
+- [[context-window-docs]], [[extend-claude-code]], [[caveman-readme]]

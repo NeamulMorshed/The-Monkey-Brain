@@ -4,7 +4,7 @@ type: source
 status: active
 tags: [claude-code, context, compaction, subagents]
 created: 2026-06-17
-updated: 2026-06-17
+updated: 2026-09-16
 raw: "../../raw-sources/Explore the context window.md"
 origin: "https://code.claude.com/docs/en/context-window"
 related: ["[[context-window]]", "[[compaction]]", "[[subagents]]"]
@@ -42,7 +42,7 @@ to it as Claude works; compaction summarizes history when it fills.
 - [[claude-md]], [[skills]], [[mcp]], [[hooks]], [[rules]], [[memory]] — what loads & when
 
 ## Contradictions / notes
-> Reinforces [[permission-modes]]: auto-mode conversational boundaries are re-read from the
+> Reinforces [[permission-modes-docs]]: auto-mode conversational boundaries are re-read from the
 > transcript and can be **dropped by compaction** — a cross-source dependency.
 
 ## Pages updated on ingest

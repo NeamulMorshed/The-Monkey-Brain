@@ -23,6 +23,8 @@ the narrative belongs to you.
      suite, linters), run them — unless the same check already ran this session after the
      last source change (a build or review ran it): report that result instead of re-running.
      Report failures with output — never paper over them.
+   - **CI parity:** if the repo has `.github/workflows/*.yml`, run their `run:` steps that
+     work locally too — CI often checks more than the test suite (an example lint, a build).
    - **Domain-pack gate:** if the active workstream's `projects/<name>.md` names a `pack:`
      (e.g. `pack: product-design`), open that pack's `checklist.md`
      (`${CLAUDE_SKILL_DIR}/../<pack>/checklist.md`) and run it. Report every **open P0** with
@@ -47,7 +49,10 @@ the narrative belongs to you.
    committed yet (`ingest:` / `query:` / `lint:` / `session:` / `feat:` / `schema:` / `research:` /
    `plan:` / `build:` / `review:`).
    Show what will be staged, then commit. Never commit `Clippings/` staging drops.
-5. **Report the outcome** in 3–5 lines: what was verified (with results), what was logged
+   **After a push**, check the pushed commit's CI (`gh run list --branch <branch> --limit 3`,
+   `gh run watch <id>` or `gh run view <id> --log-failed`). Red CI means **not done**: report
+   the failing step with its output. If `gh` is missing or unauthenticated, say CI was not checked.
+5. **Report the outcome** in 3–5 lines: what was verified (with results, CI included), what was logged
    and committed, and the top next step now recorded in resume.md.
 
 **Done when:** checks ran (or none applied), log + index + resume reflect the session,

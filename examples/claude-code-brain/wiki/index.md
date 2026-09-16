@@ -4,7 +4,7 @@ type: index
 status: active
 tags: [index, navigation, moc]
 created: 2026-06-17
-updated: 2026-07-17
+updated: 2026-09-16
 source_count: 15
 page_count: 66
 ---
@@ -51,8 +51,8 @@ Distilled summaries of each immutable [[raw-sources-layer|raw source]].
 | Page | Summary |
 | --- | --- |
 | [[sources/llm-wiki\|LLM Wiki (Karpathy)]] | The founding pattern: build a compounding wiki, not RAG. |
-| [[sources/permission-modes\|Choose a Permission Mode]] | Six Claude Code permission modes + rules + protected paths. |
-| [[sources/context-window\|Explore the Context Window]] | What loads into context, what each thing costs, compaction. |
+| [[permission-modes-docs\|Choose a Permission Mode]] | Six Claude Code permission modes + rules + protected paths. |
+| [[context-window-docs\|Explore the Context Window]] | What loads into context, what each thing costs, compaction. |
 | [[sources/extend-claude-code\|Extend Claude Code]] | When to use CLAUDE.md / skills / hooks / MCP / subagents / plugins. |
 | [[sources/frontend-design-plugin\|Frontend Design Plugin]] | Plugin for distinctive, non-generic frontends. |
 | [[sources/superpowers-plugin\|Superpowers Plugin]] | TDD / debugging / brainstorming methodology framework. |

@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, product, hub]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[permission-modes]]", "[[context-window]]", "[[extend-claude-code]]"]
+updated: 2026-09-16
+sources: ["[[permission-modes-docs]]", "[[context-window-docs]]", "[[extend-claude-code]]"]
 related: ["[[permission-modes]]", "[[context-window]]", "[[skills]]", "[[hooks]]", "[[mcp]]", "[[subagents]]", "[[plugins]]", "[[claude-md]]"]
 aliases: ["claude code cli"]
 ---
@@ -32,4 +32,4 @@ Claude Code subject area in The Monkey Brain.
 - [[claude-md-vs-skills-vs-hooks]] — when to use which extension.
 
 ## Sources
-- [[permission-modes]], [[context-window]], [[extend-claude-code]]
+- [[permission-modes-docs]], [[context-window-docs]], [[extend-claude-code]]

@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, extension, mcp, integration]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[extend-claude-code]]", "[[context-window]]", "[[mcp-guide]]"]
+updated: 2026-09-16
+sources: ["[[extend-claude-code]]", "[[context-window-docs]]", "[[mcp-guide]]"]
 related: ["[[skills]]", "[[hooks]]", "[[mcp-tool-search]]", "[[search-tooling]]", "[[qmd]]", "[[claude-code]]"]
 aliases: ["mcp", "model context protocol"]
 ---
@@ -36,4 +36,4 @@ post to Slack, control a browser. The server handles connection and authenticati
   the `Elicitation`/`ElicitationResult` [[hook-events|events]] handle MCP user-input requests.
 
 ## Sources
-- [[extend-claude-code]], [[context-window]], [[mcp-guide]]
+- [[extend-claude-code]], [[context-window-docs]], [[mcp-guide]]

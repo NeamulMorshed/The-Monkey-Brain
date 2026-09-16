@@ -1480,6 +1480,8 @@ try {
   check('/brain:review names both exits: phase: build + /brain:build on failure, /brain:wrap on success (AC-6)', /phase: build/.test(revDoc) && /\/brain:build/.test(revDoc) && /## Blockers/.test(revDoc) && /\/brain:wrap/.test(revDoc));
   const wrapDoc = rd('wrap/SKILL.md');
   check('/brain:wrap trusts status: done and re-verifies only active specs (AC-7)', /status: done/.test(wrapDoc) && /active/.test(wrapDoc));
+  // 0.33.3 — five pushes went red on a CI-only step (example-brain lint) while wraps reported clean.
+  check('/brain:wrap runs the CI workflow steps locally and checks the pushed run, reporting red as not done (0.33.3)', /\.github\/workflows/.test(wrapDoc) && /gh run/.test(wrapDoc) && /red/i.test(wrapDoc));
   check('/brain:build states it never sets plan_approved (AC-8)', /never sets? `?plan_approved/i.test(rd('build/SKILL.md')));
   const manual = rd('init/brain-template/CLAUDE.md');
   const devSection = (manual.split('### Develop')[1] || '').split(/\r?\n##+ /)[0]; // §4 Develop up to the next heading

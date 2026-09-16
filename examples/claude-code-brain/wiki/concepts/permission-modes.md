@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, permissions, safety]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[permission-modes]]"]
+updated: 2026-09-16
+sources: ["[[permission-modes-docs]]"]
 related: ["[[auto-mode]]", "[[plan-mode]]", "[[protected-paths]]", "[[permission-rules]]", "[[claude-code]]"]
 aliases: ["permission mode", "modes"]
 ---
@@ -38,4 +38,4 @@ built-in [[read-only-commands]] run without a prompt in *every* mode. Where the 
 exists at multiple levels, [[settings-precedence]] decides.
 
 ## Sources
-- [[permission-modes]]
+- [[permission-modes-docs]]

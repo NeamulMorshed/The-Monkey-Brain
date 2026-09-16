@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, context, memory]
 created: 2026-06-17
-updated: 2026-07-17
-sources: ["[[context-window]]", "[[extend-claude-code]]"]
+updated: 2026-09-16
+sources: ["[[context-window-docs]]", "[[extend-claude-code]]"]
 related: ["[[claude-md]]", "[[context-window]]", "[[compaction]]", "[[caveman]]"]
 aliases: ["memory", "auto memory"]
 ---
@@ -23,4 +23,4 @@ Because memory files load every session, they are also the highest-leverage **co
 target — [[caveman]]'s `/caveman-compress` cuts them ~46% permanently (see [[claude-md]]).
 
 ## Sources
-- [[context-window]], [[extend-claude-code]]
+- [[context-window-docs]], [[extend-claude-code]]

@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, extension, context, memory]
 created: 2026-06-17
-updated: 2026-07-17
-sources: ["[[extend-claude-code]]", "[[context-window]]", "[[caveman-readme]]"]
+updated: 2026-09-16
+sources: ["[[extend-claude-code]]", "[[context-window-docs]]", "[[caveman-readme]]"]
 related: ["[[skills]]", "[[rules]]", "[[memory]]", "[[schema-layer]]", "[[claude-md-vs-skills-vs-hooks]]"]
 aliases: ["claude.md", "memory file"]
 ---
@@ -32,4 +32,4 @@ In The Monkey Brain, the [[schema-layer|schema]] (`schema/CLAUDE.md`) plays this
 wiki itself.
 
 ## Sources
-- [[extend-claude-code]], [[context-window]], [[caveman-readme]]
+- [[extend-claude-code]], [[context-window-docs]], [[caveman-readme]]

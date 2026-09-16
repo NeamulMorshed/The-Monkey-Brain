@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, permissions, planning]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[permission-modes]]"]
+updated: 2026-09-16
+sources: ["[[permission-modes-docs]]"]
 related: ["[[permission-modes]]", "[[auto-mode]]", "[[claude-code]]"]
 aliases: ["plan"]
 ---
@@ -25,4 +25,4 @@ otherwise behave like `default`. Research is delegated to the read-only **Plan**
 - Make it the project default via `permissions.defaultMode: "plan"`.
 
 ## Sources
-- [[permission-modes]]
+- [[permission-modes-docs]]

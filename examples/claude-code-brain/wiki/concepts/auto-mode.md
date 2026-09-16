@@ -4,8 +4,8 @@ type: concept
 status: active
 tags: [claude-code, permissions, autonomy, classifier]
 created: 2026-06-17
-updated: 2026-06-17
-sources: ["[[permission-modes]]"]
+updated: 2026-09-16
+sources: ["[[permission-modes-docs]]"]
 related: ["[[permission-modes]]", "[[protected-paths]]", "[[permission-rules]]", "[[subagents]]", "[[context-window]]"]
 aliases: ["auto"]
 ---
@@ -28,7 +28,7 @@ API, read-only HTTP, pushing to the branch you started on.
 Saying "don't push" makes the classifier block matching actions even when defaults allow
 them. **Caveat:** boundaries are re-read from the transcript each check, so they can be
 **lost on [[compaction]]** — for a hard guarantee use a deny [[permission-rules|rule]].
-(Cross-link noted from [[context-window]].)
+(Cross-link noted from [[context-window-docs]].)
 
 ## Fallbacks & decision order
 On entering auto mode, broad code-execution allow rules (`Bash(*)`, interpreters, `Agent`)
@@ -40,4 +40,4 @@ run, and on return. Writes to [[protected-paths]] route to the classifier.
 > [[superpowers]] plugin's debugging methodology.
 
 ## Sources
-- [[permission-modes]]
+- [[permission-modes-docs]]
