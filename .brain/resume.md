@@ -34,3 +34,10 @@ Reviewed on Fable ([[ci-signal-review]], 2 P1 + 6 P2 fixed). Selftest 612.
 - [2026-09-16 07:54] ■ session ended (clear)
 - [2026-09-16 23:34] ■ session ended (prompt_input_exit)
 - [2026-09-16 23:45] ■ session ended (other)
+
+## Open — security hardening for 0.35.x (from the automated review, 2026-11-09)
+- [ ] `trigger-router.js` `firstOffer`: create the marker with `{ flag: 'wx', mode: 0o600 }`, treat EEXIST as offered, drop the `existsSync` pre-check.
+- [ ] `skills.js` `declinedPacks`: parse line-wise (`^\s*[-*]?\s*([a-z][a-z0-9-]*)\s*$`) and intersect with manifest pack ids.
+- [ ] Manifest validation: apply the no-secret scan and an allowlist (`npx skills add …` / `git clone … https://github.com/…`) to `install_fallbacks` and `install_notes` too; `skills.js` refuses to render an entry that fails.
+- [ ] Selftest: restore the AC-4 assertion that `new-brain.js` never mentions `recommended-skills|skills add|npx`.
+A first attempt via an inline `node -e` patch broke escaping and was reverted — use Edit, test-first.
