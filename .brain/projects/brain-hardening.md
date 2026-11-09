@@ -1,7 +1,7 @@
 ---
 title: "Brain hardening — status"
 type: project
-status: active
+status: done
 tier: architecture
 phase: done
 pack:
