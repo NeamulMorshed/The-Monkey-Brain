@@ -330,46 +330,104 @@ function devHint(brain, prompt) {
   return head + `Open specs: ${shown}. If one covers this request → invoke brain:build <slug>. Otherwise → ` + entry;
 }
 
+/**
+ * Craft rules (skill packs, v0.35.0): motion / video prompts point at the matching pack from
+ * skills/init/recommended-skills.json. They rank BELOW every brain rule above: the craft line is
+ * appended after the workflow line, never instead of it. First match wins (mobile, video, web),
+ * so a prompt gets at most one craft line.
+ */
+const CRAFT_RULES = [
+  {
+    pack: 'mobile-motion',
+    re: /\b(?:react[- ]native|expo)\b/i,
+    and: /\b(?:animat\w*|gestures?|swipe|reanimated|haptics?|bottom sheet|sheets?)\b/i,
+  },
+  {
+    pack: 'video',
+    re: /\bremotion\b|\b(?:make|create|render|generate|produce|build)\b[^.!?]{0,30}\bvideos?\b/i,
+  },
+  {
+    pack: 'web-motion',
+    re: /\bparallax\b|\banimate\b[^.!?]{0,30}\bon scroll\b|\bscroll[- ]?(?:triggers?|driven|linked|reveal|animations?|jacking)\b|\b(?:entrance|enter|exit|page|route|view|modal|hover|css|ui) (?:animations?|transitions?)\b|\beasing\b|\bease-(?:in|out)\b|\bfeel(?:s)? (?:smooth|snappy|polished|alive)\b|\banimat(?:e|es|ed|ing|ion|ions)\b|\bmotion design\b/i,
+  },
+];
+
+/** One craft line for the prompt, or ''. Fails open on any manifest / filesystem problem. */
+function craftLine(prompt, root) {
+  try {
+    const rule = CRAFT_RULES.find((r) => r.re.test(prompt) && (!r.and || r.and.test(prompt)));
+    if (!rule) return '';
+    const skillsLib = require(path.join(__dirname, '..', '..', 'skills', 'init', 'scripts', 'skills.js'));
+    const manifest = skillsLib.loadManifestSafe();
+    const pack = manifest && manifest.packs.find((p) => p.id === rule.pack);
+    if (!pack) return '';
+    const st = skillsLib.packStatus(pack, skillsLib.installedSkills(root));
+    if (st.state === 'none') {
+      return (
+        '🐵 trigger-router: craft — this is ' + rule.pack + ' work and the ' + rule.pack + ' skill pack is not installed here → ' +
+        'offer it via /brain:init (the curator\'s yes only; nothing installs by default). Brain workflows above come first.'
+      );
+    }
+    return (
+      '🐵 trigger-router: craft — the ' + rule.pack + ' pack is installed → use its skills (' + st.have.join(', ') + ') for the how; ' +
+      'file their output per reference.md §9. Brain workflows above come first.'
+    );
+  } catch {
+    return '';
+  }
+}
+
 async function main() {
   const input = await lib.readStdinJson();
   const prompt = String(input.prompt || '').trim();
   if (!prompt || prompt.startsWith('/') || /\/brain:/.test(prompt)) return;
   if (HANDBACK_RE.test(prompt)) return; // someone else's report pasted into the conversation
 
-  const rule = RULES.find((r) => r.re.test(prompt) && !(r.not && r.not().test(prompt)));
-  if (!rule) return;
-  if ((rule.dev || rule.question) && QUESTION_RE.test(prompt)) return; // a question, not a work order
-
   const brain = lib.findBrainDir(input.cwd);
+  const hint = brainHint(input, prompt, brain);
+  // The craft line (motion / video packs) ranks below the brain's own workflows and is silent on
+  // questions; it needs a brain (the offer path is /brain:init) and never replaces the hint above it.
+  const craft = brain && !QUESTION_RE.test(prompt) ? craftLine(prompt, path.dirname(brain)) : '';
+  const out = [hint, craft].filter(Boolean).join('\n');
+  if (!out) return;
+
+  lib.succeed({
+    hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: out },
+  });
+}
+
+/** The brain-workflow routing hint for a prompt, or '' when no rule claims it. */
+function brainHint(input, prompt, brain) {
+  const rule = RULES.find((r) => r.re.test(prompt) && !(r.not && r.not().test(prompt)));
+  if (!rule) return '';
+  if ((rule.dev || rule.question) && QUESTION_RE.test(prompt)) return ''; // a question, not a work order
+
   let hint;
   if (rule.needsBrain && !brain) {
     const root = path.resolve(input.cwd || process.cwd());
-    if (fs.existsSync(path.join(root, '.no-brain'))) return; // engine declined here
-    const next = !rule.dev ? `/brain:${rule.skill}` : SKIP_RE.test(prompt) ? '/brain:plan → /brain:build (research skipped at your word)' : '/brain:research → /brain:plan → /brain:build';
+    if (fs.existsSync(path.join(root, '.no-brain'))) return ''; // engine declined here
+    const next = !rule.dev ? '/brain:' + rule.skill : SKIP_RE.test(prompt) ? '/brain:plan → /brain:build (research skipped at your word)' : '/brain:research → /brain:plan → /brain:build';
     // The init offer is made once per session in a repo (v0.33.0); afterwards dev work still gets its
     // lifecycle line and other workflows stay quiet. Without a session id nothing is remembered.
     const sid = String(input.session_id || '').replace(/[^\w-]/g, '');
-    const offered = sid ? path.join(os.tmpdir(), `mb-router-init-${sid}-${crypto.createHash('sha1').update(root).digest('hex').slice(0, 8)}`) : '';
+    const offered = sid ? path.join(os.tmpdir(), 'mb-router-init-' + sid + '-' + crypto.createHash('sha1').update(root).digest('hex').slice(0, 8)) : '';
     if (offered && fs.existsSync(offered)) {
-      if (!rule.dev) return;
-      hint = `🐵 trigger-router: that sounds like ${rule.what} (this project has no .brain/) — ${next}.`;
+      if (!rule.dev) return '';
+      hint = '🐵 trigger-router: that sounds like ' + rule.what + ' (this project has no .brain/) — ' + next + '.';
     } else {
       if (offered) { try { fs.writeFileSync(offered, ''); } catch {} }
       hint =
-        `🐵 trigger-router: that sounds like ${rule.what}, but this project has no .brain/ yet — ` +
-        `offer /brain:init first, then continue with ${next}.`;
+        '🐵 trigger-router: that sounds like ' + rule.what + ', but this project has no .brain/ yet — ' +
+        'offer /brain:init first, then continue with ' + next + '.';
     }
   } else if (rule.dev) {
     hint = devHint(brain, prompt);
   } else {
     hint =
-      `🐵 trigger-router: matched "${rule.what}" → invoke the brain:${rule.skill} skill now ` +
-      `(Skill tool) and follow its checklist instead of improvising the workflow.`;
+      '🐵 trigger-router: matched "' + rule.what + '" → invoke the brain:' + rule.skill + ' skill now ' +
+      '(Skill tool) and follow its checklist instead of improvising the workflow.';
   }
-
-  lib.succeed({
-    hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: hint },
-  });
+  return hint;
 }
 
 main().then(() => process.exit(0)).catch(() => process.exit(0));
