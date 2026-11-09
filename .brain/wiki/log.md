@@ -120,3 +120,6 @@ Read three external skill sets via `gh` (no install): `github/awesome-copilot` g
 
 ## [2026-11-09] plan | motion-skill-packs
 Spec [[motion-skill-packs]] drafted from [[motion-and-video-skills]] on the curator's "write the spec here": 12 ACs over the pack manifest + offer (`recommended-skills.json`, `skills.js`), routing (a craft line below the brain's workflows), filing and review rules, a motion test plan, seeded pending instincts, terse handling of scripted greetings, and release. Tier `feature` (graph radius: 4 files, 2 modules, score 8, no dependents). Workstream [[skill-packs]] opened; `brain-hardening` marked done (it was idle 54 days with phase done).
+
+## [2026-11-09] review | motion-skill-packs → 0.35.0 done
+Built test-first by a Sonnet fork (4 commits, selftest 664), reviewed on Fable ([[motion-skill-packs-review]]): 0 P0 / 5 P1 / 12 P2 — video rule false positives, three user-invoked upstream skills, `improve-animations`' own `plans/` folder, a failing gsap install, a repeating offer — all fixed red-first in `95e47f7` (selftest 698). Spec [[motion-skill-packs]] and workstream [[skill-packs]] → done. Next: a `/brain:video` pipeline spec once the video pack is in real use.

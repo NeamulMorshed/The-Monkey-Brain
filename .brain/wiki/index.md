@@ -6,7 +6,7 @@ tags: [index, navigation, moc]
 created: 2026-09-15
 updated: 2026-11-09
 source_count: 4
-page_count: 37
+page_count: 38
 ---
 
 # 🐵 The Monkey Brain (engine) — Index
@@ -61,6 +61,7 @@ How the engine works, one subsystem per page.
 - [[engine-knowledge-review]] — AC-by-AC verification of engine knowledge (0.32.0); 0 P0 / 3 P1 / 13 P2, code and 14 pages fixed in review (2026-09-16)
 - [[router-and-drift-review]] — AC-by-AC verification of router misfires, doctor #20 and drift (0.33.0); 0 P0 / 2 P1 / 12 P2, fixed in review; bundle 0.14.1 + weekly drift job (2026-09-16)
 - [[ci-signal-review]] — AC-by-AC verification of drift issues and doctor #21 ci-status (0.34.0); 0 P0 / 2 P1 / 6 P2, fixed in review (2026-11-09)
+- [[motion-skill-packs-review]] — AC-by-AC verification of the motion & video skill packs (0.35.0); 0 P0 / 5 P1 / 12 P2, fixed in review (2026-11-09)
 
 ## 📐 Decisions
 - [[fork-not-switch-model-routing]] — change model by forking or dispatching, never by switching the main thread; only `build` forks (2026-09-15, amended 2026-09-16)

@@ -1,15 +1,16 @@
 ---
 title: "Spec — Motion & video skill packs"
 type: spec
-status: active
+status: done
 tier: feature
-phase: review
+phase: done
+audit_score: "done — 0 P0 / 5 P1 / 12 P2 found in review, all fixed; see motion-skill-packs-review"
 plan_approved: false
 tdd: true
 scope: [plugin/skills/init/recommended-skills.json, plugin/skills/init/scripts/skills.js, plugin/skills/init/SKILL.md, plugin/hooks/scripts/trigger-router.js, plugin/hooks/scripts/brain-status.js, plugin/skills/review/SKILL.md, plugin/skills/plan/SKILL.md, schema/brain-template/**, plugin/skills/init/brain-template/**, plugin/hooks/scripts/selftest.js, plugin/README.md, plugin/skills/README.md, README.md, plugin/CHANGELOG.md, plugin/.claude-plugin/**, .claude-plugin/**]
 created: 2026-11-09
 updated: 2026-11-09
-related: ["[[motion-and-video-skills]]", "[[trigger-router]]", "[[develop-lifecycle-stages]]", "[[session-injection]]"]
+related: ["[[motion-and-video-skills]]", "[[trigger-router]]", "[[develop-lifecycle-stages]]", "[[session-injection]]", "[[motion-skill-packs-review]]", "[[skill-packs]]"]
 ---
 
 # Motion & video skill packs — spec
@@ -32,7 +33,7 @@ and leave their audits, reviews and library choices unrecorded ([[motion-and-vid
 ## Acceptance criteria
 
 **Manifest and offer**
-- **AC-1** ✅ (selftest AC-1 x6: 3 packs, fields, licence_note, 13 Remotion skills) — `plugin/skills/init/recommended-skills.json` (schema_version, updated, contract) lists three packs. Each pack has `id`, `title`, `when` (the work it serves), `source` (repo URL + licence), `skills` (names), `install_hint` (instructions-only command), `context_cost` (approx. tokens of descriptions per turn) and `filing` (where each kind of output goes). `video` carries a `licence_note` on Remotion's company licence.
+- **AC-1** ✅ (selftest AC-1 x6: 3 packs, fields, licence_note, 13 Remotion skills) — `plugin/skills/init/recommended-skills.json` (schema_version, updated, contract) lists three packs. Each pack has `id`, `title`, `when` (the work it serves), `source` (repo URL + licence), `skills` (names), `install_steps` (instructions-only commands, one per source; `install_fallbacks` where a source is slow), `context_cost` (approx. tokens of descriptions per turn) and `filing` (where each kind of output goes). `video` carries a `licence_note` on Remotion's company licence.
 - **AC-2** ✅ (selftest AC-2 x9 + skills.test.js: table, --verbose, --json, installed/partial, ~/.claude, fail-open) — `plugin/skills/init/scripts/skills.js` renders the offer: a table by default, `--verbose` adds filing lines, `--json` prints the manifest. With `--project <root>` it marks each pack installed / partial / not installed, from `<root>/.claude/skills/<name>/SKILL.md` and `~/.claude/skills/<name>/SKILL.md`. A missing or malformed manifest or skills dir fails open (no crash).
 - **AC-3** ✅ (selftest AC-3 x2) — A skill installed in either skills dir that no pack lists shows under "detected, no filing rules yet", like `mcp-servers.js` does for servers.
 - **AC-4** ✅ (selftest AC-4 x4: init step 6c after MCP offer, yes-only, new-brain.js untouched) — `/brain:init` SKILL.md offers the packs after the MCP offer: shows `skills.js --project`, the context cost and Remotion's licence note, and runs a pack's `install_hint` **only after the curator says yes to that pack**; it never installs by default. Scaffolding (`new-brain.js`) is unchanged.
@@ -43,7 +44,7 @@ and leave their audits, reviews and library choices unrecorded ([[motion-and-vid
 
 **Filing and review**
 - **AC-7** ✅ (selftest AC-7 x2: schema + bundled reference.md) — `reference.md` §9 (schema template, synced to the bundled copy) adds the packs' filing rules: `improve-animations` audit → `wiki/research/`, each plan → a spec with ACs; `review-animations` / `break-ui` / `animation-performance` findings → the spec's `wiki/syntheses/<x>-review` with P0–P2 (an open P0 gates `/brain:wrap`); library / easing choices and `pick-ui-library` → `decisions/` ADRs; `prototype` variants → a labelled spike, the chosen one → a spec; Remotion renders → `projects/` status, video style choices → ADRs.
-- **AC-8** ✅ (selftest AC-8) — `/brain:review` SKILL.md: when the spec's scope touches motion code and web-motion is installed, run `review-animations` as an extra reviewer and file its findings in the same review page.
+- **AC-8** ✅ (selftest AC-8) — `/brain:review` SKILL.md: when the spec's scope touches motion code and web-motion is installed, run `review-animations` as an extra reviewer — it is user-invoked upstream, so the curator runs `/review-animations` or a reviewer subagent applies its SKILL.md/STANDARDS.md — and file its findings in the same review page.
 - **AC-9** ✅ (selftest AC-9) — `/brain:plan` SKILL.md and the spec template: a motion spec's test plan names a visual check (recording or screenshots per state), a performance check (compositor-only properties, no dropped frames in a trace) and `prefers-reduced-motion`; motion-only source may use `tdd: false` when the review AC requires a `review-animations` pass.
 
 **Taste rules and terse mode**
@@ -51,7 +52,7 @@ and leave their audits, reviews and library choices unrecorded ([[motion-and-vid
 - **AC-11** ✅ (selftest AC-11 x2, within 3000 tokens) — The session-start terse rules gain one line: a skill that opens with a scripted greeting or "Initial Response" is followed for its substance, not its greeting. The injection stays within budget (doctor #9).
 
 **Release**
-- **AC-12** ✅ (selftest ALL GREEN 664, validate --strict x2, lint --strict clean, 0.35.0 everywhere; pushed-CI part open (not pushed)) — selftest ALL GREEN; both manifests `--strict`; 0.35.0 in both manifests, the CHANGELOG and the README badge; README, plugin README and skills README mention the packs; pushed CI green.
+- **AC-12** ✅ (selftest ALL GREEN 664, validate --strict x2, lint --strict clean, 0.35.0 everywhere; after review fixes selftest 698; pushed CI checked at close) — selftest ALL GREEN; both manifests `--strict`; 0.35.0 in both manifests, the CHANGELOG and the README badge; README, plugin README and skills README mention the packs; pushed CI green.
 
 ## Test plan
 - AC-1: selftest loads the manifest — three packs, every required field, `licence_note` on video, URLs and skill names non-empty.
@@ -75,3 +76,5 @@ and leave their audits, reviews and library choices unrecorded ([[motion-and-vid
 - Research: [[motion-and-video-skills]]. Pattern copied from `recommended-mcp-servers.json` + `mcp-servers.js`.
 - Sizing: `graph.js radius` → "touches 4 file(s) across 2 module(s) · 1 file type(s) · score 8 · dependents: none · suggested tier: feature · model: sonnet to build, opus or fable to review".
 - Tier `feature`: additive, no dependents; TDD gate on; `plan_approved` stays false (feature tier needs verbal agreement only).
+
+- **Review (2026-11-09):** [[motion-skill-packs-review]] — Fable reviewer: 0 P0 / 5 P1 / 12 P2, all fixed red-first in `95e47f7` (selftest 664 → 698). Spec → done.

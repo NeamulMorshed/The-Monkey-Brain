@@ -230,3 +230,8 @@ sonnet = routine · main model = judgment. Doctor reads the model mix and outcom
 - [2026-09-16 23:27] ↳ done · fork · on <synthetic>+claude-opus-5 · 105,147 tokens · 2 turn(s)
 - [2026-11-09 21:11] general-purpose · model: fable · Review ci-signal 0.34.0
 - [2026-11-09 21:14] ↳ empty · general-purpose · on claude-opus-5-5 · 1,298,073 tokens · 15 turn(s)
+- [2026-11-09 22:15] ↳ done · general-purpose · on claude-sonnet-5-5 · 4,542,040 tokens · 36 turn(s)
+- [2026-11-09 22:16] general-purpose · model: fable · Review motion-skill-packs build
+- [2026-11-09 22:30] ↳ empty · general-purpose · on claude-opus-5-5 · 3,916,322 tokens · 35 turn(s)
+- [2026-11-09 22:30] general-purpose · model: sonnet · Fix motion-skill-packs review findings
+- [2026-11-09 22:44] ↳ empty · general-purpose · on claude-sonnet-5-5 · 6,249,166 tokens · 55 turn(s)

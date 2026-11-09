@@ -1,11 +1,11 @@
 ---
 title: "Skill packs — status"
 type: project
-status: active
+status: done
 tier: feature
-phase: plan
+phase: done
 pack:
-audit_score:
+audit_score: "motion-skill-packs done — 5 P1 + 12 P2 fixed in review"
 created: 2026-11-09
 updated: 2026-11-09
 related: ["[[motion-skill-packs]]", "[[motion-and-video-skills]]"]
@@ -16,7 +16,7 @@ related: ["[[motion-skill-packs]]", "[[motion-and-video-skills]]"]
 External craft skills (motion, video) offered per project and run under the brain's rules.
 
 ## Now
-- [[motion-skill-packs]] — spec drafted, awaiting curator review of the ACs (feature tier).
+- [[motion-skill-packs]] — done in 0.35.0 ([[motion-skill-packs-review]]).
 
 ## Next
 1. `/brain:build motion-skill-packs` (test-first, AC-1 → AC-12).
