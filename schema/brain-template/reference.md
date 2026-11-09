@@ -101,8 +101,11 @@ offers three packs from `recommended-skills.json` — web-motion, video (Remotio
 and installs one only on the curator's yes. The router adds one craft line for a matching prompt,
 always after the brain's own workflow line. Where each pack output is filed:
 
-- `improve-animations` audit → `wiki/research/`; each plan it produces → a spec with ACs.
-- `review-animations`, `break-ui` and `animation-performance` findings → the spec's
+- `improve-animations` audit → `wiki/research/`; each plan it makes → `specs/<slug>.md` with ACs, citing
+  `plans/NNN`. The skill writes only under `plans/` (`NNN-slug` files plus a README): let it, file both,
+  then delete `plans/` (or git-ignore it) so one copy is left.
+- `review-animations` (user-invoked: the curator runs it, or a reviewer subagent applies its skill file),
+  `break-ui` and `animation-performance` findings → the spec's
   `wiki/syntheses/<x>-review` with P0–P2; an open P0 gates `/brain:wrap`.
 - Library and easing choices, `pick-ui-library` → `decisions/` ADRs.
 - `prototype` variants → a labelled spike; the chosen variant gets a spec.

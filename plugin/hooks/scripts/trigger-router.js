@@ -340,36 +340,65 @@ const CRAFT_RULES = [
   {
     pack: 'mobile-motion',
     re: /\b(?:react[- ]native|expo)\b/i,
-    and: /\b(?:animat\w*|gestures?|swipe|reanimated|haptics?|bottom sheet|sheets?)\b/i,
+    and: /\b(?:animat\w*|gestures?|swipe|reanimated|haptics?|bottom sheets?)\b/i,
   },
   {
+    // Remotion by name is always video work.
     pack: 'video',
-    re: /\bremotion\b|\b(?:make|create|render|generate|produce|build)\b[^.!?]{0,30}\bvideos?\b/i,
+    re: /\bremotion\b/i,
+  },
+  {
+    // "make a video" alone is too loose (video call, upload, player, thumbnails): it also needs a
+    // production cue and no product-feature word (v0.35.0 review).
+    pack: 'video',
+    re: /\b(?:make|create|render|generate|produce|build)\b[^.!?]{0,30}\bvideos?\b/i,
+    and: /\b(?:promo(?:tional)?|intro|explainer|launch|marketing|animated|composition|clips?|trailer|demo video)\b/i,
+    not: /\b(?:call|chat|player|upload|stream(?:ing)?|thumbnails?|conference|embed|codec|transcod\w*)\b/i,
   },
   {
     pack: 'web-motion',
-    re: /\bparallax\b|\banimate\b[^.!?]{0,30}\bon scroll\b|\bscroll[- ]?(?:triggers?|driven|linked|reveal|animations?|jacking)\b|\b(?:entrance|enter|exit|page|route|view|modal|hover|css|ui) (?:animations?|transitions?)\b|\beasing\b|\bease-(?:in|out)\b|\bfeel(?:s)? (?:smooth|snappy|polished|alive)\b|\banimat(?:e|es|ed|ing|ion|ions)\b|\bmotion design\b/i,
+    re: /\bparallax\b|\banimate\b[^.!?]{0,30}\bon scroll\b|\bscroll[- ]?(?:triggers?|driven|linked|reveal|animations?|jacking)\b|\b(?:entrance|enter|exit|page|route|view|modal|hover|css|ui) (?:animations?|transitions?)\b|\beasing (?:curves?|functions?|for|on|ease-(?:in|out)|cubic)\b|\bease-(?:in|out)\b|\bfeel(?:s)? (?:smooth|snappy|polished|alive)\b|\banimat(?:e|es|ed|ing|ion|ions)\b|\bmotion design\b/i,
+    not: /\banimated[- ](?:gif|png|webp|svg)s?\b|\b(?:ci|pipeline|workflow|deploy(?:ment)?)\b[^.!?]{0,20}\banimation\b/i,
   },
 ];
 
+const PACK_MARK = (sid, root, pack) =>
+  sid ? path.join(os.tmpdir(), 'mb-router-pack-' + sid + '-' + crypto.createHash('sha1').update(root).digest('hex').slice(0, 8) + '-' + pack) : '';
+
+/** True the first time this session sees the offer for this pack (and records it); true always without a session id. */
+function firstOffer(sid, root, pack) {
+  const mark = PACK_MARK(sid, root, pack);
+  if (!mark) return true;
+  if (fs.existsSync(mark)) return false;
+  try { fs.writeFileSync(mark, ''); } catch {}
+  return true;
+}
+
 /** One craft line for the prompt, or ''. Fails open on any manifest / filesystem problem. */
-function craftLine(prompt, root) {
+function craftLine(prompt, root, sid) {
   try {
-    const rule = CRAFT_RULES.find((r) => r.re.test(prompt) && (!r.and || r.and.test(prompt)));
+    const rule = CRAFT_RULES.find((r) => r.re.test(prompt) && (!r.and || r.and.test(prompt)) && !(r.not && r.not.test(prompt)));
     if (!rule) return '';
     const skillsLib = require(path.join(__dirname, '..', '..', 'skills', 'init', 'scripts', 'skills.js'));
     const manifest = skillsLib.loadManifestSafe();
     const pack = manifest && manifest.packs.find((p) => p.id === rule.pack);
     if (!pack) return '';
     const st = skillsLib.packStatus(pack, skillsLib.installedSkills(root));
+    const declined = skillsLib.declinedPacks(root).has(rule.pack);
     if (st.state === 'none') {
+      if (declined || !firstOffer(sid, root, rule.pack)) return ''; // offered once per session; never after a decline
       return (
         '🐵 trigger-router: craft — this is ' + rule.pack + ' work and the ' + rule.pack + ' skill pack is not installed here → ' +
-        'offer it via /brain:init (the curator\'s yes only; nothing installs by default). Brain workflows above come first.'
+        'offer it via /brain:init (the curator\'s yes only; nothing installs by default; the install can be slow). Brain workflows above come first.'
       );
     }
+    const loaded = skillsLib.modelLoaded(pack, st);
+    const runnable = st.have.filter((n) => (pack.user_invoked || []).includes(n));
+    const partial = st.state === 'partial' && !declined && firstOffer(sid, root, rule.pack);
     return (
-      '🐵 trigger-router: craft — the ' + rule.pack + ' pack is installed → use its skills (' + st.have.join(', ') + ') for the how; ' +
+      '🐵 trigger-router: craft — the ' + rule.pack + (partial ? ' pack is partly installed — /brain:init can add the rest' : ' pack is installed') +
+      (loaded.length ? ' → use its skills (' + loaded.join(', ') + ') for the how' : '') +
+      (runnable.length ? '; you can run ' + runnable.map((n) => '/' + n).join(', ') + ' yourself' : '') + '; ' +
       'file their output per reference.md §9. Brain workflows above come first.'
     );
   } catch {
@@ -387,7 +416,7 @@ async function main() {
   const hint = brainHint(input, prompt, brain);
   // The craft line (motion / video packs) ranks below the brain's own workflows and is silent on
   // questions; it needs a brain (the offer path is /brain:init) and never replaces the hint above it.
-  const craft = brain && !QUESTION_RE.test(prompt) ? craftLine(prompt, path.dirname(brain)) : '';
+  const craft = brain && !QUESTION_RE.test(prompt) ? craftLine(prompt, path.dirname(brain), String(input.session_id || '').replace(/[^\w-]/g, '')) : '';
   const out = [hint, craft].filter(Boolean).join('\n');
   if (!out) return;
 

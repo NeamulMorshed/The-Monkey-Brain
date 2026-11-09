@@ -4,7 +4,7 @@ type: schema
 status: living
 tags: [schema, reference, monkey-brain]
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-11-09
 engine_version: 2.1
 ---
 
@@ -95,6 +95,25 @@ Vercel) and marks which are already in this project's `.mcp.json`.
 A connected MCP server outside this curated set still gets surfaced (generic "no filing
 rules yet" note) rather than going unmentioned — treat its output as a finding and file it
 by hand until it earns a curated entry.
+
+**Skill packs (the motion and video craft layer).** Same contract for skills: `/brain:init`
+offers three packs from `recommended-skills.json` — web-motion, video (Remotion) and mobile-motion —
+and installs one only on the curator's yes. The router adds one craft line for a matching prompt,
+always after the brain's own workflow line. Where each pack output is filed:
+
+- `improve-animations` audit → `wiki/research/`; each plan it makes → `specs/<slug>.md` with ACs, citing
+  `plans/NNN`. The skill writes only under `plans/` (`NNN-slug` files plus a README): let it, file both,
+  then delete `plans/` (or git-ignore it) so one copy is left.
+- `review-animations` (user-invoked: the curator runs it, or a reviewer subagent applies its skill file),
+  `break-ui` and `animation-performance` findings → the spec's
+  `wiki/syntheses/<x>-review` with P0–P2; an open P0 gates `/brain:wrap`.
+- Library and easing choices, `pick-ui-library` → `decisions/` ADRs.
+- `prototype` variants → a labelled spike; the chosen variant gets a spec.
+- Remotion renders → `projects/` status; video style choices → `decisions/` ADRs.
+
+A skill that opens with a scripted greeting is followed for its substance, not its greeting (terse
+mode). `skills.js --seed-instincts web-motion` proposes the pack's taste rules to
+`instincts/pending/`; the curator promotes.
 
 ---
 

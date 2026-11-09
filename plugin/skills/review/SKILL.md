@@ -35,8 +35,12 @@ A review that only lives in chat is lost. This one ends in the brain.
    - **test quality** — do the tests actually pin the ACs, or just touch the code?
    Report findings concretely: `file:line`, what breaks, how to fix.
    - **Motion code:** when the spec's `scope:` touches animation or transition code and the
-     web-motion pack is installed (`skills.js --project .`), run `review-animations` as an extra
-     reviewer and file its findings (P0-P2) in the same review page as the rest.
+     web-motion pack is installed (`skills.js --project .`), add a motion review.
+     `review-animations` is user-invoked upstream (`disable-model-invocation`), so the model cannot
+     run it as a skill: either ask the curator to run `/review-animations` and paste the result, or
+     dispatch a reviewer subagent that reads `.claude/skills/review-animations/SKILL.md` (and
+     `STANDARDS.md` beside it if present) and applies those standards to the changed files. Either
+     way, file the findings (P0-P2) in the same review page as the rest.
 4. **File it back:**
    - Review page → `wiki/syntheses/<feature>-review.md` (verdict, AC table, findings),
      linked from the index and the spec. In PR mode, include the PR URL and its CI check

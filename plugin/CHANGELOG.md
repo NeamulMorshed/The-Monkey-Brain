@@ -7,6 +7,7 @@ Spec `specs/motion-skill-packs.md`. Three external skill sets work under the bra
 - **Router craft line** — motion / video prompts get one line after the brain's workflow line, naming installed skills or offering the pack; silent on questions.
 - **Filing + review** — reference.md §9 files audits, reviews (P0 gates wrap) and choices; `/brain:review` runs `review-animations`; motion specs get visual, performance and reduced-motion test plans.
 - **Taste rules** — `skills.js --seed-instincts web-motion` writes up to 6 pending instincts. Terse mode follows a skill's substance, not its scripted greeting.
+- Review fixes (5 P1 + P2): video router needs a production cue and skips video call / player / upload / thumbnails; user-invoked skills (`review-animations`, `prototype`, `pick-ui-library`) are not pushed to the model and `/brain:review` asks the curator or dispatches a subagent; `improve-animations` `plans/` is filed into research + specs then removed; gsap installs as its own step with a sparse-clone fallback; the not-installed offer shows once per session per pack and honours `memory/skill-packs-declined.md`; easing / animated GIF / sheets false positives gone; context cost measured (`skills.js` re-measures); gestures + mobile-native moved to web-motion; `--seed-instincts` skips pruned and needs a brain; `--json` fails open. Selftest 698, red first.
 
 ## 0.34.0 — 2026-11-09 (red CI is loud)
 

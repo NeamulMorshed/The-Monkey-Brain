@@ -57,9 +57,15 @@ staging, `raw-sources/`, `memory/`, and `resume.md`. Once it exists, the plugin'
    (web-motion, video, mobile-motion) marked installed / partial / not installed from
    `.claude/skills/` and `~/.claude/skills/`. Offer only the packs relevant to *this* project,
    and state each pack's **context cost** (its skill descriptions load every turn) and, for
-   video, **Remotion's licence note** (a paid company licence above its size threshold). Run a
-   pack's `install_hint` (`npx skills add ...`) **only after the curator says yes to that pack**;
-   the brain never installs by default, and `new-brain.js` scaffolding never touches packs. After a
+   video, **Remotion's licence note** (free up to 3 employees, a paid company licence above). Run a
+   pack's `install_steps` (`npx skills add ...`, one command at a time, never chained)
+   **only after the curator says yes to that pack**; the brain never installs by default, and
+   `new-brain.js` scaffolding never touches packs. Tell the curator a step marked slow in
+   `install_notes` is slow (the gsap step clones a large repo). A **partial** install (skills.js
+   shows `~ partial`) means a step failed: retry that step, or run the pack's `install_fallbacks`
+   (a sparse clone of the one directory), then re-run skills.js to confirm. A **declined** pack goes
+   in `.brain/memory/skill-packs-declined.md` (one pack id per line); the router never offers a
+   pack listed there, and the router makes each not-installed offer once per session per pack. After a
    web-motion install, offer `skills.js --seed-instincts web-motion --brain "<root>/.brain"` (writes
    `instincts/pending/` only; the curator promotes). Skip on `--update` unless asked.
 7. **Commit** (offer first): `feat: scaffold .brain (Monkey Brain instance)`. The

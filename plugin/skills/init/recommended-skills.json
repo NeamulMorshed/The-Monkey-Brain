@@ -1,19 +1,27 @@
 {
   "schema_version": "1.0",
   "updated": "2026-11-09",
-  "contract": "Skill packs do the craft; the brain records the knowledge. The brain never installs a skill: it offers a pack, and runs the pack's install_hint only after the curator says yes to that pack. Packs are installed per project (into .claude/skills/), never vendored into the plugin: upstream stays the source of truth. Every installed skill's description loads each turn, so each pack states its context cost.",
+  "contract": "Skill packs do the craft; the brain records the knowledge. The brain never installs a skill: it offers a pack, and runs the pack's install_steps only after the curator says yes to that pack. Packs are installed per project (into .claude/skills/), never vendored into the plugin: upstream stays the source of truth. Every installed skill's description loads each turn, so each pack states its context cost.",
   "install": {
-    "how": "install_hint is an instructions-only `npx skills add ...` command (the `skills` CLI from vercel-labs; verified with `npx skills@latest --help`). `-a claude-code` targets Claude Code, `-y` skips prompts, `--skill` picks names. Run it from the project root so the skills land in the project, not globally (`-g`).",
-    "detect": "skills.js looks for <skill>/SKILL.md under <project>/.claude/skills/ and ~/.claude/skills/ and marks a pack installed (all skills), partial (some) or not installed."
+    "how": "install_steps is a list of instructions-only `npx skills add ...` commands (the `skills` CLI from vercel-labs; verified with `npx skills@latest --help`), one per source repo, run one at a time. `-a claude-code` targets Claude Code, `-y` skips prompts, `--skill` picks names. Run them from the project root so the skills land in the project, not globally (`-g`). A pack may add install_fallbacks (plain shell for one skill directory) and install_notes (e.g. a slow step). A failed step leaves the pack partial: retry that step or run its fallback.",
+    "detect": "skills.js looks for <skill>/SKILL.md under <project>/.claude/skills/ and ~/.claude/skills/ and marks a pack installed (all skills), partial (some) or not installed. Skills listed in a pack's user_invoked carry disable-model-invocation upstream: the router never tells the model to use them (it may mention that the curator can run them) and they add nothing to the per-turn context cost."
   },
   "packs": [
     {
       "id": "web-motion",
-      "title": "Web motion — scroll, entrances, easing, polish",
-      "when": "Animating a web UI: scroll-linked or entrance animation, parallax, page and view transitions, easing and timing, gesture-driven sheets, and auditing existing motion.",
+      "title": "Web motion - scroll, entrances, easing, polish",
+      "when": "Animating a web UI (including mobile web and touch gestures): scroll-linked or entrance animation, parallax, page and view transitions, easing and timing, gesture-driven sheets, and auditing existing motion.",
       "source": [
-        { "repo": "emilkowalski/skills", "url": "https://github.com/emilkowalski/skills", "licence": "MIT" },
-        { "repo": "github/awesome-copilot", "url": "https://github.com/github/awesome-copilot/tree/main/skills/gsap-framer-scroll-animation", "licence": "MIT" }
+        {
+          "repo": "emilkowalski/skills",
+          "url": "https://github.com/emilkowalski/skills",
+          "licence": "MIT"
+        },
+        {
+          "repo": "github/awesome-copilot",
+          "url": "https://github.com/github/awesome-copilot/tree/main/skills/gsap-framer-scroll-animation",
+          "licence": "MIT"
+        }
       ],
       "skills": [
         "gsap-framer-scroll-animation",
@@ -25,17 +33,33 @@
         "animation-performance",
         "break-ui",
         "prototype",
-        "pick-ui-library"
+        "pick-ui-library",
+        "mobile-native",
+        "gestures"
       ],
-      "install_hint": "npx skills add emilkowalski/skills --skill emil-design-eng animate choreograph review-animations improve-animations animation-performance break-ui prototype pick-ui-library -a claude-code -y && npx skills add github/awesome-copilot --skill gsap-framer-scroll-animation -a claude-code -y",
-      "context_cost": "~1.6k tokens of skill descriptions per turn (10 skills)",
+      "context_cost": "~1.4k tokens of skill descriptions per turn (9 model-loaded skills; review-animations, prototype and pick-ui-library are user-invoked and not loaded). Measured 2026-11-09; skills.js re-measures once installed.",
       "design_companion": "frontend-design (already a bundled plugin) is the design partner gsap-framer-scroll-animation asks for.",
       "filing": [
-        { "what": "improve-animations audit", "to": "wiki/research/" },
-        { "what": "each improve-animations plan (one per fix, with ACs)", "to": "specs/" },
-        { "what": "review-animations, break-ui and animation-performance findings (P0-P2)", "to": "wiki/syntheses/" },
-        { "what": "library, easing and approach choices, pick-ui-library", "to": "decisions/" },
-        { "what": "prototype variants (labelled spike; the chosen variant gets a spec)", "to": "specs/" }
+        {
+          "what": "improve-animations audit",
+          "to": "wiki/research/"
+        },
+        {
+          "what": "each improve-animations plan (one per fix, with ACs)",
+          "to": "specs/"
+        },
+        {
+          "what": "review-animations, break-ui and animation-performance findings (P0-P2)",
+          "to": "wiki/syntheses/"
+        },
+        {
+          "what": "library, easing and approach choices, pick-ui-library",
+          "to": "decisions/"
+        },
+        {
+          "what": "prototype variants (labelled spike; the chosen variant gets a spec)",
+          "to": "specs/"
+        }
       ],
       "instincts": [
         {
@@ -80,6 +104,21 @@
           "why": "Restarting from the beginning makes a rapid second action jump or stutter.",
           "scope": "Hover, toggle, open/close and drag interactions. Fire-and-forget entrance sequences need not be."
         }
+      ],
+      "user_invoked": [
+        "review-animations",
+        "prototype",
+        "pick-ui-library"
+      ],
+      "install_steps": [
+        "npx skills add emilkowalski/skills --skill emil-design-eng animate choreograph review-animations improve-animations animation-performance break-ui prototype pick-ui-library mobile-native gestures -a claude-code -y",
+        "npx skills add github/awesome-copilot --skill gsap-framer-scroll-animation -a claude-code -y"
+      ],
+      "install_notes": [
+        "Step 2 is slow: the skills CLI clones the whole awesome-copilot repo. Tell the curator before running it; if it fails or stalls, use the install_fallbacks entry instead."
+      ],
+      "install_fallbacks": [
+        "git clone -q --depth 1 --filter=blob:none --sparse https://github.com/github/awesome-copilot .mb-ac-tmp && git -C .mb-ac-tmp sparse-checkout set skills/gsap-framer-scroll-animation && mkdir -p .claude/skills && cp -r .mb-ac-tmp/skills/gsap-framer-scroll-animation .claude/skills/ && rm -rf .mb-ac-tmp"
       ]
     },
     {
@@ -87,7 +126,11 @@
       "title": "Video - programmatic video with Remotion",
       "when": "Making a video with code: React compositions, captions, data-driven or branded videos, rendering, and maintaining a Remotion project.",
       "source": [
-        { "repo": "remotion-dev/skills", "url": "https://github.com/remotion-dev/skills", "licence": "Remotion licence (custom, not MIT)" }
+        {
+          "repo": "remotion-dev/skills",
+          "url": "https://github.com/remotion-dev/skills",
+          "licence": "Remotion licence (custom, not MIT)"
+        }
       ],
       "skills": [
         "remotion-best-practices",
@@ -104,31 +147,49 @@
         "remotion-studio",
         "remotion-upgrade"
       ],
-      "licence_note": "Remotion is free for individuals and small companies; companies above its size threshold need a paid company licence. Check https://www.remotion.dev/license before shipping commercially (the remotion-license skill covers it). The skills are Remotion's own and are never vendored into this plugin.",
-      "install_hint": "npx skills add remotion-dev/skills --skill '*' -a claude-code -y",
-      "context_cost": "~1.9k tokens of skill descriptions per turn (13 skills)",
+      "licence_note": "Remotion is free for individuals and companies of up to 3 employees; larger companies need a paid company licence. See https://github.com/remotion-dev/remotion/blob/main/LICENSE.md (the remotion-dev/skills repo itself has no LICENSE file). Check before shipping commercially (the remotion-license skill covers it). The skills are Remotion's own and are never vendored into this plugin.",
+      "context_cost": "~250 tokens of skill descriptions per turn (13 skills, short descriptions; measured 2026-11-09)",
       "filing": [
-        { "what": "render runs and video status (brief, storyboard, composition, render)", "to": "projects/" },
-        { "what": "video style and tooling choices (fps, resolution, caption approach)", "to": "decisions/" }
+        {
+          "what": "render runs and video status (brief, storyboard, composition, render)",
+          "to": "projects/"
+        },
+        {
+          "what": "video style and tooling choices (fps, resolution, caption approach)",
+          "to": "decisions/"
+        }
+      ],
+      "install_steps": [
+        "npx skills add remotion-dev/skills --skill '*' -a claude-code -y"
       ]
     },
     {
       "id": "mobile-motion",
       "title": "Mobile motion - React Native and Expo",
-      "when": "Animating a React Native or Expo app: Reanimated, gestures, sheets, screen transitions and haptics.",
+      "when": "Animating a React Native or Expo app: Reanimated, native screen transitions, sheets and haptics. (Gestures and mobile-web touch live in the web-motion pack.)",
       "source": [
-        { "repo": "emilkowalski/skills", "url": "https://github.com/emilkowalski/skills", "licence": "MIT" }
+        {
+          "repo": "emilkowalski/skills",
+          "url": "https://github.com/emilkowalski/skills",
+          "licence": "MIT"
+        }
       ],
       "skills": [
-        "animate-expo",
-        "mobile-native",
-        "gestures"
+        "animate-expo"
       ],
-      "install_hint": "npx skills add emilkowalski/skills --skill animate-expo mobile-native gestures -a claude-code -y",
-      "context_cost": "~0.6k tokens of skill descriptions per turn (3 skills)",
+      "context_cost": "~130 tokens of skill descriptions per turn (1 skill; measured 2026-11-09)",
       "filing": [
-        { "what": "motion and gesture approach choices (spring vs timing, library)", "to": "decisions/" },
-        { "what": "on-device motion review findings (P0-P2)", "to": "wiki/syntheses/" }
+        {
+          "what": "motion and gesture approach choices (spring vs timing, library)",
+          "to": "decisions/"
+        },
+        {
+          "what": "on-device motion review findings (P0-P2)",
+          "to": "wiki/syntheses/"
+        }
+      ],
+      "install_steps": [
+        "npx skills add emilkowalski/skills --skill animate-expo -a claude-code -y"
       ]
     }
   ]

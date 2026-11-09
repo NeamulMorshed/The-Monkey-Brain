@@ -64,6 +64,54 @@ function installedSkills(projectRoot) {
   return names;
 }
 
+/** Path of an installed skill's SKILL.md (project scope first), or ''. */
+function skillFile(projectRoot, name) {
+  for (const dir of skillDirs(projectRoot)) {
+    const p = path.join(dir, name, 'SKILL.md');
+    if (fs.existsSync(p)) return p;
+  }
+  return '';
+}
+
+/** { description, userInvoked } from a SKILL.md frontmatter (folded / quoted descriptions handled). */
+function readSkillMeta(file) {
+  try {
+    const fm = (fs.readFileSync(file, 'utf8').match(/^---\r?\n([\s\S]*?)\r?\n---/) || [])[1] || '';
+    const d = (fm.match(/^description:[ \t]*([\s\S]*?)(?=\r?\n[A-Za-z][\w-]*:|$)/m) || [])[1] || '';
+    const description = d.replace(/^[>|][-+]?\s*/, '').replace(/\s+/g, ' ').replace(/^["']|["']$/g, '').trim();
+    return { description, userInvoked: /^disable-model-invocation:\s*true\s*$/m.test(fm) };
+  } catch {
+    return { description: '', userInvoked: false };
+  }
+}
+
+/** Skills of the pack the model loads each turn: installed, not user-invoked. */
+function modelLoaded(pack, st) {
+  const ui = new Set(pack.user_invoked || []);
+  return st.have.filter((n) => !ui.has(n));
+}
+
+/** Measured tokens (chars / 4) of the model-loaded descriptions of a pack's installed skills, or null. */
+function measuredTokens(pack, st, projectRoot) {
+  if (!st.have.length) return null;
+  let chars = 0;
+  for (const n of modelLoaded(pack, st)) {
+    const meta = readSkillMeta(skillFile(projectRoot, n));
+    if (!meta.userInvoked) chars += meta.description.length;
+  }
+  return Math.round(chars / 4);
+}
+
+/** Pack ids the curator declined (listed in <root>/.brain/memory/skill-packs-declined.md). */
+function declinedPacks(projectRoot) {
+  try {
+    const t = fs.readFileSync(path.join(projectRoot, '.brain', 'memory', 'skill-packs-declined.md'), 'utf8');
+    return new Set((t.match(/[a-z][a-z0-9-]*/g) || []));
+  } catch {
+    return new Set();
+  }
+}
+
 /** { state: 'installed' | 'partial' | 'none', have: [installed skill names of the pack] }. */
 function packStatus(pack, installed) {
   const have = (pack.skills || []).filter((s) => installed.has(s));
@@ -92,17 +140,21 @@ function render(manifest, opts) {
     const st = packStatus(p, installed);
     const label = st.state === 'installed' ? '✓ installed' : st.state === 'partial' ? `~ partial (${st.have.length}/${p.skills.length})` : '  not installed';
     lines.push(`${pad(p.id, idW)}  ${pad(label, 18)}  ${p.when}`);
-    lines.push(`${indent}${p.skills.length} skills · ${p.context_cost}`);
+    const mt = opts.root ? measuredTokens(p, st, opts.root) : null;
+    lines.push(`${indent}${p.skills.length} skills · ${p.context_cost}${mt !== null ? ` · measured ~${mt} tokens (installed, model-loaded)` : ''}`);
     if (opts.verbose) {
       for (const f of p.filing || []) lines.push(`${indent}files: ${f.what} -> ${f.to}`);
       if (p.design_companion) lines.push(`${indent}pairs with: ${p.design_companion}`);
       if (p.licence_note) lines.push(`${indent}licence: ${p.licence_note}`);
-      lines.push(`${indent}install: ${p.install_hint}`);
+      (p.install_steps || []).forEach((h, i, a) => lines.push(`${indent}install${a.length > 1 ? ` ${i + 1}/${a.length}` : ''}: ${h}`));
+      for (const n of p.install_notes || []) lines.push(`${indent}note: ${n}`);
+      for (const fb of p.install_fallbacks || []) lines.push(`${indent}fallback: ${fb}`);
+      if ((p.user_invoked || []).length) lines.push(`${indent}user-invoked (curator runs them): ${p.user_invoked.map((n) => '/' + n).join(', ')}`);
     }
   }
   lines.push('');
   lines.push('✓ every skill of the pack is installed (project or user scope).');
-  lines.push('Offer a pack by handing over its install_hint; run it only after the curator says yes to that pack. The brain never installs by default.');
+  lines.push('Offer a pack by handing over its install_steps (one at a time); run them only after the curator says yes to that pack. The brain never installs by default.');
   if (unrecognized.length) {
     lines.push('');
     lines.push(`Detected but not in any pack (no filing rules yet): ${unrecognized.join(', ')}`);
@@ -145,6 +197,7 @@ function seedInstincts(manifest, packId, brain) {
   const rules = (pack.instincts || []).slice(0, 6);
   if (!rules.length) return { error: `pack "${packId}" has no curated rules to seed` };
   if (!brain || !fs.existsSync(brain) || !fs.statSync(brain).isDirectory()) return { error: `brain directory not found: ${brain || '(none given)'}` };
+  if (!fs.existsSync(path.join(brain, 'CLAUDE.md'))) return { error: `${brain} is not a Monkey Brain (no CLAUDE.md in it); pass the .brain directory` };
   const dir = path.join(brain, 'instincts', 'pending');
   fs.mkdirSync(dir, { recursive: true });
   const today = new Date().toISOString().slice(0, 10);
@@ -152,7 +205,7 @@ function seedInstincts(manifest, packId, brain) {
   const skipped = [];
   for (const rule of rules) {
     const file = path.join(dir, `${rule.name}.md`);
-    if (fs.existsSync(file) || fs.existsSync(path.join(brain, 'instincts', 'active', `${rule.name}.md`))) {
+    if (fs.existsSync(file) || fs.existsSync(path.join(brain, 'instincts', 'active', `${rule.name}.md`)) || fs.existsSync(path.join(brain, 'instincts', 'pruned', `${rule.name}.md`))) {
       skipped.push(rule.name);
       continue;
     }
@@ -170,6 +223,10 @@ function arg(argv, flag) {
 function main() {
   const argv = process.argv.slice(2);
   const manifest = loadManifestSafe();
+  if (!manifest && argv.includes('--json')) {
+    process.stdout.write(JSON.stringify({ packs: [] }) + '\n');
+    return;
+  }
   if (!manifest) {
     console.log('skills: cannot read a valid recommended-skills.json manifest - no skill packs to offer.');
     if (argv.includes('--seed-instincts')) process.exit(1);
@@ -191,9 +248,9 @@ function main() {
   }
   const project = arg(argv, '--project');
   const root = project ? path.resolve(project) : process.cwd();
-  console.log(render(manifest, { verbose: argv.includes('--verbose'), installed: installedSkills(root) }));
+  console.log(render(manifest, { verbose: argv.includes('--verbose'), installed: installedSkills(root), root }));
 }
 
 if (require.main === module) main();
 
-module.exports = { loadManifest, loadManifestSafe, installedSkills, packStatus, render, seedInstincts, MANIFEST };
+module.exports = { loadManifest, loadManifestSafe, installedSkills, packStatus, modelLoaded, measuredTokens, declinedPacks, render, seedInstincts, MANIFEST };
