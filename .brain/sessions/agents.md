@@ -235,3 +235,5 @@ sonnet = routine · main model = judgment. Doctor reads the model mix and outcom
 - [2026-11-09 22:30] ↳ empty · general-purpose · on claude-opus-5-5 · 3,916,322 tokens · 35 turn(s)
 - [2026-11-09 22:30] general-purpose · model: sonnet · Fix motion-skill-packs review findings
 - [2026-11-09 22:44] ↳ empty · general-purpose · on claude-sonnet-5-5 · 6,249,166 tokens · 55 turn(s)
+- [2026-11-09 23:42] general-purpose · model: sonnet · Security hardening for skill packs
+- [2026-11-09 23:45] ↳ empty · general-purpose · on claude-sonnet-5-5 · 994,302 tokens · 11 turn(s)

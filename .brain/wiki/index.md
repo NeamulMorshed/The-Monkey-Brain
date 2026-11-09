@@ -4,9 +4,9 @@ type: index
 status: active
 tags: [index, navigation, moc]
 created: 2026-09-15
-updated: 2026-11-09
+updated: 2026-11-10
 source_count: 4
-page_count: 38
+page_count: 39
 ---
 
 # 🐵 The Monkey Brain (engine) — Index
@@ -64,6 +64,8 @@ How the engine works, one subsystem per page.
 - [[motion-skill-packs-review]] — AC-by-AC verification of the motion & video skill packs (0.35.0); 0 P0 / 5 P1 / 12 P2, fixed in review (2026-11-09)
 
 ## 📐 Decisions
+- [[pack-install-commands-allowlisted]] — pack install commands pass an allowlist + secret scan before the curator sees them; failures are skipped with a warning (2026-11-10)
+- [[skill-packs-offered-not-vendored]] — external craft skills are offered per project as packs, never vendored into the plugin (2026-11-09)
 - [[fork-not-switch-model-routing]] — change model by forking or dispatching, never by switching the main thread; only `build` forks (2026-09-15, amended 2026-09-16)
 - [[links-resolve-across-records]] — wikilinks resolve across wiki pages and spec, decision and project records; one shared index (2026-09-16)
 - [[router-ignores-questions-and-reports]] — the router acts on the curator's instructions only: questions, pasted reports and incidental nouns never route (2026-09-16)
@@ -78,3 +80,4 @@ How the engine works, one subsystem per page.
 - [[research-first-entry]] — why generic dev intent enters at plan, not research; 13 findings, recommends a research-first router default with an explicit curator skip (2026-09-15)
 - [[brain-health-audit]] — full audit of standard, hooks, skills, MCP, dependency plugins, token cost and model routing; 2 P0 / 8 P1 / 15 P2, three specs recommended (2026-09-15)
 - [[motion-and-video-skills]] — GSAP/Framer scroll skill, Remotion (13 public skills) and Emil Kowalski's 18 skills mapped onto the brain: offer as capability packs, route and file their outputs (2026-11-09)
+- [[ideas]] — loose ideas awaiting research; first: a `/brain:update` command that updates the plugin and the brain (2026-11-10)

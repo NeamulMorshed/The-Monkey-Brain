@@ -126,3 +126,6 @@ Built test-first by a Sonnet fork (4 commits, selftest 664), reviewed on Fable (
 
 ## [2026-11-09] build | skill-pack security hardening → 0.35.1
 Fixed the four findings from the automated review of the 0.35 skill packs, test-first: exclusive-create (`wx`, 0600) offer markers in the router, line-wise declined-pack parsing, `validInstall` allowlist + secret scan on manifest steps/fallbacks/notes with render-time skipping, and the restored AC-4 no-npx assertions. Selftest 715, all green; plugin bumped to 0.35.1.
+
+## [2026-11-10] session | ADR for 0.35.1, first release, /brain:update idea
+Filed ADR [[pack-install-commands-allowlisted]] (the why behind 0.35.1's `validInstall` allowlist, line-wise declines and exclusive-create markers) and indexed the missing [[skill-packs-offered-not-vendored]]. Created [[ideas]] with the `/brain:update` idea (one command for marketplace users to update the plugin and refresh `.brain/`); brainstorming paused on whether it performs the update or only reports. Tagged `v0.35.1` and published the repo's first GitHub Release from `plugin/CHANGELOG.md`.

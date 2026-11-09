@@ -1,7 +1,7 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-11-09
+updated: 2026-11-09 23:59
 ---
 
 ## Where we left off
@@ -22,10 +22,17 @@ all 6 jobs, selftest 590.
 Then spec [[ci-signal]] → 0.34.0: drift now files/closes a `bundle-drift` issue, and doctor #21
 `ci-status` warns on any red workflow on the default branch (so session-start status shows it).
 Reviewed on Fable ([[ci-signal-review]], 2 P1 + 6 P2 fixed). Selftest 612.
+Then 0.35.0 (motion & video skill packs) and 0.35.1 (skill-pack security hardening, selftest 715).
+
+2026-11-10 — bookkeeping session: ADR [[pack-install-commands-allowlisted]] filed for 0.35.1,
+first tag + GitHub Release `v0.35.1`, and the `/brain:update` idea parked in [[ideas]]
+(brainstorming paused on "do the update vs. only report what's out of date").
 
 ## Next steps
-- [x] New fine-grained `GITHUB_PERSONAL_ACCESS_TOKEN` (user env, expires 2027-02-07) — verified 2026-11-09: API + MCP endpoint accept it. Confirm `/mcp` shows github connected after restart.
-- [ ] Reinstall the plugin at 0.34.0 and restart, so the installed doctor has #21.
+- [ ] GitHub MCP returned 401 (`AUTH_HEADER_REJECTED`) on 2026-11-10 although the token verified on 2026-11-09 — retry `/mcp`; check `GITHUB_PERSONAL_ACCESS_TOKEN` is in the shell Claude Code starts from.
+- [ ] Reinstall the plugin at 0.35.1 and restart, so the installed doctor has #21.
+- [ ] `/brain:update`: resume brainstorming from [[ideas]], then `/brain:research`.
+- [ ] Tag + release every future version bump (first release was `v0.35.1`).
 - [ ] A router misfire seen in a real session gets a selftest case before its fix.
 
 ## Task log (auto)
@@ -34,6 +41,7 @@ Reviewed on Fable ([[ci-signal-review]], 2 P1 + 6 P2 fixed). Selftest 612.
 - [2026-09-16 07:54] ■ session ended (clear)
 - [2026-09-16 23:34] ■ session ended (prompt_input_exit)
 - [2026-09-16 23:45] ■ session ended (other)
+- [2026-11-09 23:59] ■ session ended (clear)
 
 ## Open — security hardening for 0.35.x (from the automated review, 2026-11-09)
 - [x] `trigger-router.js` `firstOffer`: create the marker with `{ flag: 'wx', mode: 0o600 }`, treat EEXIST as offered, drop the `existsSync` pre-check.
