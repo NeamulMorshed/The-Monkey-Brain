@@ -1,15 +1,16 @@
 ---
 title: "Spec — CI signal: drift issues and doctor #21"
 type: spec
-status: active
+status: done
 tier: feature
-phase: build
+phase: done
+audit_score: "done — 0 P0 / 2 P1 / 6 P2 found in review, all fixed; see ci-signal-review"
 plan_approved: false
 tdd: true
 scope: [.github/workflows/bundle-drift.yml, plugin/skills/doctor/**, plugin/hooks/scripts/selftest.js, plugin/README.md, plugin/skills/README.md, plugin/skills/init/brain-template/reference.md, README.md, plugin/CHANGELOG.md, plugin/.claude-plugin/**, .claude-plugin/**]
 created: 2026-11-09
 updated: 2026-11-09
-related: ["[[router-and-drift]]", "[[router-and-drift-review]]"]
+related: ["[[router-and-drift]]", "[[router-and-drift-review]]", "[[ci-signal-review]]", "[[doctor-health-checks]]"]
 ---
 
 # CI signal: drift issues and doctor #21 — spec
@@ -29,20 +30,20 @@ not that it passes. Meanwhile `brain-all` was unloadable for every user (the cat
 ## Acceptance criteria
 
 **Drift job files an issue**
-- **AC-1** — `bundle-drift.yml` grants `issues: write` (and `contents: read`), runs the check under `shell: bash` with `pipefail`, and keeps its output for the issue body.
-- **AC-2** — On failure, the job opens an issue labelled `bundle-drift` (creating the label if missing) with the check output and the run URL; when one is already open it comments on it instead of opening another.
-- **AC-3** — On success, the job closes any open `bundle-drift` issue with a "green again" comment and the run URL; with none open it does nothing.
-- **AC-4** — Verified live: a dispatch on a branch with a stale bundle opens the issue; a second failing dispatch comments on it; a dispatch on `main` closes it.
+- **AC-1** ✅ — `bundle-drift.yml` grants `issues: write` (and `contents: read`), runs the check under `shell: bash` with `pipefail`, and keeps its output for the issue body.
+- **AC-2** ✅ — On failure, the job opens an issue labelled `bundle-drift` (creating the label if missing) with the check output and the run URL; when one is already open it comments on it instead of opening another.
+- **AC-3** ✅ — On success, the job closes any open `bundle-drift` issue with a "green again" comment and the run URL; with none open it does nothing.
+- **AC-4** ✅ — Verified live: a dispatch on a branch with a stale bundle opens the issue; a second failing dispatch comments on it; a dispatch on `main` closes it.
 
 **Doctor #21 `ci-status`**
-- **AC-5** — Doctor runs 21 checks; #21 `ci-status` reads, per workflow file in `.github/workflows/`, the latest *completed* run on the default branch via `gh run list`.
-- **AC-6** — Any latest run concluded `failure` (or `timed_out` / `startup_failure`) → `warn`, naming the workflow, the date, the run id and `gh run view <id> --log-failed`. All green → `ok`, naming the workflows.
-- **AC-7** — No workflows, `gh` missing, not logged in, offline or timing out → `info`, never `warn`; a workflow with no completed run yet is skipped. Doctor stays usable without GitHub.
-- **AC-8** — `MONKEY_BRAIN_GH` overrides the `gh` binary (a `.js` path runs under node) so tests stub it; the finding reaches `sessions/health.json` and so the next session's status line.
-- **AC-9** — Docs say 21 checks (README ×2, plugin README, skills README, doctor SKILL.md, scaffold reference.md); doctor's SKILL.md routes a red #21 to `gh run view --log-failed`.
+- **AC-5** ✅ — Doctor runs 21 checks; #21 `ci-status` reads, per workflow file in `.github/workflows/`, the latest *completed* run on the default branch via `gh run list`.
+- **AC-6** ✅ — Any latest run concluded `failure` (or `timed_out` / `startup_failure`) → `warn`, naming the workflow, the date, the run id and `gh run view <id> --log-failed`. All green → `ok`, naming the workflows.
+- **AC-7** ✅ — No workflows, `gh` missing, not logged in, offline or timing out → `info`, never `warn`; a workflow with no completed run yet is skipped. Doctor stays usable without GitHub.
+- **AC-8** ✅ — `MONKEY_BRAIN_GH` overrides the `gh` binary (a `.js` path runs under node) so tests stub it; the finding reaches `sessions/health.json` and so the next session's status line.
+- **AC-9** ✅ — Docs say 21 checks (README ×2, plugin README, skills README, doctor SKILL.md, scaffold reference.md); doctor's SKILL.md routes a red #21 to `gh run view --log-failed`.
 
 **Release**
-- **AC-10** — selftest ALL GREEN; both manifests `--strict`; plugin 0.34.0 in both manifests, the CHANGELOG and the README badge; pushed CI green.
+- **AC-10** ✅ — selftest ALL GREEN; both manifests `--strict`; plugin 0.34.0 in both manifests, the CHANGELOG and the README badge; pushed CI green.
 
 ## Test plan
 - AC-1–3: selftest static checks over `bundle-drift.yml` (permissions, pipefail, `failure()` / `success()` steps, label, comment-if-open, close-on-green).
@@ -53,3 +54,4 @@ not that it passes. Meanwhile `brain-all` was unloadable for every user (the cat
 
 ## Notes & links
 Origin: the 2026-11-09 session-start doctor + `gh run list` ([[log]]). Prior drift: [[router-and-drift-review]] finding 2.
+- **Review (2026-11-09):** [[ci-signal-review]] — 0 P0 / 2 P1 / 6 P2, all fixed (404 workflow no longer hides reds; default branch via `gh repo view` when `origin/HEAD` is unset; decisive runs only; issues track the default branch; concurrency; stricter stub). Spec → done.

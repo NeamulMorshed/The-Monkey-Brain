@@ -19,11 +19,14 @@ all 6 jobs, selftest 590.
 
 2026-11-09 — `bundle-drift` had been red since 2026-10-12 unnoticed: the catalog dropped
 `data-agent-kit-starter-pack` (bundle unloadable) and added 22. `brain-all` regenerated to 315/315, 0.15.0.
+Then spec [[ci-signal]] → 0.34.0: drift now files/closes a `bundle-drift` issue, and doctor #21
+`ci-status` warns on any red workflow on the default branch (so session-start status shows it).
+Reviewed on Fable ([[ci-signal-review]], 2 P1 + 6 P2 fixed). Selftest 612.
 
 ## Next steps
 - [ ] Curator: a `GITHUB_PERSONAL_ACCESS_TOKEN` is set but the github MCP returns HTTP 401 — replace it, or disable the github plugin.
-- [x] Reinstall/restart — this session runs the 0.33.3 cache.
-- [ ] Check `gh run list --workflow bundle-drift.yml` at session start (a red scheduled run went unseen five weeks); a router misfire seen in a real session gets a selftest case before its fix.
+- [ ] Reinstall the plugin at 0.34.0 and restart, so the installed doctor has #21.
+- [ ] A router misfire seen in a real session gets a selftest case before its fix.
 
 ## Task log (auto)
 - [2026-09-15 11:17] ■ session ended (other)

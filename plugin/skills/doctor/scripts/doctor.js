@@ -249,41 +249,55 @@ add(20, 'dependency-health', depProblems.length ? 'warn' : 'ok', depProblems.len
 // ---- 21. CI status (the latest completed run of each workflow is green) ----
 // A red *scheduled* run notifies nobody (bundle-drift sat red five weeks), so doctor asks gh.
 // Anything that stops gh answering — missing, logged out, offline — is info, never a warning.
+// Only a pass or a fail says anything: cancelled / skipped / neutral runs are looked past.
 const RED = new Set(['failure', 'timed_out', 'startup_failure']);
+const DECISIVE = new Set([...RED, 'success']);
 function gh(ghArgs) {
   const bin = (process.env.MONKEY_BRAIN_GH || '').trim() || 'gh';
-  const [cmd, pre] = /\.c?js$/i.test(bin) ? [process.execPath, [bin]] : [bin, []];
+  const [cmd, pre] = /\.[cm]?js$/i.test(bin) ? [process.execPath, [bin]] : [bin, []];
   try {
     const r = spawnSync(cmd, [...pre, ...ghArgs], { cwd: projectRoot, encoding: 'utf8', timeout: 15000, windowsHide: true });
     if (r.error || r.status !== 0) return { error: String((r.error && r.error.code) || r.stderr || `exit ${r.status}`).trim().split('\n')[0].slice(0, 120) };
     return { out: r.stdout };
   } catch (e) { return { error: e.message }; }
 }
+/** origin/HEAD exists only after a clone; a git-init'd repo asks GitHub. Never guessed — runs from every branch mislead. */
 function defaultBranch() {
   try {
     const r = spawnSync('git', ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD'], { cwd: projectRoot, encoding: 'utf8', timeout: 5000, windowsHide: true });
-    if (r.status === 0) return String(r.stdout).trim().replace(/^origin\//, '');
+    if (r.status === 0 && String(r.stdout).trim()) return { branch: String(r.stdout).trim().replace(/^origin\//, '') };
   } catch {}
-  return '';
+  const r = gh(['repo', 'view', '--json', 'defaultBranchRef', '-q', '.defaultBranchRef.name']);
+  if (r.error) return { error: r.error };
+  const branch = String(r.out || '').trim();
+  return branch ? { branch } : { error: 'gh named no default branch' };
 }
 if (!workflows.length) add(21, 'ci-status', 'info', 'no workflows in .github/workflows/ — nothing to check');
 else {
-  const branch = defaultBranch();
-  const green = [], red = [];
-  let ghError = '';
-  for (const wf of workflows) {
-    const r = gh(['run', 'list', '--workflow', wf, ...(branch ? ['--branch', branch] : []), '--status', 'completed', '--limit', '1', '--json', 'conclusion,databaseId,createdAt,url']);
-    if (r.error) { ghError = r.error; break; }
-    let run; try { run = (JSON.parse(r.out || '[]') || [])[0]; } catch {}
-    if (!run) continue; // never completed a run yet
-    const name = wf.replace(/\.ya?ml$/i, '');
-    if (RED.has(run.conclusion)) red.push(`${name} ${run.conclusion} ${String(run.createdAt || '').slice(0, 10)} (gh run view ${run.databaseId} --log-failed)`);
-    else green.push(name);
+  const db = defaultBranch();
+  if (!db.branch) add(21, 'ci-status', 'info', `could not determine the default branch (${db.error}) — install gh and run gh auth login to check CI here`);
+  else {
+    const { branch } = db;
+    const green = [], red = [];
+    let ghError = '';
+    for (const wf of workflows) {
+      const r = gh(['run', 'list', '--workflow', wf, '--branch', branch, '--status', 'completed', '--limit', '10', '--json', 'conclusion,databaseId,createdAt,url']);
+      // A workflow GitHub does not know yet (new, unpushed) is skipped; any other error stops asking.
+      if (r.error && /\b404\b|not found|could not find/i.test(r.error)) continue;
+      if (r.error) { ghError = r.error; break; }
+      let runs = []; try { runs = JSON.parse(r.out || '[]') || []; } catch {}
+      const run = runs.find((x) => DECISIVE.has(x.conclusion));
+      if (!run) continue; // no pass or fail yet
+      const name = wf.replace(/\.ya?ml$/i, '');
+      if (RED.has(run.conclusion)) red.push(`${name} ${run.conclusion} ${String(run.createdAt || '').slice(0, 10)} (gh run view ${run.databaseId} --log-failed)`);
+      else green.push(name);
+    }
+    const partial = ghError ? ` · gh stopped answering (${ghError}), later workflows unchecked` : '';
+    if (red.length) add(21, 'ci-status', 'warn', `red on ${branch}: ${red.join(' · ')}${green.length ? ` · green: ${green.join(', ')}` : ''}${partial}`);
+    else if (ghError) add(21, 'ci-status', 'info', `could not ask gh for CI runs (${ghError}) — install gh and run gh auth login to check CI here`);
+    else if (green.length) add(21, 'ci-status', 'ok', `latest runs green on ${branch}: ${green.join(', ')}`);
+    else add(21, 'ci-status', 'info', `no passed or failed workflow runs on ${branch} yet`);
   }
-  if (ghError) add(21, 'ci-status', 'info', `could not ask gh for CI runs (${ghError}) — install gh and run gh auth login to check CI here`);
-  else if (red.length) add(21, 'ci-status', 'warn', `red on ${branch || 'the latest runs'}: ${red.join(' · ')}${green.length ? ` · green: ${green.join(', ')}` : ''}`);
-  else if (green.length) add(21, 'ci-status', 'ok', `latest runs green${branch ? ` on ${branch}` : ''}: ${green.join(', ')}`);
-  else add(21, 'ci-status', 'info', 'no completed workflow runs yet');
 }
 
 // ---- verdict + report -------------------------------------------------------

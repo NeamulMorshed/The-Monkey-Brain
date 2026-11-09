@@ -968,7 +968,7 @@ try {
   check('reference.md §10 documents product + game pipelines', /##\s*10\.\s*Domain pipelines/.test(tmplRef) && /Product:/.test(tmplRef) && /Game:/.test(tmplRef), 'no §10 pipelines');
 
   // ---------- /brain:doctor 18-check health monitor (Phase 8 + v3 P11) ----------
-  console.log('doctor.js (skill /brain:doctor — 15 health checks + health.json surfacing)');
+  console.log('doctor.js (skill /brain:doctor — 21 health checks + health.json surfacing)');
   const DOCTOR = path.join(SKILLS, 'doctor', 'scripts', 'doctor.js');
   let dr = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
   check('doctor runs all 21 checks, exit 0 by default', dr.status === 0 && /21-check health/.test(dr.stdout) && /20\. dependency-health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout) && /19\. ci-presence/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
@@ -2138,8 +2138,10 @@ try {
   check('AC-1 drift job grants issues: write + contents: read', /permissions:[\s\S]*issues:\s*write/.test(driftYml) && /contents:\s*read/.test(driftYml), driftYml.slice(0, 300));
   check('AC-1 drift check runs under bash pipefail and keeps its output', /shell:\s*bash/.test(driftYml) && /set -o pipefail|-eo pipefail/.test(driftYml) && /gen-brain-all\.js --check[^\n]*\|\s*tee drift\.txt/.test(driftYml), 'no pipefail/tee');
   check('AC-2 a failure() step opens a bundle-drift issue, commenting when one is open', /if:\s*failure\(\)/.test(driftYml) && /gh label create bundle-drift/.test(driftYml) && /gh issue list --label bundle-drift --state open/.test(driftYml) && /gh issue comment/.test(driftYml) && /gh issue create[^\n]*--label bundle-drift/.test(driftYml) && /drift\.txt/.test(driftYml) && /run_id|RUN_URL/.test(driftYml), 'failure path incomplete');
-  check('AC-3 a success() step closes an open bundle-drift issue', /if:\s*success\(\)/.test(driftYml) && /gh issue close/.test(driftYml) && /green again/i.test(driftYml), 'success path incomplete');
+  check('AC-3 a success() step closes an open bundle-drift issue, on the default branch only (review P2-4)', /if:\s*success\(\) && github\.ref_name == github\.event\.repository\.default_branch/.test(driftYml) && /gh issue close/.test(driftYml) && /green again/i.test(driftYml), 'success path incomplete');
 
+  check('drift job runs one at a time (review P2-5)', /concurrency:[\s\S]*group:\s*bundle-drift/.test(driftYml), 'no concurrency group');
+  check('a catalog-fetch failure is not filed as drift (review P2-4)', /catalog fetch failed/i.test(driftYml) && /steps\.fetch\.outcome/.test(driftYml), 'fetch failure not distinguished');
   const CIS = path.join(ROOT, 'ci-status');
   fs.mkdirSync(path.join(CIS, '.brain', 'wiki'), { recursive: true });
   fs.writeFileSync(path.join(CIS, '.brain', 'wiki', 'index.md'), '# Index\n');
@@ -2150,12 +2152,17 @@ try {
     "const fs = require('fs');",
     'const fx = JSON.parse(fs.readFileSync(process.env.GH_FIXTURE, "utf8"));',
     'const a = process.argv.slice(2);',
+    'const opt = (k) => (a.includes(k) ? a[a.indexOf(k) + 1] : undefined);',
     'if (fx.exit) { process.stderr.write(fx.stderr || "gh: error"); process.exit(fx.exit); }',
-    "const wf = a[a.indexOf('--workflow') + 1];",
+    'if (a[0] === "repo" && a[1] === "view") { if (!fx.defaultBranch) { process.stderr.write("no repo"); process.exit(1); } process.stdout.write(fx.defaultBranch + "\\n"); process.exit(0); }',
+    'if (opt("--status") !== "completed") { process.stderr.write("stub: --status completed missing"); process.exit(2); }',
+    'if (opt("--branch") !== fx.defaultBranch) { process.stderr.write("stub: --branch " + opt("--branch") + " is not the default branch"); process.exit(3); }',
+    'const wf = opt("--workflow");',
+    'if ((fx.missing || []).includes(wf)) { process.stderr.write("HTTP 404: workflow " + wf + " not found on the default branch"); process.exit(1); }',
     'process.stdout.write(JSON.stringify((fx.runs || {})[wf] || []));',
   ].join('\n'));
   const ciStatus = (fixture, gh) => {
-    fs.writeFileSync(GH_FIX, JSON.stringify(fixture));
+    fs.writeFileSync(GH_FIX, JSON.stringify({ defaultBranch: 'main', ...fixture }));
     const d = spawnSync(process.execPath, [path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), '--brain', path.join(CIS, '.brain'), '--json'], { encoding: 'utf8', timeout: 60000, env: { ...process.env, MONKEY_BRAIN_GH: gh === undefined ? GH_STUB : gh, GH_FIXTURE: GH_FIX } });
     let o = {}; try { o = JSON.parse(d.stdout); } catch {}
     return { f: (o.findings || []).find((x) => x.check === 'ci-status') || {}, n: (o.findings || []).length, stdout: d.stdout };
@@ -2168,13 +2175,23 @@ try {
   fs.writeFileSync(path.join(CIS, '.github', 'workflows', 'bundle-drift.yml'), 'name: bundle-drift\n');
   const run1 = (conclusion, id, day) => ({ conclusion, status: 'completed', databaseId: id, createdAt: `2026-11-0${day}T06:00:00Z`, url: `https://github.com/o/r/actions/runs/${id}` });
   cs = ciStatus({ runs: { 'selftest.yml': [run1('success', 11, 8)], 'bundle-drift.yml': [run1('success', 12, 9)] } });
-  check('AC-6 doctor 21: all latest runs green → ok, naming the workflows', cs.f.level === 'ok' && /selftest/.test(cs.f.detail) && /bundle-drift/.test(cs.f.detail), JSON.stringify(cs.f));
+  check('AC-6 doctor 21: all green → ok, asked with --status completed on the default branch', cs.f.level === 'ok' && /selftest/.test(cs.f.detail) && /bundle-drift/.test(cs.f.detail) && /on main/.test(cs.f.detail), JSON.stringify(cs.f));
   cs = ciStatus({ runs: { 'selftest.yml': [run1('success', 11, 8)], 'bundle-drift.yml': [run1('failure', 4263, 9)] } });
   check('AC-6 doctor 21: a red latest run → warn naming workflow, date, id and the log command', cs.f.level === 'warn' && /bundle-drift/.test(cs.f.detail) && /2026-11-09/.test(cs.f.detail) && /gh run view 4263 --log-failed/.test(cs.f.detail) && !/selftest[^,]*fail/.test(cs.f.detail), JSON.stringify(cs.f));
   cs = ciStatus({ runs: { 'selftest.yml': [run1('timed_out', 21, 8)], 'bundle-drift.yml': [run1('startup_failure', 22, 9)] } });
-  check('AC-6 doctor 21: timed_out and startup_failure count as red', cs.f.level === 'warn' && /21/.test(cs.f.detail) && /22/.test(cs.f.detail), JSON.stringify(cs.f));
+  check('AC-6 doctor 21: timed_out and startup_failure count as red', cs.f.level === 'warn' && /gh run view 21 --log-failed/.test(cs.f.detail) && /gh run view 22 --log-failed/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({ runs: { 'selftest.yml': [run1('success', 11, 8)], 'bundle-drift.yml': [run1('cancelled', 30, 9), run1('skipped', 29, 9), run1('failure', 28, 8)] } });
+  check('AC-6 doctor 21: looks past cancelled / skipped runs to the last pass-or-fail (review P2-3)', cs.f.level === 'warn' && /gh run view 28 --log-failed/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({ runs: { 'selftest.yml': [run1('success', 11, 8)], 'bundle-drift.yml': [run1('cancelled', 30, 9)] } });
+  check('AC-6 doctor 21: a cancelled-only workflow is never reported green (review P2-3)', cs.f.level === 'ok' && !/bundle-drift/.test(cs.f.detail), JSON.stringify(cs.f));
   cs = ciStatus({ runs: { 'selftest.yml': [run1('success', 11, 8)] } });
   check('AC-7 doctor 21: a workflow with no completed run is skipped', cs.f.level === 'ok' && /selftest/.test(cs.f.detail) && !/bundle-drift/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({ missing: ['bundle-drift.yml'], runs: { 'selftest.yml': [run1('failure', 41, 8)] } });
+  check('AC-7 doctor 21: a workflow unknown to GitHub (404) is skipped, others still reported (review P1-1)', cs.f.level === 'warn' && /gh run view 41 --log-failed/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({ missing: ['selftest.yml'], runs: { 'bundle-drift.yml': [run1('failure', 42, 9)] } });
+  check('AC-7 doctor 21: a 404 before a red workflow does not hide it (review P1-1)', cs.f.level === 'warn' && /gh run view 42 --log-failed/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({ defaultBranch: '', runs: { 'bundle-drift.yml': [run1('failure', 43, 9)] } });
+  check('AC-5 doctor 21: no known default branch → info, never runs from every branch (review P1-2)', cs.f.level === 'info' && /default branch/.test(cs.f.detail), JSON.stringify(cs.f));
   cs = ciStatus({ exit: 1, stderr: 'To get started with GitHub CLI, please run:  gh auth login' });
   check('AC-7 doctor 21: gh not logged in / offline → info, never warn', cs.f.level === 'info' && /gh/.test(cs.f.detail), JSON.stringify(cs.f));
   cs = ciStatus({}, path.join(ROOT, 'no-such-gh.exe'));
@@ -2182,9 +2199,10 @@ try {
   cs = ciStatus({ runs: { 'bundle-drift.yml': [run1('failure', 4263, 9)] } });
   const csHealth = libC.readJsonSafe(path.join(CIS, '.brain', 'sessions', 'health.json'), {}) || {};
   check('AC-8 doctor 21 finding reaches sessions/health.json', (csHealth.findings || []).some((x) => x.check === 'ci-status' && x.level === 'warn'), JSON.stringify(csHealth.findings || []).slice(0, 200));
-  check('AC-8 doctor text shows "21. ci-status"', /21-check health/.test(spawnSync(process.execPath, [path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), '--brain', path.join(CIS, '.brain')], { encoding: 'utf8', timeout: 60000, env: { ...process.env, MONKEY_BRAIN_GH: GH_STUB, GH_FIXTURE: GH_FIX } }).stdout), 'no 21-check header');
+  const csText = spawnSync(process.execPath, [path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), '--brain', path.join(CIS, '.brain')], { encoding: 'utf8', timeout: 60000, env: { ...process.env, MONKEY_BRAIN_GH: GH_STUB, GH_FIXTURE: GH_FIX } }).stdout;
+  check('AC-8 doctor text shows "21. ci-status"', /21-check health/.test(csText) && /21\. ci-status:/.test(csText), csText.slice(-400));
   const REPO = path.join(HERE, '..', '..', '..');
-  const docs21 = ['README.md', 'plugin/README.md', 'plugin/skills/README.md', 'plugin/skills/doctor/SKILL.md', 'plugin/skills/init/brain-template/reference.md'];
+  const docs21 = ['README.md', 'plugin/README.md', 'plugin/skills/README.md', 'plugin/skills/doctor/SKILL.md', 'plugin/skills/init/brain-template/reference.md', 'schema/brain-template/reference.md'];
   const stale20 = docs21.filter((f) => /20-check/.test(fs.readFileSync(path.join(REPO, f), 'utf8')) || !/21-check/.test(fs.readFileSync(path.join(REPO, f), 'utf8')));
   check('AC-9 docs say 21-check, none say 20-check', stale20.length === 0, stale20.join(', '));
   check('AC-9 doctor SKILL.md routes a red #21 to gh run view --log-failed', /#21[^\n]*gh run view[^\n]*--log-failed/.test(fs.readFileSync(path.join(SKILLS, 'doctor', 'SKILL.md'), 'utf8')), 'no #21 triage line');

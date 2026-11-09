@@ -228,3 +228,5 @@ sonnet = routine · main model = judgment. Doctor reads the model mix and outcom
 - [2026-09-16 07:38] general-purpose · model: (inherit) · adversarial review of the router · ⛔ blocked: no explicit model
 - [2026-09-16 07:53] ↳ done · agent · on unknown · 0 tokens · 0 turn(s)
 - [2026-09-16 23:27] ↳ done · fork · on <synthetic>+claude-opus-5 · 105,147 tokens · 2 turn(s)
+- [2026-11-09 21:11] general-purpose · model: fable · Review ci-signal 0.34.0
+- [2026-11-09 21:14] ↳ empty · general-purpose · on claude-opus-5-5 · 1,298,073 tokens · 15 turn(s)

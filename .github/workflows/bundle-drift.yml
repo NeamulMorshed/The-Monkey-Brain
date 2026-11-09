@@ -3,7 +3,7 @@ name: bundle-drift
 # brain-all depends on every plugin in the official catalog; when the catalog drops one, the bundle
 # stops loading for everyone. This job notices within a week instead of at the next release — and,
 # because a red scheduled run notifies nobody, it files the drift as an issue (one per episode) and
-# closes it once the bundle matches again.
+# closes it once the bundle matches again. Issues track the default branch only.
 on:
   schedule:
     - cron: '0 6 * * 1'
@@ -12,6 +12,11 @@ on:
 permissions:
   contents: read
   issues: write
+
+# One run at a time, so an overlapping schedule + dispatch cannot open two issues.
+concurrency:
+  group: bundle-drift
+  cancel-in-progress: false
 
 jobs:
   check:
@@ -29,32 +34,42 @@ jobs:
         with:
           node-version: 22
       - name: Fetch the official plugin catalog
+        id: fetch
         run: curl -fsSL https://raw.githubusercontent.com/anthropics/claude-plugins-official/main/.claude-plugin/marketplace.json -o catalog.json
       - name: brain-all matches the catalog
         run: |
           set -o pipefail
           node bundles/gen-brain-all.js --check --from catalog.json | tee drift.txt
       - name: File the drift as an issue
-        if: failure()
+        if: failure() && github.ref_name == github.event.repository.default_branch
+        env:
+          FETCH: ${{ steps.fetch.outcome }}
         run: |
           gh label create bundle-drift --color d93f0b --description "brain-all drifted from the official catalog" --force
-          {
-            echo "The weekly \`bundle-drift\` check failed on \`${GITHUB_REF_NAME}\`: ${RUN_URL}"
-            echo
-            echo '```'
-            cat drift.txt 2>/dev/null || echo "(no check output — the catalog fetch failed; see the run log)"
-            echo '```'
-            echo
-            echo "Fix: \`node bundles/gen-brain-all.js\` against the live catalog, bump \`brain-all\` in both manifests, CHANGELOG, release."
-          } > body.md
+          if [ "$FETCH" = "success" ]; then
+            title="brain-all drifted from the official plugin catalog"
+            {
+              echo "The \`bundle-drift\` check failed on \`${GITHUB_REF_NAME}\` (${GITHUB_EVENT_NAME}): ${RUN_URL}"
+              echo
+              echo '```'
+              cat drift.txt 2>/dev/null || echo "(no check output — see the run log)"
+              echo '```'
+              echo
+              echo "Fix: \`node bundles/gen-brain-all.js\` against the live catalog, bump \`brain-all\` in both manifests, CHANGELOG, release."
+            } > body.md
+          else
+            title="bundle-drift could not run: the catalog fetch failed"
+            echo "The catalog fetch failed (or an earlier step did) on \`${GITHUB_REF_NAME}\`, so drift is unknown: ${RUN_URL}" > body.md
+          fi
           open=$(gh issue list --label bundle-drift --state open --json number -q '.[0].number')
           if [ -n "$open" ]; then
-            gh issue comment "$open" --body-file body.md
+            { echo "**${title}**"; echo; cat body.md; } > comment.md
+            gh issue comment "$open" --body-file comment.md
           else
-            gh issue create --title "brain-all drifted from the official plugin catalog" --label bundle-drift --body-file body.md
+            gh issue create --title "$title" --label bundle-drift --body-file body.md
           fi
       - name: Close the drift issue when green
-        if: success()
+        if: success() && github.ref_name == github.event.repository.default_branch
         run: |
           for n in $(gh issue list --label bundle-drift --state open --json number -q '.[].number'); do
             gh issue close "$n" --comment "Green again on \`${GITHUB_REF_NAME}\`: ${RUN_URL}"

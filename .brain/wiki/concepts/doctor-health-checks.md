@@ -1,16 +1,16 @@
 ---
-title: "Doctor: the 20 health checks"
+title: "Doctor: the 21 health checks"
 type: concept
 status: active
 tags: [hooks, doctor, health, enforcement]
 created: 2026-09-16
-updated: 2026-09-16
-sources: ["[[engine-roadmap]]", "[[engine-changelog]]", "[[brain-health-audit]]", "[[brain-correctness]]", "[[brain-correctness-review]]"]
+updated: 2026-11-09
+sources: ["[[ci-signal]]", "[[engine-roadmap]]", "[[engine-changelog]]", "[[brain-health-audit]]", "[[brain-correctness]]", "[[brain-correctness-review]]"]
 related: ["[[wiki-self-healing]]", "[[bounded-loops]]", "[[model-routing]]", "[[session-injection]]", "[[develop-lifecycle-stages]]"]
 aliases: [doctor.js, brain doctor, /brain:doctor]
 ---
 
-# Doctor: the 20 health checks
+# Doctor: the 21 health checks
 
 What it is: `/brain:doctor` is the brain's periodic health monitor (ROADMAP Phase 8, v0.12.0) —
 a deterministic, zero-model-token scan that the model then reasons over (what to fix first, what
@@ -18,7 +18,7 @@ to file). Unlike [[wiki-self-healing]], which fires reactively per write, doctor
 snapshot whose result persists and surfaces automatically at the *next* session start.
 
 ## How it works
-`plugin/skills/doctor/scripts/doctor.js` runs 20 checks, each producing a
+`plugin/skills/doctor/scripts/doctor.js` runs 21 checks, each producing a
 level (`ok`/`info`/`warn`/`crit`) and a one-line detail:
 
 1. **broken-links** — resolves every `[[link]]` against `lib.linkIndex(brain)`, the shared
@@ -55,6 +55,7 @@ level (`ok`/`info`/`warn`/`crit`) and a one-line detail:
 19. **ci-presence** — detects the project's stack (`ci.js`) and checks for
     `.github/workflows/*.y(a)ml`; recognises an existing workflow even with no stack match.
 20. **dependency-health** (v0.33.0) — an enabled `security-guidance` needs a Python ≥ 3.10 (`python3`, `python` or `py -3`; `MONKEY_BRAIN_PYTHON` names another), an enabled `github` plugin needs `GITHUB_PERSONAL_ACCESS_TOKEN` in the environment or a settings `env` entry; each missing one is a warning naming the fix ([[router-and-drift]]).
+21. **ci-status** (v0.34.0) — per workflow in `.github/workflows/`, the latest *decisive* completed run (success or failure; cancelled/skipped looked past) on the default branch, via `gh run list` (`MONKEY_BRAIN_GH` overrides the binary; a `.js` runs under node). Red (`failure`/`timed_out`/`startup_failure`) → warn with `gh run view <id> --log-failed`. Default branch from `origin/HEAD`, else `gh repo view`; neither → info, never runs from every branch. A workflow GitHub doesn't know (404) is skipped; gh missing/logged out/offline → info ([[ci-signal]]).
 
 Plus a **model-mix** line parsed from `sessions/agents.md` model tags.
 
@@ -98,8 +99,8 @@ handful of tokens only when there's something to report.
   to be about `.brain/`, and didn't exclude hook-owned files (`sessions/**`, `resume.md`), so a
   clean session with only auto-logged snapshot files still warned. Fixed with brain-relative
   pathspecs and the same hook-owned filter `wrap[git]` uses.
-- Doctor's check count grew from 15 (Phase 8, v0.12.0) to 20 as P11 (cache/usage), P14
-  (CI presence) and P16-era work added checks; the docstring and `SKILL.md` are the source of
+- Doctor's check count grew from 15 (Phase 8, v0.12.0) to 21 as P11 (cache/usage), P14
+  (CI presence), P16-era work and ci-signal (#21, 0.34.0) added checks; the docstring and `SKILL.md` are the source of
   truth for the current count if it drifts further.
 - **Check 1 used to be `wiki/`-only**: through 0.31.0 it (and wiki-check, and lint) only
   indexed `wiki/**`, so a `[[link]]` to a `specs/`, `decisions/` or `projects/` record read as
