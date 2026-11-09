@@ -2206,6 +2206,144 @@ try {
   const stale20 = docs21.filter((f) => /20-check/.test(fs.readFileSync(path.join(REPO, f), 'utf8')) || !/21-check/.test(fs.readFileSync(path.join(REPO, f), 'utf8')));
   check('AC-9 docs say 21-check, none say 20-check', stale20.length === 0, stale20.join(', '));
   check('AC-9 doctor SKILL.md routes a red #21 to gh run view --log-failed', /#21[^\n]*gh run view[^\n]*--log-failed/.test(fs.readFileSync(path.join(SKILLS, 'doctor', 'SKILL.md'), 'utf8')), 'no #21 triage line');
+  // ---------- v0.35.0 motion-skill-packs (spec motion-skill-packs, AC-1..AC-12) ----------
+  console.log('v0.35.0 motion-skill-packs (recommended-skills.json + skills.js + router craft line)');
+  {
+    const REPO_MP = path.join(HERE, '..', '..', '..');
+    const MP_MANIFEST = path.join(SKILLS, 'init', 'recommended-skills.json');
+    const MP_JS = path.join(SKILLS, 'init', 'scripts', 'skills.js');
+    let mp = {};
+    try { mp = JSON.parse(fs.readFileSync(MP_MANIFEST, 'utf8')); } catch {}
+    const packs = Array.isArray(mp.packs) ? mp.packs : [];
+    const byId = Object.fromEntries(packs.map((p) => [p.id, p]));
+    const MP_HOME = path.join(ROOT, 'mp-home');
+    fs.mkdirSync(MP_HOME, { recursive: true });
+    const mpEnv = { MONKEY_BRAIN_HOME: MP_HOME };
+    const skillsJs = (args, env) => spawnSync(process.execPath, [MP_JS, ...args], { encoding: 'utf8', timeout: 15000, env: { ...process.env, ...mpEnv, ...(env || {}) } });
+    const mpWrite = (root, rel, content) => { const p = path.join(root, rel); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, content, 'utf8'); };
+    const installSkill = (root, name) => mpWrite(root, path.join('.claude', 'skills', name, 'SKILL.md'), `---\nname: ${name}\ndescription: fixture\n---\n`);
+    const MPA = path.join(ROOT, 'mp-proj');
+    fs.mkdirSync(MPA, { recursive: true });
+
+    // AC-1 manifest
+    check('AC-1 manifest has schema_version, updated, contract and exactly the three packs', mp.schema_version && mp.updated && mp.contract && packs.length === 3 && ['web-motion', 'video', 'mobile-motion'].every((id) => byId[id]), packs.map((p) => p.id).join(','));
+    check('AC-1 every pack declares id/title/when/source/skills/install_hint/context_cost/filing', packs.every((p) => p.id && p.title && p.when && Array.isArray(p.source) && p.source.length && p.source.every((s) => s.repo && /^https:\/\//.test(s.url) && s.licence) && Array.isArray(p.skills) && p.skills.length && p.skills.every((s) => typeof s === 'string' && s) && /^npx skills add /.test(p.install_hint || '') && p.context_cost && Array.isArray(p.filing) && p.filing.length && p.filing.every((f) => f.what && f.to)), 'missing pack field');
+    check('AC-1 filing targets are real .brain/ folders', packs.every((p) => (p.filing || []).every((f) => /^(wiki\/|specs\/|projects\/|decisions\/|instincts\/)/.test(f.to))), 'bad filing target');
+    check('AC-1 video carries a licence_note on the Remotion company licence', /licen[cs]e/i.test((byId.video || {}).licence_note || '') && /compan/i.test((byId.video || {}).licence_note || ''), (byId.video || {}).licence_note);
+    check('AC-1 video lists Remotion\'s 13 public skills; web-motion has gsap + review-animations; mobile has animate-expo', (byId.video || {}).skills && byId.video.skills.length === 13 && byId.video.skills.every((s) => /^remotion-/.test(s)) && byId['web-motion'].skills.includes('gsap-framer-scroll-animation') && byId['web-motion'].skills.includes('review-animations') && byId['mobile-motion'].skills.includes('animate-expo'), JSON.stringify((byId.video || {}).skills));
+    check('AC-1 install_hints embed no literal secret; contract says the brain never installs', packs.every((p) => !/(sk-|ghp_|glpat-)/.test(p.install_hint)) && /never/i.test(mp.contract || ''), 'hint or contract');
+
+    // AC-2 render
+    let sj = skillsJs(['--project', MPA]);
+    check('AC-2 skills.js default: a table naming every pack, exit 0, all "not installed" in an empty project', sj.status === 0 && packs.length === 3 && packs.every((p) => sj.stdout.includes(p.id)) && (sj.stdout.match(/not installed/g) || []).length >= 3, `status=${sj.status} ${sj.stdout.slice(0, 300)}`);
+    sj = skillsJs(['--project', MPA, '--verbose']);
+    check('AC-2 --verbose adds each pack\'s filing lines and the install hint', sj.status === 0 && /improve-animations/.test(sj.stdout) && /wiki\/research\//.test(sj.stdout) && /npx skills add/.test(sj.stdout), sj.stdout.slice(0, 300));
+    sj = skillsJs(['--json']);
+    let sjJson = {}; try { sjJson = JSON.parse(sj.stdout); } catch {}
+    check('AC-2 --json prints the parseable manifest', sj.status === 0 && Array.isArray(sjJson.packs) && sjJson.packs.length === 3, `status=${sj.status}`);
+    for (const s of (byId.video || { skills: [] }).skills) installSkill(MPA, s);
+    installSkill(MPA, 'animate'); // one web-motion skill only -> partial
+    sj = skillsJs(['--project', MPA]);
+    const lineOf = (out, id) => out.split('\n').find((l) => new RegExp(`\\b${id}\\b`).test(l) && /(installed|partial)/.test(l)) || '';
+    check('AC-2 marks a fully installed pack installed, a part-installed one partial, the rest not installed', /✓/.test(lineOf(sj.stdout, 'video')) && !/not installed|partial/.test(lineOf(sj.stdout, 'video')) && /partial/.test(lineOf(sj.stdout, 'web-motion')) && /not installed/.test(lineOf(sj.stdout, 'mobile-motion')), `${lineOf(sj.stdout, 'video')} | ${lineOf(sj.stdout, 'web-motion')} | ${lineOf(sj.stdout, 'mobile-motion')}`);
+    installSkill(MP_HOME, 'animate-expo'); installSkill(MP_HOME, 'mobile-native'); installSkill(MP_HOME, 'gestures');
+    sj = skillsJs(['--project', MPA]);
+    check('AC-2 also reads ~/.claude/skills (user scope)', /✓/.test(lineOf(sj.stdout, 'mobile-motion')) && !/not installed|partial/.test(lineOf(sj.stdout, 'mobile-motion')), lineOf(sj.stdout, 'mobile-motion'));
+    fs.rmSync(path.join(MP_HOME, '.claude'), { recursive: true, force: true });
+    const BADM = path.join(ROOT, 'mp-bad-manifest.json');
+    fs.writeFileSync(BADM, '{not json');
+    sj = skillsJs(['--project', MPA], { MONKEY_BRAIN_SKILLS_MANIFEST: BADM });
+    check('AC-2 a malformed manifest fails open (exit 0, says so, no crash)', sj.status === 0 && /manifest/i.test(sj.stdout + sj.stderr), `status=${sj.status} ${(sj.stderr || '').slice(0, 150)}`);
+    sj = skillsJs(['--project', MPA], { MONKEY_BRAIN_SKILLS_MANIFEST: path.join(ROOT, 'no-such-manifest.json') });
+    check('AC-2 a missing manifest fails open', sj.status === 0, `status=${sj.status}`);
+    sj = skillsJs(['--project', path.join(ROOT, 'no-such-project-dir')]);
+    check('AC-2 a missing project dir fails open', sj.status === 0 && packs.length === 3 && packs.every((p) => sj.stdout.includes(p.id)), `status=${sj.status}`);
+
+    // AC-3 uncurated
+    installSkill(MPA, 'my-private-skill');
+    sj = skillsJs(['--project', MPA]);
+    check('AC-3 an uncurated installed skill shows under "detected, no filing rules yet"', /no filing rules yet/i.test(sj.stdout) && sj.stdout.includes('my-private-skill'), sj.stdout.slice(-300));
+    sj = skillsJs(['--project', path.join(ROOT, 'mp-empty')]);
+    check('AC-3 no detected section when nothing is uncurated', sj.status === 0 && !/no filing rules yet/i.test(sj.stdout), sj.stdout.slice(-200));
+
+    // AC-4 init SKILL
+    const initSkill = fs.readFileSync(path.join(SKILLS, 'init', 'SKILL.md'), 'utf8');
+    check('AC-4 /brain:init offers the packs via skills.js --project, with context cost and the Remotion licence note', /skills\.js" --project/.test(initSkill) && /context cost/i.test(initSkill) && /licen[cs]e/i.test(initSkill) && /remotion/i.test(initSkill), 'no pack-offer step');
+    check('AC-4 install_hint runs only after a yes to that pack; never by default', /only after the curator says yes to that pack/i.test(initSkill) && /never installs? by default/i.test(initSkill), 'no yes-only rule');
+    const offerAt = initSkill.search(/skills\.js" --project/); const mcpAt = initSkill.search(/mcp-servers\.js" --project/);
+    check('AC-4 the pack offer comes after the MCP offer', mcpAt > 0 && offerAt > mcpAt, `${mcpAt} < ${offerAt}`);
+    const newBrainSrc = fs.readFileSync(path.join(SKILLS, 'init', 'scripts', 'new-brain.js'), 'utf8');
+    check('AC-4 scaffolding (new-brain.js) never touches the pack manifest or installs skills', !/recommended-skills|skills add|npx/.test(newBrainSrc), 'new-brain.js mentions packs');
+
+    // AC-5/6 router
+    const craft = (prompt, cwd, env) => { const rr = run('trigger-router.js', { cwd: cwd || PROJ, hook_event_name: 'UserPromptSubmit', prompt, session_id: `mp${process.pid}` }, { ...mpEnv, ...(env || {}) }); let o = {}; try { o = JSON.parse(rr.stdout || '{}'); } catch {} return (o.hookSpecificOutput || {}).additionalContext || ''; };
+    const craftLines = (c) => c.split('\n').filter((l) => /craft/.test(l));
+    const webP = ['animate the cards on scroll', 'add a parallax effect to the hero', 'tweak the easing so the modal feels smooth', 'I want a scrolltrigger pin section'];
+    const vidP = ['make a video for the launch', 'render a promo video', 'set up remotion for our intro'];
+    const mobP = ['add a swipe gesture animation in our react native app', 'expo screen transition animation with reanimated', 'animate the bottom sheet in expo'];
+    for (const p of webP) { const c = craft(p); check(`AC-5 web-motion prompt "${p}" offers the pack when not installed`, craftLines(c).length === 1 && /web-motion/.test(c) && /\/brain:init/.test(c), c); }
+    for (const p of vidP) { const c = craft(p); check(`AC-5 video prompt "${p}" offers the pack when not installed`, craftLines(c).length === 1 && /pack video|video pack|\bvideo\b/.test(craftLines(c)[0]) && /\/brain:init/.test(c), c); }
+    for (const p of mobP) { const c = craft(p); check(`AC-5 mobile prompt "${p}" goes to mobile-motion, not web-motion`, craftLines(c).length === 1 && /mobile-motion/.test(c) && !/web-motion/.test(c), c); }
+    check('AC-5 an unrelated prompt gets no craft line', craftLines(craft('fix the bug in the invoice parser')).length === 0 && craft('hello there') === '', craft('fix the bug in the invoice parser'));
+    installSkill(PROJ, 'animate'); installSkill(PROJ, 'choreograph');
+    let c = craft('animate the cards on scroll');
+    check('AC-5 installed pack: the line names its installed skills and does not offer init', /web-motion/.test(c) && /animate/.test(craftLines(c)[0] || '') && /choreograph/.test(craftLines(c)[0] || '') && !/\/brain:init/.test(craftLines(c)[0] || ''), c);
+    fs.rmSync(path.join(PROJ, '.claude'), { recursive: true, force: true });
+    c = craft('animate the cards on scroll', PROJ, { MONKEY_BRAIN_SKILLS_MANIFEST: BADM });
+    check('AC-5 a broken manifest gives no craft line and no crash (fails open)', craftLines(c).length === 0, c);
+    // AC-6 ordering
+    c = craft('add a scroll animation feature to the landing page');
+    const lines6 = c.split('\n');
+    check('AC-6 a brain rule match keeps its line first; the craft line follows; one craft line', /brain:/.test(lines6[0]) && !/craft/.test(lines6[0]) && /craft/.test(lines6[1] || '') && craftLines(c).length === 1, c);
+    check('AC-6 questions stay silent', craft('how do I animate on scroll?') === '' && craft('what is easing?') === '', craft('how do I animate on scroll?'));
+    check('AC-6 a prompt matching both video and web-motion gets one craft line', craftLines(craft('make a video with a parallax intro, animate on scroll')).length === 1, craft('make a video with a parallax intro, animate on scroll'));
+    check('AC-6 slash commands and /brain: prompts stay silent', craft('/brain:plan animate on scroll') === '' && craft('please run /brain:plan for scroll animation') === '', '');
+
+    // AC-7 filing rules in reference.md (template + bundled copy)
+    for (const [label, ref] of [['schema', fs.readFileSync(path.join(REPO_MP, 'schema', 'brain-template', 'reference.md'), 'utf8')], ['bundled', tmplRef]]) {
+      const sec = ref.indexOf('Skill packs') >= 0 ? ref.slice(ref.indexOf('Skill packs')).replace(/\n\s+/g, ' ') : '';
+      check(`AC-7 ${label} reference.md §9 carries the skill-pack filing rules`, /improve-animations[^.]*wiki\/research\//.test(sec) && /review-animations[^.]*break-ui[^.]*animation-performance[^.]*wiki\/syntheses/.test(sec) && /P0/.test(sec) && /pick-ui-library[^.]*decisions\//.test(sec) && /prototype[^.]*spike/.test(sec) && /Remotion[^.]*projects\//.test(sec), 'rules missing');
+    }
+    // AC-8/9
+    const reviewSkill = fs.readFileSync(path.join(SKILLS, 'review', 'SKILL.md'), 'utf8');
+    check('AC-8 /brain:review runs review-animations as an extra reviewer for motion scope when web-motion is installed, same review page', /review-animations/.test(reviewSkill) && /web-motion/.test(reviewSkill) && /same review page/i.test(reviewSkill), 'no review-animations step');
+    const planSkill = fs.readFileSync(path.join(SKILLS, 'plan', 'SKILL.md'), 'utf8');
+    const specTmplMp = fs.readFileSync(path.join(bundled, 'templates', 'spec.md'), 'utf8');
+    check('AC-9 /brain:plan and the spec template name visual, performance and prefers-reduced-motion checks for motion specs', [planSkill, specTmplMp].every((t) => /prefers-reduced-motion/.test(t) && /visual/i.test(t) && /performance/i.test(t) && /compositor/i.test(t)) && /tdd: false/.test(planSkill) && /review-animations/.test(planSkill), 'motion test-plan terms missing');
+
+    // AC-10 seed instincts
+    const SEED = path.join(ROOT, 'mp-seed', '.brain');
+    fs.mkdirSync(path.join(SEED, 'instincts', 'pending'), { recursive: true });
+    fs.mkdirSync(path.join(SEED, 'instincts', 'active'), { recursive: true });
+    sj = skillsJs(['--seed-instincts', 'web-motion', '--brain', SEED]);
+    const seeded = fs.readdirSync(path.join(SEED, 'instincts', 'pending'));
+    const seedText = seeded.map((f) => fs.readFileSync(path.join(SEED, 'instincts', 'pending', f), 'utf8')).join('\n');
+    check('AC-10 seeds 1..6 rules into instincts/pending/ only, active/ untouched', sj.status === 0 && seeded.length >= 1 && seeded.length <= 6 && fs.readdirSync(path.join(SEED, 'instincts', 'active')).length === 0, `status=${sj.status} files=${seeded.length} ${sj.stderr}`);
+    check('AC-10 seeded files use the instinct template format (status pending, trigger, Rule/Why/Scope) and cite emilkowalski/skills', seeded.length > 0 && seeded.every((f) => { const t = fs.readFileSync(path.join(SEED, 'instincts', 'pending', f), 'utf8'); return /^type: instinct/m.test(t) && /^status: pending/m.test(t) && /^trigger: /m.test(t) && /\*\*Rule:\*\*/.test(t) && /\*\*Why:\*\*/.test(t) && /\*\*Scope:\*\*/.test(t); }) && /emilkowalski\/skills/.test(seedText), seedText.slice(0, 300));
+    check('AC-10 the curated set includes ease-out on enter and no animating keyboard-initiated actions', /ease-out/i.test(seedText) && /keyboard/i.test(seedText), seedText.slice(0, 200));
+    if (seeded.length) fs.writeFileSync(path.join(SEED, 'instincts', 'pending', seeded[0]), 'EDITED BY CURATOR\n');
+    sj = skillsJs(['--seed-instincts', 'web-motion', '--brain', SEED]);
+    check('AC-10 re-running skips existing files (a curator edit survives, nothing new)', sj.status === 0 && seeded.length > 0 && fs.readdirSync(path.join(SEED, 'instincts', 'pending')).length === seeded.length && fs.readFileSync(path.join(SEED, 'instincts', 'pending', seeded[0]), 'utf8') === 'EDITED BY CURATOR\n', sj.stdout);
+    sj = skillsJs(['--seed-instincts', 'no-such-pack', '--brain', SEED]);
+    check('AC-10 an unknown pack seeds nothing and exits non-zero with a message', sj.status !== 0 && /no-such-pack/.test(sj.stdout + sj.stderr), `status=${sj.status}`);
+    sj = skillsJs(['--seed-instincts', 'web-motion', '--brain', path.join(ROOT, 'mp-no-brain')]);
+    check('AC-10 a missing brain dir seeds nothing (no stray dirs created)', sj.status !== 0 && !fs.existsSync(path.join(ROOT, 'mp-no-brain')), `status=${sj.status}`);
+
+    // AC-11 terse line
+    const startCtx = (() => { const rr = run('brain-status.js', { cwd: PROJ, hook_event_name: 'SessionStart', source: 'startup' }); let o = {}; try { o = JSON.parse(rr.stdout || '{}'); } catch {} return (o.hookSpecificOutput || {}).additionalContext || ''; })();
+    check('AC-11 the startup injection carries the scripted-greeting rule', /scripted greeting/i.test(startCtx) && /Initial Response/.test(startCtx) && /substance/i.test(startCtx), startCtx.slice(-300));
+    check('AC-11 the injection stays within the 3000-token budget (doctor #9)', startCtx.length > 0 && Math.ceil(startCtx.length / 4) <= 3000, `${Math.ceil(startCtx.length / 4)} tokens`);
+
+    // AC-12 release
+    const pj = JSON.parse(fs.readFileSync(path.join(SKILLS, '..', '.claude-plugin', 'plugin.json'), 'utf8'));
+    const mk = JSON.parse(fs.readFileSync(path.join(REPO_MP, '.claude-plugin', 'marketplace.json'), 'utf8'));
+    const brainEntry = (mk.plugins || []).find((x) => x.name === 'brain') || {};
+    check('AC-12 plugin.json and marketplace.json say 0.35.0', pj.version === '0.35.0' && brainEntry.version === '0.35.0', `${pj.version} / ${brainEntry.version}`);
+    check('AC-12 CHANGELOG has a 0.35.0 entry and the README badge says v0.35.0', /^## 0\.35\.0 /m.test(fs.readFileSync(path.join(SKILLS, '..', 'CHANGELOG.md'), 'utf8')) && /plugin-v0\.35\.0-blue/.test(fs.readFileSync(path.join(REPO_MP, 'README.md'), 'utf8')), 'version docs');
+    const noPacks = ['README.md', 'plugin/README.md', 'plugin/skills/README.md'].filter((f) => { const t = fs.readFileSync(path.join(REPO_MP, f), 'utf8'); return !/skill packs?/i.test(t) || !/web-motion/.test(t); });
+    check('AC-12 README, plugin README and skills README mention the packs', noPacks.length === 0, noPacks.join(', '));
+  }
+
 } finally {
   fs.rmSync(ROOT, { recursive: true, force: true });
   fs.rmSync(GLOBAL_CFG, { recursive: true, force: true });

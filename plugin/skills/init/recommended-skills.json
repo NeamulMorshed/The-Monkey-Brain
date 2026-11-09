@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-11-09",
+  "contract": "Skill packs do the craft; the brain records the knowledge. The brain never installs a skill: it offers a pack, and runs the pack's install_hint only after the curator says yes to that pack. Packs are installed per project (into .claude/skills/), never vendored into the plugin: upstream stays the source of truth. Every installed skill's description loads each turn, so each pack states its context cost.",
+  "install": {
+    "how": "install_hint is an instructions-only `npx skills add ...` command (the `skills` CLI from vercel-labs; verified with `npx skills@latest --help`). `-a claude-code` targets Claude Code, `-y` skips prompts, `--skill` picks names. Run it from the project root so the skills land in the project, not globally (`-g`).",
+    "detect": "skills.js looks for <skill>/SKILL.md under <project>/.claude/skills/ and ~/.claude/skills/ and marks a pack installed (all skills), partial (some) or not installed."
+  },
+  "packs": [
+    {
+      "id": "web-motion",
+      "title": "Web motion — scroll, entrances, easing, polish",
+      "when": "Animating a web UI: scroll-linked or entrance animation, parallax, page and view transitions, easing and timing, gesture-driven sheets, and auditing existing motion.",
+      "source": [
+        { "repo": "emilkowalski/skills", "url": "https://github.com/emilkowalski/skills", "licence": "MIT" },
+        { "repo": "github/awesome-copilot", "url": "https://github.com/github/awesome-copilot/tree/main/skills/gsap-framer-scroll-animation", "licence": "MIT" }
+      ],
+      "skills": [
+        "gsap-framer-scroll-animation",
+        "emil-design-eng",
+        "animate",
+        "choreograph",
+        "review-animations",
+        "improve-animations",
+        "animation-performance",
+        "break-ui",
+        "prototype",
+        "pick-ui-library"
+      ],
+      "install_hint": "npx skills add emilkowalski/skills --skill emil-design-eng animate choreograph review-animations improve-animations animation-performance break-ui prototype pick-ui-library -a claude-code -y && npx skills add github/awesome-copilot --skill gsap-framer-scroll-animation -a claude-code -y",
+      "context_cost": "~1.6k tokens of skill descriptions per turn (10 skills)",
+      "design_companion": "frontend-design (already a bundled plugin) is the design partner gsap-framer-scroll-animation asks for.",
+      "filing": [
+        { "what": "improve-animations audit", "to": "wiki/research/" },
+        { "what": "each improve-animations plan (one per fix, with ACs)", "to": "specs/" },
+        { "what": "review-animations, break-ui and animation-performance findings (P0-P2)", "to": "wiki/syntheses/" },
+        { "what": "library, easing and approach choices, pick-ui-library", "to": "decisions/" },
+        { "what": "prototype variants (labelled spike; the chosen variant gets a spec)", "to": "specs/" }
+      ],
+      "instincts": [
+        {
+          "name": "motion-ease-out-on-enter",
+          "trigger": "writing an entrance animation or transition for something appearing on screen",
+          "rule": "Use an ease-out curve for things entering or responding to the user; keep ease-in out of UI motion.",
+          "why": "Ease-in starts slowly, so the interface feels laggy exactly when the user is waiting on it.",
+          "scope": "Entrances and user-triggered responses. Not for looping or decorative ambient motion."
+        },
+        {
+          "name": "motion-no-keyboard-animation",
+          "trigger": "animating an action the user starts from the keyboard (shortcuts, command palette, typing, tab focus)",
+          "rule": "Never animate keyboard-initiated actions; apply the result instantly.",
+          "why": "Keyboard users repeat actions many times a minute; animation turns speed into delay.",
+          "scope": "Keyboard shortcuts, command menus, focus moves. Pointer and touch interactions may still animate."
+        },
+        {
+          "name": "motion-composite-properties-only",
+          "trigger": "choosing which CSS or JS properties to animate",
+          "rule": "Animate transform and opacity (compositor-only); never width, height, top or left.",
+          "why": "Layout and paint properties run on the main thread and drop frames when the page is busy.",
+          "scope": "Frequently animated UI. A one-off height reveal behind a measured frame budget may be an exception, recorded in an ADR."
+        },
+        {
+          "name": "motion-honor-reduced-motion",
+          "trigger": "adding any non-trivial animation to a web UI",
+          "rule": "Every animation has a prefers-reduced-motion path that removes movement and keeps meaning (fade or instant).",
+          "why": "Motion is a vestibular trigger for some users and an accessibility requirement, not polish.",
+          "scope": "All motion beyond opacity changes. Essential progress indicators may keep subtle movement."
+        },
+        {
+          "name": "motion-short-ui-durations",
+          "trigger": "setting a duration for a UI transition",
+          "rule": "Keep UI transitions under about 300ms; reserve longer durations for large, deliberate moments.",
+          "why": "Slow transitions make the product feel sluggish even when the animation is smooth.",
+          "scope": "Buttons, menus, tooltips, popovers, list changes. Marketing hero sequences and scroll storytelling may run longer."
+        },
+        {
+          "name": "motion-interruptible",
+          "trigger": "building an animation the user can re-trigger or reverse mid-flight",
+          "rule": "Make interactive animations interruptible: prefer CSS transitions or springs that retarget from the current value over keyframes that restart.",
+          "why": "Restarting from the beginning makes a rapid second action jump or stutter.",
+          "scope": "Hover, toggle, open/close and drag interactions. Fire-and-forget entrance sequences need not be."
+        }
+      ]
+    },
+    {
+      "id": "video",
+      "title": "Video - programmatic video with Remotion",
+      "when": "Making a video with code: React compositions, captions, data-driven or branded videos, rendering, and maintaining a Remotion project.",
+      "source": [
+        { "repo": "remotion-dev/skills", "url": "https://github.com/remotion-dev/skills", "licence": "Remotion licence (custom, not MIT)" }
+      ],
+      "skills": [
+        "remotion-best-practices",
+        "remotion-captions",
+        "remotion-create",
+        "remotion-docs",
+        "remotion-interactivity",
+        "remotion-license",
+        "remotion-maps",
+        "remotion-markup",
+        "remotion-multimedia",
+        "remotion-render",
+        "remotion-saas",
+        "remotion-studio",
+        "remotion-upgrade"
+      ],
+      "licence_note": "Remotion is free for individuals and small companies; companies above its size threshold need a paid company licence. Check https://www.remotion.dev/license before shipping commercially (the remotion-license skill covers it). The skills are Remotion's own and are never vendored into this plugin.",
+      "install_hint": "npx skills add remotion-dev/skills --skill '*' -a claude-code -y",
+      "context_cost": "~1.9k tokens of skill descriptions per turn (13 skills)",
+      "filing": [
+        { "what": "render runs and video status (brief, storyboard, composition, render)", "to": "projects/" },
+        { "what": "video style and tooling choices (fps, resolution, caption approach)", "to": "decisions/" }
+      ]
+    },
+    {
+      "id": "mobile-motion",
+      "title": "Mobile motion - React Native and Expo",
+      "when": "Animating a React Native or Expo app: Reanimated, gestures, sheets, screen transitions and haptics.",
+      "source": [
+        { "repo": "emilkowalski/skills", "url": "https://github.com/emilkowalski/skills", "licence": "MIT" }
+      ],
+      "skills": [
+        "animate-expo",
+        "mobile-native",
+        "gestures"
+      ],
+      "install_hint": "npx skills add emilkowalski/skills --skill animate-expo mobile-native gestures -a claude-code -y",
+      "context_cost": "~0.6k tokens of skill descriptions per turn (3 skills)",
+      "filing": [
+        { "what": "motion and gesture approach choices (spring vs timing, library)", "to": "decisions/" },
+        { "what": "on-device motion review findings (P0-P2)", "to": "wiki/syntheses/" }
+      ]
+    }
+  ]
+}
