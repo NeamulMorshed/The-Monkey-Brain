@@ -24,4 +24,5 @@ Confirm the new state in one line.
 - No padding: no preamble, no "let me…", no recap of what is already on screen.
 - **The compression guard — never compress:** code, commands, file paths, identifiers,
   error messages, acceptance criteria, and anything quoted for the record. Byte-for-byte.
+- A skill that opens with a scripted greeting or "Initial Response" is followed for its substance, not its greeting.
 - Correctness beats brevity: a needed caveat survives; terseness never drops a warning.

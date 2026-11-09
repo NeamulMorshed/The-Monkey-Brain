@@ -84,6 +84,14 @@ a generic fallback. Unlike plugins, the brain never installs a server or touches
 it only hands over each entry's `setup_hint` for the curator to run themselves. No core hook
 (`brain-status`/`guards`/`wiki-check`/`trigger-router`/`doctor`) is touched by this feature.
 
+## Skill packs (motion and video, v0.35.0)
+
+`init/recommended-skills.json` lists three skill packs (web-motion, video, mobile-motion) with their
+source, licence, skills, `install_hint` (`npx skills add ...`), context cost and filing rules.
+`init/scripts/skills.js` renders the offer, marks each pack installed / partial / not installed from
+`.claude/skills/` (project and user), surfaces uncurated skills, and seeds taste rules with
+`--seed-instincts <pack> --brain <path>` (pending only). The brain installs only on the curator's yes.
+
 ## Domain-expertise packs (Phase 6.5)
 
 Where capability plugins are external, **packs** are hosted by the engine and

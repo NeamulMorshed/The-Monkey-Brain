@@ -34,6 +34,9 @@ A review that only lives in chat is lost. This one ends in the brain.
    - **simplification / reuse** — needless complexity, duplicated logic;
    - **test quality** — do the tests actually pin the ACs, or just touch the code?
    Report findings concretely: `file:line`, what breaks, how to fix.
+   - **Motion code:** when the spec's `scope:` touches animation or transition code and the
+     web-motion pack is installed (`skills.js --project .`), run `review-animations` as an extra
+     reviewer and file its findings (P0-P2) in the same review page as the rest.
 4. **File it back:**
    - Review page → `wiki/syntheses/<feature>-review.md` (verdict, AC table, findings),
      linked from the index and the spec. In PR mode, include the PR URL and its CI check

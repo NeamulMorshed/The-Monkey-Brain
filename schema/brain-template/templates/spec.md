@@ -30,6 +30,9 @@ Numbered, observable, testable — /brain:build works these and /brain:wrap veri
 
 ## Test plan
 How each AC will be verified (unit / integration / manual script).
+For a motion spec also name: a **visual** check (recording or screenshots per state), a
+**performance** check (compositor-only properties, no dropped frames in a trace) and
+`prefers-reduced-motion` behaviour.
 
 ## Notes & links
 Decisions: [[…]] · Research: [[…]] · PRs: …

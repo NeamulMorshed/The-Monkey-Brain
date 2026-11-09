@@ -22,6 +22,11 @@ Numbered acceptance criteria, a tier, and a truthful approval field — that is 
    - **Acceptance criteria** — numbered `AC-1, AC-2…`, each observable and testable;
      they are the contract `/brain:build` works and `/brain:review` verifies.
    - **Test plan** — how each AC will be proven.
+   - **Motion specs** (animation, transitions, scroll effects): the test plan names a **visual**
+     check (recording or screenshots per state), a **performance** check (compositor-only
+     properties, no dropped frames in a trace) and `prefers-reduced-motion` behaviour. Motion-only
+     source is hard to unit-test, so the spec may use `tdd: false` (the curator's opt-out) when
+     one AC requires a `review-animations` pass (web-motion pack) and its findings filed.
    - **Tier** (manual §5) with one line of rationale: `quick` (<2h, advisory only) ·
      `feature` (TDD gate on) · `architecture` (hard plan gate + TDD gate).
    - **Markdown only.** The spec file *is* the plan — don't also publish it as a web page

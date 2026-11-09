@@ -52,6 +52,16 @@ staging, `raw-sources/`, `memory/`, and `resume.md`. Once it exists, the plugin'
    placeholder, never a literal secret) and let the curator run and confirm it themselves. A
    configured server outside the curated set is still surfaced (generic "no filing rules yet"
    note) so nothing connected goes unmentioned. Skip on `--update` unless asked.
+6c. **Offer the skill packs** (the motion and video craft layer). Run
+   `node "${CLAUDE_SKILL_DIR}/scripts/skills.js" --project "<root>"` to list the three packs
+   (web-motion, video, mobile-motion) marked installed / partial / not installed from
+   `.claude/skills/` and `~/.claude/skills/`. Offer only the packs relevant to *this* project,
+   and state each pack's **context cost** (its skill descriptions load every turn) and, for
+   video, **Remotion's licence note** (a paid company licence above its size threshold). Run a
+   pack's `install_hint` (`npx skills add ...`) **only after the curator says yes to that pack**;
+   the brain never installs by default, and `new-brain.js` scaffolding never touches packs. After a
+   web-motion install, offer `skills.js --seed-instincts web-motion --brain "<root>/.brain"` (writes
+   `instincts/pending/` only; the curator promotes). Skip on `--update` unless asked.
 7. **Commit** (offer first): `feat: scaffold .brain (Monkey Brain instance)`. The
    `Clippings/.gitignore` keeps staging drops out of git by design.
 
@@ -67,6 +77,8 @@ staging, `raw-sources/`, `memory/`, and `resume.md`. Once it exists, the plugin'
   integration notes, `--json` for raw); the brain's `reference.md` §9 states the recording
   contract. Plugins auto-activate by their own descriptions; the trigger-router nudges the
   brain's own workflows, not theirs.
+- The recommended skill packs live in `recommended-skills.json`; `scripts/skills.js` renders the
+  offer, detects installs and seeds taste rules (reference.md §9, "Skill packs").
 - The recommended MCP server set lives in `recommended-mcp-servers.json` (next to this
   skill) — same shape and contract as the plugin manifest, for MCP servers instead of Claude
   Code plugins. `scripts/mcp-servers.js` renders it and detects which curated servers are

@@ -1,5 +1,13 @@
 # Changelog — brain plugin
 
+## 0.35.0 — 2026-11-09 (motion and video skill packs)
+
+Spec `specs/motion-skill-packs.md`. Three external skill sets work under the brain's rules instead of beside them.
+- **Skill packs, offered not vendored** — `recommended-skills.json` + `skills.js`: web-motion (Emil Kowalski + GSAP/Framer scroll), video (Remotion, licence note), mobile-motion. `/brain:init` offers them with context cost; `install_hint` (`npx skills add ...`) runs only on a yes to that pack. Detects installed / partial from `.claude/skills/`.
+- **Router craft line** — motion / video prompts get one line after the brain's workflow line, naming installed skills or offering the pack; silent on questions.
+- **Filing + review** — reference.md §9 files audits, reviews (P0 gates wrap) and choices; `/brain:review` runs `review-animations`; motion specs get visual, performance and reduced-motion test plans.
+- **Taste rules** — `skills.js --seed-instincts web-motion` writes up to 6 pending instincts. Terse mode follows a skill's substance, not its scripted greeting.
+
 ## 0.34.0 — 2026-11-09 (red CI is loud)
 
 Spec `specs/ci-signal.md`. `bundle-drift` sat red for five weekly runs because a failed scheduled

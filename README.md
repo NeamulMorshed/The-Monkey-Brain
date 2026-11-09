@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.34.0](https://img.shields.io/badge/plugin-v0.34.0-blue)
+![Plugin v0.34.0](https://img.shields.io/badge/plugin-v0.35.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -30,6 +30,7 @@ synthesis already exist *before* you ask. Knowledge accumulates instead of being
 - [All skills](#all-skills)
 - [All hooks](#all-hooks)
 - [Capability plugins](#capability-plugins)
+- [Skill packs](#skill-packs)
 - [MCP servers](#mcp-servers)
 - [User guide](#user-guide)
 - [Requirements](#requirements)
@@ -437,6 +438,16 @@ plugin in Anthropic's official marketplace (minus the output styles that contrad
 Heavy on context; only worth it if you want maximum coverage and don't mind the token cost.
 
 ---
+
+## Skill packs
+
+Same contract for skills: *skill packs do the craft; the brain records the knowledge.* `/brain:init`
+offers three **skill packs** from `recommended-skills.json` and installs one only on your yes:
+**web-motion** (Emil Kowalski's design-engineering skills plus GSAP/Framer scroll animation, MIT),
+**video** (Remotion's 13 skills; a company licence applies above its size threshold) and
+**mobile-motion** (React Native / Expo). Nothing is vendored. The router adds a craft line for motion
+and video prompts below the brain's own workflows, audits and reviews are filed (research, review
+pages with P0-P2, ADRs), and `skills.js --seed-instincts web-motion` proposes taste rules.
 
 ## MCP servers
 

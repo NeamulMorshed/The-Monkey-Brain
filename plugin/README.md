@@ -68,6 +68,8 @@ plugin/
 | 7 | PreToolUse Agent + SubagentStop | `agent-track` | dispatch log → `sessions/agents.md`; every main-model spawn needs an explicit model (per dispatch; forks exempt; `MONKEY_BRAIN_MODEL_BLOCK=0` off), routed by manual §5; **outcome ledger** — each finished subagent's result, model and real token count from its own transcript (doctor check 18); while a `/brain:loop` runs, a verify/review dispatch on the generator's model family is blocked |
 | 8 | SessionStart + Task events | `resume` / `resume-log` | one resume file per project (`lib.resumePath`); injected with ask-to-continue on fresh sessions, silent while it is still the seed; auto task log |
 
+Plus **skill packs** (web-motion, video, mobile-motion): `/brain:init` offers them from `recommended-skills.json`, installs on your yes only, and the router adds a craft line for motion and video prompts.
+
 Plus **`search-mcp`** — the `brain-search` MCP server registered in `.mcp.json`. In any
 project with a brain it serves built-in recall: `brain_search` (ranked pages + snippets) and
 `brain_brief` (a cited ≤ ~2k-token pack), BM25 over the compiled layers via
