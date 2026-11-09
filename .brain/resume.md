@@ -24,7 +24,7 @@ Then spec [[ci-signal]] → 0.34.0: drift now files/closes a `bundle-drift` issu
 Reviewed on Fable ([[ci-signal-review]], 2 P1 + 6 P2 fixed). Selftest 612.
 
 ## Next steps
-- [ ] Curator: a `GITHUB_PERSONAL_ACCESS_TOKEN` is set but the github MCP returns HTTP 401 — replace it, or disable the github plugin.
+- [x] New fine-grained `GITHUB_PERSONAL_ACCESS_TOKEN` (user env, expires 2027-02-07) — verified 2026-11-09: API + MCP endpoint accept it. Confirm `/mcp` shows github connected after restart.
 - [ ] Reinstall the plugin at 0.34.0 and restart, so the installed doctor has #21.
 - [ ] A router misfire seen in a real session gets a selftest case before its fix.
 
