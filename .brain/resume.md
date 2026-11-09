@@ -25,14 +25,14 @@ Reviewed on Fable ([[ci-signal-review]], 2 P1 + 6 P2 fixed). Selftest 612.
 Then 0.35.0 (motion & video skill packs) and 0.35.1 (skill-pack security hardening, selftest 715).
 
 2026-11-10 — bookkeeping session: ADR [[pack-install-commands-allowlisted]] filed for 0.35.1,
-first tag + GitHub Release `v0.35.1`, and the `/brain:update` idea parked in [[ideas]]
+and the `/brain:update` idea parked in [[ideas]]
 (brainstorming paused on "do the update vs. only report what's out of date").
 
 ## Next steps
 - [ ] GitHub MCP returned 401 (`AUTH_HEADER_REJECTED`) on 2026-11-10 although the token verified on 2026-11-09 — retry `/mcp`; check `GITHUB_PERSONAL_ACCESS_TOKEN` is in the shell Claude Code starts from.
 - [ ] Reinstall the plugin at 0.35.1 and restart, so the installed doctor has #21.
 - [ ] `/brain:update`: resume brainstorming from [[ideas]], then `/brain:research`.
-- [ ] Tag + release every future version bump (first release was `v0.35.1`).
+- [ ] Tag `v0.35.1` on `8a68542` and create the repo's first GitHub Release from the CHANGELOG 0.35.1 section (blocked by the permission classifier on 2026-11-10 — needs the curator's go-ahead); then tag every future bump.
 - [ ] A router misfire seen in a real session gets a selftest case before its fix.
 
 ## Task log (auto)
