@@ -123,3 +123,6 @@ Spec [[motion-skill-packs]] drafted from [[motion-and-video-skills]] on the cura
 
 ## [2026-11-09] review | motion-skill-packs → 0.35.0 done
 Built test-first by a Sonnet fork (4 commits, selftest 664), reviewed on Fable ([[motion-skill-packs-review]]): 0 P0 / 5 P1 / 12 P2 — video rule false positives, three user-invoked upstream skills, `improve-animations`' own `plans/` folder, a failing gsap install, a repeating offer — all fixed red-first in `95e47f7` (selftest 698). Spec [[motion-skill-packs]] and workstream [[skill-packs]] → done. Next: a `/brain:video` pipeline spec once the video pack is in real use.
+
+## [2026-11-09] build | skill-pack security hardening → 0.35.1
+Fixed the four findings from the automated review of the 0.35 skill packs, test-first: exclusive-create (`wx`, 0600) offer markers in the router, line-wise declined-pack parsing, `validInstall` allowlist + secret scan on manifest steps/fallbacks/notes with render-time skipping, and the restored AC-4 no-npx assertions. Selftest 715, all green; plugin bumped to 0.35.1.

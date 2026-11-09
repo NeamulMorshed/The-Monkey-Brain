@@ -1,5 +1,13 @@
 # Changelog — brain plugin
 
+## 0.35.1 — 2026-11-09 (skill-pack hardening)
+
+Fixes the four findings of the automated security review of 0.35.0. Selftest 715.
+- **Exclusive-create markers** — `trigger-router.js` `firstOffer` and the no-brain init marker create with `{ flag: 'wx', mode: 0o600 }`; EEXIST means already offered; the `existsSync` pre-check is gone.
+- **Line-wise declined parsing** — `declinedPacks` accepts only `- id` / `* id` / bare-id lines and intersects with the manifest's pack ids; prose mentioning a pack no longer declines it.
+- **Manifest install validation** — `validInstall(entry, kind)` allowlists steps (`npx skills add …`), fallbacks (`git clone` of github.com only) and notes, and secret-scans all three; `render()` skips a failing entry and prints a warning.
+- **AC-4 restored** — selftest asserts `new-brain.js` never mentions `recommended-skills|skills add|npx`, and no hook script (except selftest.js) mentions `npx` or `skills add`.
+
 ## 0.35.0 — 2026-11-09 (motion and video skill packs)
 
 Spec `specs/motion-skill-packs.md`. Three external skill sets work under the brain's rules instead of beside them.

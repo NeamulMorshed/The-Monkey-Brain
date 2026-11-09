@@ -106,7 +106,13 @@ function measuredTokens(pack, st, projectRoot) {
 function declinedPacks(projectRoot) {
   try {
     const t = fs.readFileSync(path.join(projectRoot, '.brain', 'memory', 'skill-packs-declined.md'), 'utf8');
-    return new Set((t.match(/[a-z][a-z0-9-]*/g) || []));
+    const known = new Set((loadManifestSafe() || { packs: [] }).packs.map((p) => p.id));
+    const out = new Set();
+    for (const line of t.split(/\r?\n/)) {
+      const m = line.match(/^\s*[-*]?\s*([a-z][a-z0-9-]*)\s*$/);
+      if (m && known.has(m[1])) out.add(m[1]);
+    }
+    return out;
   } catch {
     return new Set();
   }
@@ -117,6 +123,21 @@ function packStatus(pack, installed) {
   const have = (pack.skills || []).filter((s) => installed.has(s));
   const state = have.length === 0 ? 'none' : have.length === pack.skills.length ? 'installed' : 'partial';
   return { state, have };
+}
+
+const SECRET_RE = /(sk-|ghp_|github_pat_|glpat-)/;
+
+/** Whether a manifest install entry is safe to print for the curator to run. kind: step | fallback | note. */
+function validInstall(entry, kind) {
+  if (typeof entry !== 'string' || !entry || SECRET_RE.test(entry)) return false;
+  if (kind === 'step') return /^npx skills add [\w./@'*\s-]+$/.test(entry) && !/&&|[;|`$><]/.test(entry);
+  if (kind === 'fallback') {
+    if (!entry.startsWith('git clone ') || /[;|`$><]/.test(entry) || /&/.test(entry.replace(/&&/g, ''))) return false;
+    const urls = entry.match(/https?:\/\/\S+/g) || [];
+    return urls.length > 0 && urls.every((u) => u.startsWith('https://github.com/'));
+  }
+  if (kind === 'note') return !(entry.match(/`[^`]*`/g) || []).some((s) => /[;|$]/.test(s));
+  return false;
 }
 
 function pad(s, n) {
@@ -146,9 +167,11 @@ function render(manifest, opts) {
       for (const f of p.filing || []) lines.push(`${indent}files: ${f.what} -> ${f.to}`);
       if (p.design_companion) lines.push(`${indent}pairs with: ${p.design_companion}`);
       if (p.licence_note) lines.push(`${indent}licence: ${p.licence_note}`);
-      (p.install_steps || []).forEach((h, i, a) => lines.push(`${indent}install${a.length > 1 ? ` ${i + 1}/${a.length}` : ''}: ${h}`));
-      for (const n of p.install_notes || []) lines.push(`${indent}note: ${n}`);
-      for (const fb of p.install_fallbacks || []) lines.push(`${indent}fallback: ${fb}`);
+      const warn = () => lines.push(`${indent}⚠ skipped an install entry that failed validation`);
+      const steps = p.install_steps || [];
+      steps.forEach((h, i, a) => (validInstall(h, 'step') ? lines.push(`${indent}install${a.length > 1 ? ` ${i + 1}/${a.length}` : ''}: ${h}`) : warn()));
+      for (const n of p.install_notes || []) validInstall(n, 'note') ? lines.push(`${indent}note: ${n}`) : warn();
+      for (const fb of p.install_fallbacks || []) validInstall(fb, 'fallback') ? lines.push(`${indent}fallback: ${fb}`) : warn();
       if ((p.user_invoked || []).length) lines.push(`${indent}user-invoked (curator runs them): ${p.user_invoked.map((n) => '/' + n).join(', ')}`);
     }
   }
@@ -253,4 +276,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { loadManifest, loadManifestSafe, installedSkills, packStatus, modelLoaded, measuredTokens, declinedPacks, render, seedInstincts, MANIFEST };
+module.exports = { loadManifest, loadManifestSafe, installedSkills, packStatus, modelLoaded, measuredTokens, declinedPacks, validInstall, render, seedInstincts, MANIFEST };

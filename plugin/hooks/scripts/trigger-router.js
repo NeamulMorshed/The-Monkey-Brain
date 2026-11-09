@@ -369,8 +369,11 @@ const PACK_MARK = (sid, root, pack) =>
 function firstOffer(sid, root, pack) {
   const mark = PACK_MARK(sid, root, pack);
   if (!mark) return true;
-  if (fs.existsSync(mark)) return false;
-  try { fs.writeFileSync(mark, ''); } catch {}
+  try {
+    fs.writeFileSync(mark, '', { flag: 'wx', mode: 0o600 }); // exclusive create: no exists-then-write race
+  } catch (e) {
+    if (e && e.code === 'EEXIST') return false; // already offered
+  }
   return true;
 }
 
@@ -440,11 +443,14 @@ function brainHint(input, prompt, brain) {
     // lifecycle line and other workflows stay quiet. Without a session id nothing is remembered.
     const sid = String(input.session_id || '').replace(/[^\w-]/g, '');
     const offered = sid ? path.join(os.tmpdir(), 'mb-router-init-' + sid + '-' + crypto.createHash('sha1').update(root).digest('hex').slice(0, 8)) : '';
-    if (offered && fs.existsSync(offered)) {
+    let alreadyOffered = false;
+    if (offered) {
+      try { fs.writeFileSync(offered, '', { flag: 'wx', mode: 0o600 }); } catch (e) { alreadyOffered = !!(e && e.code === 'EEXIST'); }
+    }
+    if (alreadyOffered) {
       if (!rule.dev) return '';
       hint = '🐵 trigger-router: that sounds like ' + rule.what + ' (this project has no .brain/) — ' + next + '.';
     } else {
-      if (offered) { try { fs.writeFileSync(offered, ''); } catch {} }
       hint =
         '🐵 trigger-router: that sounds like ' + rule.what + ', but this project has no .brain/ yet — ' +
         'offer /brain:init first, then continue with ' + next + '.';

