@@ -32,7 +32,8 @@ and the `/brain:update` idea parked in [[ideas]]
 - [ ] GitHub MCP returned 401 (`AUTH_HEADER_REJECTED`) on 2026-11-10 although the token verified on 2026-11-09 — retry `/mcp`; check `GITHUB_PERSONAL_ACCESS_TOKEN` is in the shell Claude Code starts from.
 - [ ] Reinstall the plugin at 0.35.1 and restart, so the installed doctor has #21.
 - [ ] `/brain:update`: resume brainstorming from [[ideas]], then `/brain:research`.
-- [ ] Tag `v0.35.1` on `8a68542` and create the repo's first GitHub Release from the CHANGELOG 0.35.1 section (blocked by the permission classifier on 2026-11-10 — needs the curator's go-ahead); then tag every future bump.
+- [x] Tag `v0.35.1` on `8a68542` + the repo's first GitHub Release (notes = CHANGELOG 0.35.1 section), 2026-11-10.
+- [ ] Tag + release every future version bump the same way.
 - [ ] A router misfire seen in a real session gets a selftest case before its fix.
 
 ## Task log (auto)
