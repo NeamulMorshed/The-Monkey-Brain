@@ -19,7 +19,7 @@ needs; nothing here loads by itself. Section numbers match the manual.
 
 **Daily:** `/brain:digest` (standup; `week` for the weekly review) · `/brain:dump` (file a loose
 note where it belongs) · `/brain:dashboard` (one-page HTML overview) · `/brain:ci` (CI from the
-detected stack) · `/brain:usage` (real token receipts) · `/brain:doctor` (20-check health).
+detected stack) · `/brain:usage` (real token receipts) · `/brain:doctor` (21-check health).
 Idea validation, URL critiques and meeting prep are modes of `/brain:research`,
 `/brain:product-design` and `/brain:brief`. Running loops show at session start; a spec the plan
 gate blocks twice lands in `sessions/review-required.md` for the curator.

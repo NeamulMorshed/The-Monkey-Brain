@@ -1,5 +1,16 @@
 # Changelog — brain plugin
 
+## 0.34.0 — 2026-11-09 (red CI is loud)
+
+Spec `specs/ci-signal.md`. `bundle-drift` sat red for five weekly runs because a failed scheduled
+run notifies nobody, and doctor only checked that CI exists.
+- **Drift files an issue** — `bundle-drift.yml` opens a `bundle-drift` issue with the check output
+  and run link on failure (comments on it while it stays open), and closes it when green again.
+- **Doctor #21 `ci-status`** — the latest completed run of each workflow on the default branch, via
+  `gh run list`; red → warning with `gh run view <id> --log-failed`, so the next session's status
+  line shows it. gh missing, logged out or offline → info, never a warning. Doctor now runs 21 checks.
+- Selftest 605 (18 new, red first).
+
 ## brain-all 0.15.0 — 2026-11-09 (catalog drift)
 
 - **brain-all loads again** — the official catalog dropped `data-agent-kit-starter-pack`, so the

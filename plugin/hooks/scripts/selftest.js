@@ -971,12 +971,12 @@ try {
   console.log('doctor.js (skill /brain:doctor — 15 health checks + health.json surfacing)');
   const DOCTOR = path.join(SKILLS, 'doctor', 'scripts', 'doctor.js');
   let dr = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN], { encoding: 'utf8', timeout: 20000 });
-  check('doctor runs all 20 checks, exit 0 by default', dr.status === 0 && /20-check health/.test(dr.stdout) && /20\. dependency-health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout) && /19\. ci-presence/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
+  check('doctor runs all 21 checks, exit 0 by default', dr.status === 0 && /21-check health/.test(dr.stdout) && /20\. dependency-health/.test(dr.stdout) && /1\. broken-links/.test(dr.stdout) && /15\. schema-version/.test(dr.stdout) && /19\. ci-presence/.test(dr.stdout), `status=${dr.status} ${(dr.stderr || '').slice(0, 120)}`);
   const HEALTHP = path.join(BRAIN, 'sessions', 'health.json');
   check('doctor writes sessions/health.json', fs.existsSync(HEALTHP), 'no health.json');
   let dj = spawnSync(process.execPath, [DOCTOR, '--brain', BRAIN, '--json'], { encoding: 'utf8', timeout: 20000 });
   let hrep = {}; try { hrep = JSON.parse(dj.stdout); } catch {}
-  check('doctor --json reports exactly 20 findings + numeric counts', Array.isArray(hrep.findings) && hrep.findings.length === 20 && typeof hrep.ok === 'number' && typeof hrep.crit === 'number', `findings=${(hrep.findings || []).length}`);
+  check('doctor --json reports exactly 21 findings + numeric counts', Array.isArray(hrep.findings) && hrep.findings.length === 21 && typeof hrep.ok === 'number' && typeof hrep.crit === 'number', `findings=${(hrep.findings || []).length}`);
   check('doctor flags the fixture orphan (check 2)', (hrep.findings || []).some((f) => f.check === 'orphans' && f.level === 'warn' && /orphan-page/.test(f.detail)), JSON.stringify((hrep.findings || []).find((f) => f.check === 'orphans')));
   check('doctor flags a feature+ spec with no test plan (check 13)', (hrep.findings || []).some((f) => f.check === 'specs-without-tests' && f.level === 'warn'), 'no specs-without-tests warn');
   check('doctor reports model-mix from agents.md', typeof hrep.model_mix === 'string' && /sonnet/.test(hrep.model_mix), hrep.model_mix);
@@ -2131,6 +2131,63 @@ try {
   fs.writeFileSync(path.join(PLAIN_E, '.no-terse'), '');
   r = run('brain-status.js', { cwd: PLAIN_E, hook_event_name: 'SessionStart', source: 'startup' });
   check('.no-brain + .no-terse → fully silent', r.status === 0 && r.stdout === '');
+
+  // ---------- v0.34.0 ci-signal (spec ci-signal AC-1…9) ----------
+  console.log('ci-signal (0.34.0) — bundle-drift files an issue · doctor 21 ci-status');
+  const driftYml = fs.readFileSync(path.join(HERE, '..', '..', '..', '.github', 'workflows', 'bundle-drift.yml'), 'utf8');
+  check('AC-1 drift job grants issues: write + contents: read', /permissions:[\s\S]*issues:\s*write/.test(driftYml) && /contents:\s*read/.test(driftYml), driftYml.slice(0, 300));
+  check('AC-1 drift check runs under bash pipefail and keeps its output', /shell:\s*bash/.test(driftYml) && /set -o pipefail|-eo pipefail/.test(driftYml) && /gen-brain-all\.js --check[^\n]*\|\s*tee drift\.txt/.test(driftYml), 'no pipefail/tee');
+  check('AC-2 a failure() step opens a bundle-drift issue, commenting when one is open', /if:\s*failure\(\)/.test(driftYml) && /gh label create bundle-drift/.test(driftYml) && /gh issue list --label bundle-drift --state open/.test(driftYml) && /gh issue comment/.test(driftYml) && /gh issue create[^\n]*--label bundle-drift/.test(driftYml) && /drift\.txt/.test(driftYml) && /run_id|RUN_URL/.test(driftYml), 'failure path incomplete');
+  check('AC-3 a success() step closes an open bundle-drift issue', /if:\s*success\(\)/.test(driftYml) && /gh issue close/.test(driftYml) && /green again/i.test(driftYml), 'success path incomplete');
+
+  const CIS = path.join(ROOT, 'ci-status');
+  fs.mkdirSync(path.join(CIS, '.brain', 'wiki'), { recursive: true });
+  fs.writeFileSync(path.join(CIS, '.brain', 'wiki', 'index.md'), '# Index\n');
+  fs.writeFileSync(path.join(CIS, '.brain', 'wiki', 'log.md'), '# Log\n');
+  const GH_STUB = path.join(ROOT, 'gh-stub.js');
+  const GH_FIX = path.join(ROOT, 'gh-fixture.json');
+  fs.writeFileSync(GH_STUB, [
+    "const fs = require('fs');",
+    'const fx = JSON.parse(fs.readFileSync(process.env.GH_FIXTURE, "utf8"));',
+    'const a = process.argv.slice(2);',
+    'if (fx.exit) { process.stderr.write(fx.stderr || "gh: error"); process.exit(fx.exit); }',
+    "const wf = a[a.indexOf('--workflow') + 1];",
+    'process.stdout.write(JSON.stringify((fx.runs || {})[wf] || []));',
+  ].join('\n'));
+  const ciStatus = (fixture, gh) => {
+    fs.writeFileSync(GH_FIX, JSON.stringify(fixture));
+    const d = spawnSync(process.execPath, [path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), '--brain', path.join(CIS, '.brain'), '--json'], { encoding: 'utf8', timeout: 60000, env: { ...process.env, MONKEY_BRAIN_GH: gh === undefined ? GH_STUB : gh, GH_FIXTURE: GH_FIX } });
+    let o = {}; try { o = JSON.parse(d.stdout); } catch {}
+    return { f: (o.findings || []).find((x) => x.check === 'ci-status') || {}, n: (o.findings || []).length, stdout: d.stdout };
+  };
+  let cs = ciStatus({});
+  check('AC-7 doctor 21: no workflows → info', cs.f.n === 21 && cs.f.level === 'info', JSON.stringify(cs.f));
+  check('AC-5 doctor --json reports 21 findings', cs.n === 21, `findings=${cs.n}`);
+  fs.mkdirSync(path.join(CIS, '.github', 'workflows'), { recursive: true });
+  fs.writeFileSync(path.join(CIS, '.github', 'workflows', 'selftest.yml'), 'name: selftest\n');
+  fs.writeFileSync(path.join(CIS, '.github', 'workflows', 'bundle-drift.yml'), 'name: bundle-drift\n');
+  const run1 = (conclusion, id, day) => ({ conclusion, status: 'completed', databaseId: id, createdAt: `2026-11-0${day}T06:00:00Z`, url: `https://github.com/o/r/actions/runs/${id}` });
+  cs = ciStatus({ runs: { 'selftest.yml': [run1('success', 11, 8)], 'bundle-drift.yml': [run1('success', 12, 9)] } });
+  check('AC-6 doctor 21: all latest runs green → ok, naming the workflows', cs.f.level === 'ok' && /selftest/.test(cs.f.detail) && /bundle-drift/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({ runs: { 'selftest.yml': [run1('success', 11, 8)], 'bundle-drift.yml': [run1('failure', 4263, 9)] } });
+  check('AC-6 doctor 21: a red latest run → warn naming workflow, date, id and the log command', cs.f.level === 'warn' && /bundle-drift/.test(cs.f.detail) && /2026-11-09/.test(cs.f.detail) && /gh run view 4263 --log-failed/.test(cs.f.detail) && !/selftest[^,]*fail/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({ runs: { 'selftest.yml': [run1('timed_out', 21, 8)], 'bundle-drift.yml': [run1('startup_failure', 22, 9)] } });
+  check('AC-6 doctor 21: timed_out and startup_failure count as red', cs.f.level === 'warn' && /21/.test(cs.f.detail) && /22/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({ runs: { 'selftest.yml': [run1('success', 11, 8)] } });
+  check('AC-7 doctor 21: a workflow with no completed run is skipped', cs.f.level === 'ok' && /selftest/.test(cs.f.detail) && !/bundle-drift/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({ exit: 1, stderr: 'To get started with GitHub CLI, please run:  gh auth login' });
+  check('AC-7 doctor 21: gh not logged in / offline → info, never warn', cs.f.level === 'info' && /gh/.test(cs.f.detail), JSON.stringify(cs.f));
+  cs = ciStatus({}, path.join(ROOT, 'no-such-gh.exe'));
+  check('AC-7 doctor 21: gh missing → info, never warn', cs.f.level === 'info', JSON.stringify(cs.f));
+  cs = ciStatus({ runs: { 'bundle-drift.yml': [run1('failure', 4263, 9)] } });
+  const csHealth = libC.readJsonSafe(path.join(CIS, '.brain', 'sessions', 'health.json'), {}) || {};
+  check('AC-8 doctor 21 finding reaches sessions/health.json', (csHealth.findings || []).some((x) => x.check === 'ci-status' && x.level === 'warn'), JSON.stringify(csHealth.findings || []).slice(0, 200));
+  check('AC-8 doctor text shows "21. ci-status"', /21-check health/.test(spawnSync(process.execPath, [path.join(SKILLS, 'doctor', 'scripts', 'doctor.js'), '--brain', path.join(CIS, '.brain')], { encoding: 'utf8', timeout: 60000, env: { ...process.env, MONKEY_BRAIN_GH: GH_STUB, GH_FIXTURE: GH_FIX } }).stdout), 'no 21-check header');
+  const REPO = path.join(HERE, '..', '..', '..');
+  const docs21 = ['README.md', 'plugin/README.md', 'plugin/skills/README.md', 'plugin/skills/doctor/SKILL.md', 'plugin/skills/init/brain-template/reference.md'];
+  const stale20 = docs21.filter((f) => /20-check/.test(fs.readFileSync(path.join(REPO, f), 'utf8')) || !/21-check/.test(fs.readFileSync(path.join(REPO, f), 'utf8')));
+  check('AC-9 docs say 21-check, none say 20-check', stale20.length === 0, stale20.join(', '));
+  check('AC-9 doctor SKILL.md routes a red #21 to gh run view --log-failed', /#21[^\n]*gh run view[^\n]*--log-failed/.test(fs.readFileSync(path.join(SKILLS, 'doctor', 'SKILL.md'), 'utf8')), 'no #21 triage line');
 } finally {
   fs.rmSync(ROOT, { recursive: true, force: true });
   fs.rmSync(GLOBAL_CFG, { recursive: true, force: true });

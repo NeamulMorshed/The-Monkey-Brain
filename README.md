@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.33.3](https://img.shields.io/badge/plugin-v0.33.3-blue)
+![Plugin v0.34.0](https://img.shields.io/badge/plugin-v0.34.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -341,7 +341,7 @@ these are the explicit form. Full detail (model routing, fan-out) lives in
 | `/brain:brief <topic>` | A ≤ ~2k-token cited context pack from built-in search |
 | `/brain:lint` | Mechanical scan (broken links, orphans, frontmatter) + reasoning over contradictions/staleness |
 | `/brain:wrap` | Definition-of-done: verify, sync log + index, commit |
-| `/brain:doctor` | 20-check health report; failures surface at the next session start |
+| `/brain:doctor` | 21-check health report; failures surface at the next session start |
 
 **Development lifecycle**
 
@@ -495,7 +495,7 @@ good novel answers are filed back to `syntheses/` so the knowledge compounds.
 ### 5. Keep it healthy
 
 - **"lint the brain"** (`/brain:lint`) — catch broken links, orphans, and stale claims.
-- **"brain doctor"** (`/brain:doctor`) — 20-check health report; failures surface next session.
+- **"brain doctor"** (`/brain:doctor`) — 21-check health report; failures surface next session.
 - **"wrap up"** (`/brain:wrap`) — end-of-session: verify, log, refresh the index, commit.
 - **Terse output is on by default** — `/brain:terse off` (or "be more verbose") for a session;
   an empty `.no-terse` at the project root or `MONKEY_BRAIN_TERSE=0` turns it off for good.

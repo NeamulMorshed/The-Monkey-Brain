@@ -50,7 +50,7 @@ plugin/
 │   ├── terse/  compress/        #   token discipline (Caveman-inspired)
 │   ├── product-design/          #   domain-expertise pack (data+templates+gate) ✅ Phase 6.5
 │   ├── game/                    #   game pipeline (GDD → prototype → playtest)   ✅ Phase 7
-│   └── doctor/                  #   20-check health monitor (doctor.js)          ✅ Phase 8
+│   └── doctor/                  #   21-check health monitor (doctor.js)          ✅ Phase 8
 ├── agents/                      # brain-librarian, brain-researcher   ✅ Phase 5.5
 └── .mcp.json                    # brain-search (opt-in qmd)           ✅ Phase 5
 ```
@@ -82,7 +82,7 @@ Node script, works from a marketplace install) · `/brain:ingest` (8-step
 compile) · `/brain:query` (index-first + file-back) · `/brain:brief`
 (cited ≤ ~2k-token pack from built-in recall) · `/brain:lint` (mechanical
 scan injected, reasoning follows) · `/brain:wrap` (definition-of-done) ·
-`/brain:doctor` (20-check health monitor, `doctor.js` injected; writes
+`/brain:doctor` (21-check health monitor, `doctor.js` injected; writes
 `sessions/health.json` for hook #1 to surface next session).
 **Develop lifecycle:** `/brain:research` (filed to `wiki/research/`) ·
 `/brain:plan` (numbered ACs + a tier sized by the `graph.js` import-graph blast radius,

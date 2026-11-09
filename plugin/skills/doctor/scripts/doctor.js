@@ -2,7 +2,7 @@
 /**
  * doctor.js — the mechanical layer of /brain:doctor (ROADMAP Phase 8).
  *
- * 20 deterministic health checks over a brain (benchmark-parity + v3 receipts and CI), zero model
+ * 21 deterministic health checks over a brain (benchmark-parity + v3 receipts and CI), zero model
  * tokens. The SKILL.md injects this output via !` ` preprocessing; the model
  * then reasons over the findings (what to fix first, what to file). It also
  * writes sessions/health.json so hook #1 (brain-status) can surface open
@@ -246,6 +246,46 @@ if (pluginOn('security-guidance') && !pythonOk()) depProblems.push('security-gui
 if (pluginOn('github') && !githubToken) depProblems.push('the github plugin\'s MCP needs GITHUB_PERSONAL_ACCESS_TOKEN (environment or a settings "env" entry) — set it, or disable the plugin');
 add(20, 'dependency-health', depProblems.length ? 'warn' : 'ok', depProblems.length ? depProblems.join(' · ') : 'every enabled plugin has the runtime and credentials it needs');
 
+// ---- 21. CI status (the latest completed run of each workflow is green) ----
+// A red *scheduled* run notifies nobody (bundle-drift sat red five weeks), so doctor asks gh.
+// Anything that stops gh answering — missing, logged out, offline — is info, never a warning.
+const RED = new Set(['failure', 'timed_out', 'startup_failure']);
+function gh(ghArgs) {
+  const bin = (process.env.MONKEY_BRAIN_GH || '').trim() || 'gh';
+  const [cmd, pre] = /\.c?js$/i.test(bin) ? [process.execPath, [bin]] : [bin, []];
+  try {
+    const r = spawnSync(cmd, [...pre, ...ghArgs], { cwd: projectRoot, encoding: 'utf8', timeout: 15000, windowsHide: true });
+    if (r.error || r.status !== 0) return { error: String((r.error && r.error.code) || r.stderr || `exit ${r.status}`).trim().split('\n')[0].slice(0, 120) };
+    return { out: r.stdout };
+  } catch (e) { return { error: e.message }; }
+}
+function defaultBranch() {
+  try {
+    const r = spawnSync('git', ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD'], { cwd: projectRoot, encoding: 'utf8', timeout: 5000, windowsHide: true });
+    if (r.status === 0) return String(r.stdout).trim().replace(/^origin\//, '');
+  } catch {}
+  return '';
+}
+if (!workflows.length) add(21, 'ci-status', 'info', 'no workflows in .github/workflows/ — nothing to check');
+else {
+  const branch = defaultBranch();
+  const green = [], red = [];
+  let ghError = '';
+  for (const wf of workflows) {
+    const r = gh(['run', 'list', '--workflow', wf, ...(branch ? ['--branch', branch] : []), '--status', 'completed', '--limit', '1', '--json', 'conclusion,databaseId,createdAt,url']);
+    if (r.error) { ghError = r.error; break; }
+    let run; try { run = (JSON.parse(r.out || '[]') || [])[0]; } catch {}
+    if (!run) continue; // never completed a run yet
+    const name = wf.replace(/\.ya?ml$/i, '');
+    if (RED.has(run.conclusion)) red.push(`${name} ${run.conclusion} ${String(run.createdAt || '').slice(0, 10)} (gh run view ${run.databaseId} --log-failed)`);
+    else green.push(name);
+  }
+  if (ghError) add(21, 'ci-status', 'info', `could not ask gh for CI runs (${ghError}) — install gh and run gh auth login to check CI here`);
+  else if (red.length) add(21, 'ci-status', 'warn', `red on ${branch || 'the latest runs'}: ${red.join(' · ')}${green.length ? ` · green: ${green.join(', ')}` : ''}`);
+  else if (green.length) add(21, 'ci-status', 'ok', `latest runs green${branch ? ` on ${branch}` : ''}: ${green.join(', ')}`);
+  else add(21, 'ci-status', 'info', 'no completed workflow runs yet');
+}
+
 // ---- verdict + report -------------------------------------------------------
 const counts = { ok: 0, info: 0, warn: 0, crit: 0 };
 for (const f of findings) counts[f.level]++;
@@ -263,7 +303,7 @@ if (asJson) {
   process.exit(strict && counts.warn + counts.crit > 0 ? 1 : 0);
 }
 
-const out = [`🩺 brain doctor — 20-check health of ${brain}`];
+const out = [`🩺 brain doctor — 21-check health of ${brain}`];
 for (const f of findings.sort((a, b) => a.n - b.n)) out.push(`  ${SYM[f.level]} ${f.n}. ${f.check}: ${f.detail}`);
 out.push(`  · model-mix (agents.md): ${mixStr}`);
 const verdict = counts.crit ? `${counts.crit} CRITICAL · ${counts.warn} warning(s) — fix criticals first (they gate wrap)` : counts.warn ? `${counts.warn} warning(s) · ${counts.ok} ok — triage below` : `all clear (${counts.ok} ok, ${counts.info} info)`;
