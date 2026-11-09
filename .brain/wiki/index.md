@@ -6,7 +6,7 @@ tags: [index, navigation, moc]
 created: 2026-09-15
 updated: 2026-11-09
 source_count: 4
-page_count: 36
+page_count: 37
 ---
 
 # 🐵 The Monkey Brain (engine) — Index
@@ -76,3 +76,4 @@ How the engine works, one subsystem per page.
 - [[develop-lifecycle-dogfood]] — does research → plan → build → review → loop → wrap work end to end on this repo; 16 cited findings, 4 fixes recommended (2026-09-15)
 - [[research-first-entry]] — why generic dev intent enters at plan, not research; 13 findings, recommends a research-first router default with an explicit curator skip (2026-09-15)
 - [[brain-health-audit]] — full audit of standard, hooks, skills, MCP, dependency plugins, token cost and model routing; 2 P0 / 8 P1 / 15 P2, three specs recommended (2026-09-15)
+- [[motion-and-video-skills]] — GSAP/Framer scroll skill, Remotion (13 public skills) and Emil Kowalski's 18 skills mapped onto the brain: offer as capability packs, route and file their outputs (2026-11-09)
