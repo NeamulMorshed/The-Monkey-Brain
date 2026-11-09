@@ -1,7 +1,7 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-09-16 23:25
+updated: 2026-11-09
 ---
 
 ## Where we left off
@@ -17,12 +17,17 @@ found by a 128-probe independent test of the installed plugin. 0.33.3: CI had be
 pushes (example-brain slug collisions); fixed, `/brain:wrap` now checks CI; run 35127534491 green on
 all 6 jobs, selftest 590.
 
+2026-11-09 — `bundle-drift` had been red since 2026-10-12 unnoticed: the catalog dropped
+`data-agent-kit-starter-pack` (bundle unloadable) and added 22. `brain-all` regenerated to 315/315, 0.15.0.
+
 ## Next steps
-- [ ] Curator: set `GITHUB_PERSONAL_ACCESS_TOKEN` or disable the github plugin — doctor #20 warns until then.
-- [ ] Restart Claude Code after the reinstall and reinstall 0.33.3 so the hooks run the current version (the old session ran 0.29.1 hooks).
-- [ ] Watch the weekly `bundle-drift` job; a router misfire seen in a real session gets a selftest case before its fix.
+- [ ] Curator: a `GITHUB_PERSONAL_ACCESS_TOKEN` is set but the github MCP returns HTTP 401 — replace it, or disable the github plugin.
+- [x] Reinstall/restart — this session runs the 0.33.3 cache.
+- [ ] Check `gh run list --workflow bundle-drift.yml` at session start (a red scheduled run went unseen five weeks); a router misfire seen in a real session gets a selftest case before its fix.
 
 ## Task log (auto)
 - [2026-09-15 11:17] ■ session ended (other)
 - [2026-09-15 22:33] ■ session ended (clear)
 - [2026-09-16 07:54] ■ session ended (clear)
+- [2026-09-16 23:34] ■ session ended (prompt_input_exit)
+- [2026-09-16 23:45] ■ session ended (other)

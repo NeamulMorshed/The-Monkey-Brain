@@ -1,5 +1,11 @@
 # Changelog — brain plugin
 
+## brain-all 0.15.0 — 2026-11-09 (catalog drift)
+
+- **brain-all loads again** — the official catalog dropped `data-agent-kit-starter-pack`, so the
+  bundle was unloadable (dependency-unsatisfied); 22 plugins were added. Regenerated to 315/315
+  from the live catalog. The weekly `bundle-drift` job had flagged it red since 2026-10-12.
+
 ## 0.33.3 — 2026-09-16 (CI green is part of done)
 
 - **/brain:wrap checks CI** — it runs the repo workflow `run:` steps locally and, after a push,

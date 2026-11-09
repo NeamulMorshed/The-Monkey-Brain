@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "brain-all",
   "displayName": "The Monkey Brain — every official plugin",
-  "version": "0.14.1",
+  "version": "0.15.0",
   "description": "Opt-in bundle: one install pulls in brain plus every plugin in Anthropic's official marketplace (except the output styles that contradict terse mode). Heavy by design — each enabled plugin adds context every turn; service connectors still need your own login, LSP plugins their language binaries.",
   "author": {
     "name": "NeamulMorshed",
@@ -76,6 +76,10 @@
     },
     {
       "name": "amazon-location-service",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "amazon-selling-partner",
       "marketplace": "claude-plugins-official"
     },
     {
@@ -239,7 +243,19 @@
       "marketplace": "claude-plugins-official"
     },
     {
+      "name": "champion-kit",
+      "marketplace": "claude-plugins-official"
+    },
+    {
       "name": "chrome-devtools-mcp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "chronograph-gp",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "chronograph-lp",
       "marketplace": "claude-plugins-official"
     },
     {
@@ -268,6 +284,10 @@
     },
     {
       "name": "claude-security",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "clay",
       "marketplace": "claude-plugins-official"
     },
     {
@@ -367,7 +387,7 @@
       "marketplace": "claude-plugins-official"
     },
     {
-      "name": "data-agent-kit-starter-pack",
+      "name": "data-agent-kit",
       "marketplace": "claude-plugins-official"
     },
     {
@@ -515,6 +535,10 @@
       "marketplace": "claude-plugins-official"
     },
     {
+      "name": "govtribe",
+      "marketplace": "claude-plugins-official"
+    },
+    {
       "name": "grafana-assistant",
       "marketplace": "claude-plugins-official"
     },
@@ -571,7 +595,19 @@
       "marketplace": "claude-plugins-official"
     },
     {
+      "name": "incident-io",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "informatica-for-claude-platform",
+      "marketplace": "claude-plugins-official"
+    },
+    {
       "name": "intercom",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "intuit-quickbooks",
       "marketplace": "claude-plugins-official"
     },
     {
@@ -603,6 +639,10 @@
       "marketplace": "claude-plugins-official"
     },
     {
+      "name": "leadfeeder",
+      "marketplace": "claude-plugins-official"
+    },
+    {
       "name": "learn-with-coursera",
       "marketplace": "claude-plugins-official"
     },
@@ -612,6 +652,10 @@
     },
     {
       "name": "linear",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "linq-alpha",
       "marketplace": "claude-plugins-official"
     },
     {
@@ -656,6 +700,10 @@
     },
     {
       "name": "math-olympiad",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "math-proof",
       "marketplace": "claude-plugins-official"
     },
     {
@@ -788,6 +836,18 @@
     },
     {
       "name": "paypal",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pendo-analytics",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pendo-guides",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "pendo-orchestrate",
       "marketplace": "claude-plugins-official"
     },
     {
@@ -999,6 +1059,14 @@
       "marketplace": "claude-plugins-official"
     },
     {
+      "name": "setup-agent-analytics",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "setup-mcp-agent-analytics",
+      "marketplace": "claude-plugins-official"
+    },
+    {
       "name": "shippo",
       "marketplace": "claude-plugins-official"
     },
@@ -1135,6 +1203,10 @@
       "marketplace": "claude-plugins-official"
     },
     {
+      "name": "vanguard-advisor-tools",
+      "marketplace": "claude-plugins-official"
+    },
+    {
       "name": "vanta",
       "marketplace": "claude-plugins-official"
     },
@@ -1159,11 +1231,19 @@
       "marketplace": "claude-plugins-official"
     },
     {
+      "name": "wingspan",
+      "marketplace": "claude-plugins-official"
+    },
+    {
       "name": "wix",
       "marketplace": "claude-plugins-official"
     },
     {
       "name": "workos",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "xcode",
       "marketplace": "claude-plugins-official"
     },
     {
@@ -1176,6 +1256,10 @@
     },
     {
       "name": "zilliz",
+      "marketplace": "claude-plugins-official"
+    },
+    {
+      "name": "zocks-advisor",
       "marketplace": "claude-plugins-official"
     },
     {
