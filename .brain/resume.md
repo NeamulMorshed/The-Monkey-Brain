@@ -15,9 +15,7 @@ released as `v0.36.0` (2026-11-24); **`--apply` deferred by the curator, never r
 - [x] Installed plugin is 0.35.1; doctor runs #21 (2026-11-23).
 - [x] `/brain:update` built + reviewed, 0.36.0 on main, CI green (2026-11-24).
 - [x] Tag `v0.36.0` + GitHub Release; live `--check` clean — plugin 0.35.1 → 0.36.0, 7 brains, 0 skipped, 11 dead registry folders (2026-11-24).
-- [ ] Run `node plugin/hooks/scripts/update.js --apply` — curator deferred 2026-11-24; ask before running.
-- [ ] Python: `py` is 3.14.7 but `python`/`python3` hit the MS Store alias — security-guidance (needs 3.10+) may silently fail; disable App execution aliases or add the `py -0p` dir to PATH (doctor #20).
-- [ ] Curator: accept or reject ADR [[update-skips-only-rewritten-files]] (proposed; narrows "skip any uncommitted .brain/").
+- [ ] Run `node plugin/hooks/scripts/update.js --apply` — curator deferred 2026-11-24; ask before running.- [ ] Curator: accept or reject ADR [[update-skips-only-rewritten-files]] (proposed; narrows "skip any uncommitted .brain/").
 - [ ] Cosmetic P2: `schema 2.1 → 2.1` line when only the plugin moved — say "templates refresh".
 - [x] Tag `v0.35.1` on `8a68542` + the repo's first GitHub Release (notes = CHANGELOG 0.35.1 section), 2026-11-10.
 - [ ] Tag + release every future version bump the same way.
