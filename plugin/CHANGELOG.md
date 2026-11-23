@@ -28,6 +28,12 @@ run notifies nobody, and doctor only checked that CI exists.
   line shows it. gh missing, logged out or offline → info, never a warning. Doctor now runs 21 checks.
 - Review on another model family (2 P1, 6 P2) fixed in the same release: a 404 workflow no longer hides reds, the default branch comes from `gh repo view` when `origin/HEAD` is unset (never every branch), cancelled/skipped runs are looked past, issues track the default branch only, one drift run at a time, a fetch failure gets its own title. Selftest 612, red first.
 
+## brain-all 0.15.1 — 2026-11-23 (catalog drift)
+
+- **brain-all loads again** — the official catalog dropped `airwallex-dev` and `sap-fiori-mcp-server`
+  (bundle unloadable) and added `sap-ux-fiori-tools` and `theme-examples`. Regenerated to 315/315
+  from the live catalog; `bundle-drift` had been red since 2026-11-16.
+
 ## brain-all 0.15.0 — 2026-11-09 (catalog drift)
 
 - **brain-all loads again** — the official catalog dropped `data-agent-kit-starter-pack`, so the

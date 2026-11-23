@@ -1,7 +1,7 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-11-09 23:59
+updated: 2026-11-23 12:00
 ---
 
 ## Where we left off
@@ -28,9 +28,11 @@ Then 0.35.0 (motion & video skill packs) and 0.35.1 (skill-pack security hardeni
 and the `/brain:update` idea parked in [[ideas]]
 (brainstorming paused on "do the update vs. only report what's out of date").
 
+2026-11-23 — `bundle-drift` red again (catalog dropped 2, added 2); `brain-all` regenerated, 0.15.1. Doctor #21 caught it at session start, as designed.
+
 ## Next steps
 - [ ] GitHub MCP returned 401 (`AUTH_HEADER_REJECTED`) on 2026-11-10 although the token verified on 2026-11-09 — retry `/mcp`; check `GITHUB_PERSONAL_ACCESS_TOKEN` is in the shell Claude Code starts from.
-- [ ] Reinstall the plugin at 0.35.1 and restart, so the installed doctor has #21.
+- [x] Installed plugin is 0.35.1; doctor runs #21 (2026-11-23).
 - [ ] `/brain:update`: resume brainstorming from [[ideas]], then `/brain:research`.
 - [x] Tag `v0.35.1` on `8a68542` + the repo's first GitHub Release (notes = CHANGELOG 0.35.1 section), 2026-11-10.
 - [ ] Tag + release every future version bump the same way.
@@ -43,6 +45,7 @@ and the `/brain:update` idea parked in [[ideas]]
 - [2026-09-16 23:34] ■ session ended (prompt_input_exit)
 - [2026-09-16 23:45] ■ session ended (other)
 - [2026-11-09 23:59] ■ session ended (clear)
+- [2026-11-10 00:25] ■ session ended (other)
 
 ## Open — security hardening for 0.35.x (from the automated review, 2026-11-09)
 - [x] `trigger-router.js` `firstOffer`: create the marker with `{ flag: 'wx', mode: 0o600 }`, treat EEXIST as offered, drop the `existsSync` pre-check.

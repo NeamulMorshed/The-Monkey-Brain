@@ -129,3 +129,6 @@ Fixed the four findings from the automated review of the 0.35 skill packs, test-
 
 ## [2026-11-10] session | ADR for 0.35.1, first release, /brain:update idea
 Filed ADR [[pack-install-commands-allowlisted]] (the why behind 0.35.1's `validInstall` allowlist, line-wise declines and exclusive-create markers) and indexed the missing [[skill-packs-offered-not-vendored]]. Created [[ideas]] with the `/brain:update` idea (one command for marketplace users to update the plugin and refresh `.brain/`); brainstorming paused on whether it performs the update or only reports. Tag + first GitHub Release for `v0.35.1` first blocked by the permission classifier, then done on the curator's go-ahead: tag on `8a68542`, release notes from `plugin/CHANGELOG.md`.
+
+## [2026-11-23] session | bundle-drift red again → brain-all 0.15.1
+Doctor #21 flagged `bundle-drift` red since 2026-11-16: the catalog dropped `airwallex-dev` and `sap-fiori-mcp-server` and added `sap-ux-fiori-tools` and `theme-examples`. Regenerated `brain-all` to 315/315 from the live catalog, bumped to 0.15.1 (both manifests + CHANGELOG). The red `selftest` run 42671904007 had all 4 recorded jobs green (the Windows jobs never ran) and cannot be retried; this push re-runs it. Selftest + example lint green locally.
