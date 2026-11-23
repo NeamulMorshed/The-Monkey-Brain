@@ -1,42 +1,22 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-11-24 12:00
+updated: 2026-11-24 13:30
 ---
 
 ## Where we left off
-2026-09-16 — the brain health audit ([[brain-health-audit]]) is fully acted on, one spec at a time on
-the curator's "do all of these on your own". Four specs, each built test-first and closed after an
-independent review on another model family: brain-correctness (0.30.0), token-diet (0.31.0),
-engine-knowledge (0.32.0), router-and-drift (0.33.0; review fixes in `6ce0203`).
-Workstream `brain-hardening` → done. `brain-all` is 0.14.1 (294/294) and a weekly `bundle-drift`
-CI job watches the catalog. 0.33.1: scaffolded manuals are always LF (a Windows clone made them
-CRLF, over the 10 KB budget) — caught by the installed cache's selftest. 0.33.2: design phrasings
-("design the onboarding user flow", "redesign the checkout ux") reach `/brain:product-design`,
-found by a 128-probe independent test of the installed plugin. 0.33.3: CI had been red for five
-pushes (example-brain slug collisions); fixed, `/brain:wrap` now checks CI; run 35127534491 green on
-all 6 jobs, selftest 590.
-
-2026-11-09 — `bundle-drift` had been red since 2026-10-12 unnoticed: the catalog dropped
-`data-agent-kit-starter-pack` (bundle unloadable) and added 22. `brain-all` regenerated to 315/315, 0.15.0.
-Then spec [[ci-signal]] → 0.34.0: drift now files/closes a `bundle-drift` issue, and doctor #21
-`ci-status` warns on any red workflow on the default branch (so session-start status shows it).
-Reviewed on Fable ([[ci-signal-review]], 2 P1 + 6 P2 fixed). Selftest 612.
-Then 0.35.0 (motion & video skill packs) and 0.35.1 (skill-pack security hardening, selftest 715).
-
-2026-11-10 — bookkeeping session: ADR [[pack-install-commands-allowlisted]] filed for 0.35.1,
-and the `/brain:update` idea parked in [[ideas]]
-(brainstorming paused on "do the update vs. only report what's out of date").
-
-2026-11-23 — `bundle-drift` red again (catalog dropped 2, added 2); `brain-all` regenerated, 0.15.1. Doctor #21 caught it at session start, as designed. Released as `brain-all-v0.15.1` (not Latest).
-
-2026-11-24 — `/brain:update` brainstormed and specced: [[brain-update-command]] research, spec [[brain-update]]
-(feature, 9 ACs, 0.36.0) — do the whole job, every registered brain, skip dirty `.brain/`.
+2026-11-24 — `/brain:update` (spec [[brain-update]]) is built, reviewed on Opus ([[brain-update-review]],
+2 P1 + 1 P2 fixed) and closed; 0.36.0 is on main (`7369b40`), CI green on all 6 jobs, selftest 726 —
+**not yet tagged or released, and `--apply` has never run live.** Earlier this session: `brain-all`
+0.15.1 after catalog drift (released `brain-all-v0.15.1`). History: [[log]].
 
 ## Next steps
 - [x] GitHub MCP authenticates again (`get_me` OK, 2026-11-23).
 - [x] Installed plugin is 0.35.1; doctor runs #21 (2026-11-23).
-- [ ] `/brain:build brain-update` (AC-8 router case red first), then `/brain:review` on another family, release 0.36.0.
+- [x] `/brain:update` built + reviewed, 0.36.0 on main, CI green (2026-11-24).
+- [ ] Tag `v0.36.0` + GitHub Release (notes = CHANGELOG 0.36.0), then run `/brain:update` live (`--check`, then `--apply` on the curator's yes) — needs the curator's go-ahead.
+- [ ] Curator: accept or reject ADR [[update-skips-only-rewritten-files]] (proposed; narrows "skip any uncommitted .brain/").
+- [ ] Cosmetic P2: `schema 2.1 → 2.1` line when only the plugin moved — say "templates refresh".
 - [x] Tag `v0.35.1` on `8a68542` + the repo's first GitHub Release (notes = CHANGELOG 0.35.1 section), 2026-11-10.
 - [ ] Tag + release every future version bump the same way.
 - [ ] A router misfire seen in a real session gets a selftest case before its fix.
