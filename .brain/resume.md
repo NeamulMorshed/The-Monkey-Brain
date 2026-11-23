@@ -1,7 +1,7 @@
 ---
 title: "Resume — The Monkey Brain (engine)"
 type: resume
-updated: 2026-11-23 12:00
+updated: 2026-11-24 12:00
 ---
 
 ## Where we left off
@@ -28,12 +28,15 @@ Then 0.35.0 (motion & video skill packs) and 0.35.1 (skill-pack security hardeni
 and the `/brain:update` idea parked in [[ideas]]
 (brainstorming paused on "do the update vs. only report what's out of date").
 
-2026-11-23 — `bundle-drift` red again (catalog dropped 2, added 2); `brain-all` regenerated, 0.15.1. Doctor #21 caught it at session start, as designed.
+2026-11-23 — `bundle-drift` red again (catalog dropped 2, added 2); `brain-all` regenerated, 0.15.1. Doctor #21 caught it at session start, as designed. Released as `brain-all-v0.15.1` (not Latest).
+
+2026-11-24 — `/brain:update` brainstormed and specced: [[brain-update-command]] research, spec [[brain-update]]
+(feature, 9 ACs, 0.36.0) — do the whole job, every registered brain, skip dirty `.brain/`.
 
 ## Next steps
-- [ ] GitHub MCP returned 401 (`AUTH_HEADER_REJECTED`) on 2026-11-10 although the token verified on 2026-11-09 — retry `/mcp`; check `GITHUB_PERSONAL_ACCESS_TOKEN` is in the shell Claude Code starts from.
+- [x] GitHub MCP authenticates again (`get_me` OK, 2026-11-23).
 - [x] Installed plugin is 0.35.1; doctor runs #21 (2026-11-23).
-- [ ] `/brain:update`: resume brainstorming from [[ideas]], then `/brain:research`.
+- [ ] `/brain:build brain-update` (AC-8 router case red first), then `/brain:review` on another family, release 0.36.0.
 - [x] Tag `v0.35.1` on `8a68542` + the repo's first GitHub Release (notes = CHANGELOG 0.35.1 section), 2026-11-10.
 - [ ] Tag + release every future version bump the same way.
 - [ ] A router misfire seen in a real session gets a selftest case before its fix.

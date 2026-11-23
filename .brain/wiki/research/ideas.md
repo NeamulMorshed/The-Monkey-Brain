@@ -4,9 +4,9 @@ type: research
 status: stub
 tags: [ideas, backlog]
 created: 2026-11-10
-updated: 2026-11-10
+updated: 2026-11-24
 sources: []
-related: ["[[index]]"]
+related: ["[[index]]", "[[brain-update-command]]"]
 aliases: []
 ---
 
@@ -24,3 +24,5 @@ Loose ideas filed by `/brain:dump`; each one goes through `/brain:research` befo
   `/plugin` commands are built in; `claude plugin …` CLI behaviour), how to compare the installed
   version with the latest on GitHub, and doing this across every brain on the machine
   (`/brain:home` already lists them).
+  **2026-11-24:** researched in [[brain-update-command]]; curator chose "do the whole job" across all
+  brains; specced as [[brain-update]].
