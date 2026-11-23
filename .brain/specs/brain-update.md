@@ -1,15 +1,16 @@
 ---
 title: "Spec — /brain:update"
 type: spec
-status: draft
+status: done
 tier: feature
-phase: review
+phase: done
+audit_score: "done — 2 P1 + 1 P2 fixed in review, 1 cosmetic P2 open"
 plan_approved: false
 tdd: true
 scope: [plugin/hooks/scripts/update.js, plugin/hooks/scripts/update.test.js, plugin/skills/update/**, plugin/hooks/scripts/trigger-router.js, plugin/hooks/scripts/selftest.js]
 created: 2026-11-24
 updated: 2026-11-24
-related: ["[[brain-update-command]]", "[[ideas]]", "[[brain-update-workstream]]"]
+related: ["[[brain-update-command]]", "[[brain-update-review]]", "[[ideas]]", "[[brain-update-workstream]]"]
 ---
 
 # /brain:update — spec
@@ -35,9 +36,12 @@ and a new plugin runs over an old brain, or the reverse.
   `registry.list()` with its instance schema; it prints one plan:
   `plugin <installed> → <latest>` (or `plugin <v> is current`), the brains to refresh, and each skipped
   brain with its reason. It changes nothing.
-- **AC-2** ✅ — A brain whose project has uncommitted changes under `.brain/` (`git status --porcelain
-  .brain`) is skipped with reason `uncommitted .brain/ changes`; a project that isn't a git repo is not
-  skipped for that; a registered root that no longer exists is skipped with `missing`.
+- **AC-2** ✅ — A brain with uncommitted changes to the files the refresh rewrites (`git status
+  --porcelain -- .brain/CLAUDE.md .brain/reference.md .brain/templates`) is skipped with reason
+  `uncommitted changes to CLAUDE.md, reference.md or templates/`; hook-written `sessions/` and wiki work
+  never block it; a project that isn't a git repo is not skipped for that; registered roots that no
+  longer exist are counted in one line and pruned from the registry on `--apply`. *(Amended in review
+  2026-11-24: the first wording, any change under `.brain/`, skipped every active brain.)*
 - **AC-3** ✅ — Nothing behind (plugin current, every brain's schema equals the latest engine schema) →
   the plan says `everything is up to date` and `--apply` exits 0 without running any command.
 - **AC-4** ✅ — `update.js --apply` runs the plugin update (`claude plugin update brain@monkey-brain`) only

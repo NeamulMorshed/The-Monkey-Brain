@@ -16,7 +16,8 @@ This does both. It needs no `.brain/` in the current project.
    `node "${CLAUDE_SKILL_DIR}/../../hooks/scripts/update.js" --check`
    It refreshes the marketplace clone, then prints one plan: `plugin <installed> → <latest>` (or
    `plugin <v> is current`), the brains it would refresh, and every skipped brain with its reason
-   (`uncommitted .brain/ changes`, `missing`).
+   (uncommitted edits to its `CLAUDE.md`, `reference.md` or `templates/`, the files the refresh
+   rewrites), plus a count of registered folders that no longer exist (pruned on apply).
 2. **Show the plan** as printed. If it says `everything is up to date`, say so and stop.
    If the check aborted (no `claude` on PATH, offline), report the reason: nothing was changed.
 3. **Ask one yes/no:** "Apply this plan?" Mention any skipped brain with uncommitted work and

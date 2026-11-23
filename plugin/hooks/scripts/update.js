@@ -24,6 +24,9 @@ const { spawnSync } = require('child_process');
 const PLUGIN_ID = 'brain@monkey-brain';
 const MARKETPLACE = 'monkey-brain';
 const WIN = process.platform === 'win32';
+/** The files `new-brain.js --update` overwrites; uncommitted edits here would be lost. */
+const OWNED = ['.brain/CLAUDE.md', '.brain/reference.md', '.brain/templates'];
+const DIRTY = 'uncommitted changes to CLAUDE.md, reference.md or templates/';
 
 /** Default runner: never throws; only `claude` (possibly a .cmd shim on Windows) uses a shell. */
 function defaultRun(cmd, args) {
@@ -99,20 +102,33 @@ function plan({ run, configDir }) {
   try { reg = JSON.parse(fs.readFileSync(path.join(configDir, 'monkey-brain', 'projects.json'), 'utf8')) || {}; } catch {}
   const refresh = [];
   const skipped = [];
-  for (const v of Object.values(reg)) {
+  const missing = [];
+  for (const [key, v] of Object.entries(reg)) {
     if (!v || !v.root) continue;
     const name = v.name || path.basename(v.root);
-    if (!fs.existsSync(path.join(v.root, '.brain', 'CLAUDE.md'))) { skipped.push({ name, root: v.root, reason: 'missing' }); continue; }
+    if (!fs.existsSync(path.join(v.root, '.brain', 'CLAUDE.md'))) { missing.push(key); continue; }
     const g = run('git', ['-C', v.root, 'rev-parse', '--is-inside-work-tree']);
     if (ok(g) && g.stdout.trim() === 'true') {
-      const st = run('git', ['-C', v.root, 'status', '--porcelain', '--', '.brain']);
-      if (ok(st) && st.stdout.trim()) { skipped.push({ name, root: v.root, reason: 'uncommitted .brain/ changes' }); continue; }
+      // Only what the refresh rewrites counts: hook-written sessions/ and wiki work are always dirty in an active brain.
+      const st = run('git', ['-C', v.root, 'status', '--porcelain', '--', ...OWNED]);
+      if (ok(st) && st.stdout.trim()) { skipped.push({ name, root: v.root, reason: DIRTY }); continue; }
     }
     const schema = fm(path.join(v.root, '.brain', 'CLAUDE.md'), 'engine_version') || '?';
     // A newer plugin may change templates without a schema bump, so every clean brain is refreshed when the plugin is behind.
     if (behind || schema !== latestSchema) refresh.push({ name, root: v.root, schema });
   }
-  return { installed, latest, behind, latestSchema, refresh, skipped };
+  return { installed, latest, behind, latestSchema, refresh, skipped, missing };
+}
+
+/** Drop registry entries whose folder (or brain) is gone — what registry.list() does, under the injected config dir. */
+function pruneMissing(configDir, keys) {
+  if (!keys.length) return;
+  const f = path.join(configDir, 'monkey-brain', 'projects.json');
+  try {
+    const reg = JSON.parse(fs.readFileSync(f, 'utf8')) || {};
+    for (const k of keys) delete reg[k];
+    fs.writeFileSync(f, JSON.stringify(reg, null, 2) + '\n', 'utf8');
+  } catch {}
 }
 
 function render(p) {
@@ -125,6 +141,7 @@ function render(p) {
     L.push(`skipped (${p.skipped.length}):`);
     for (const b of p.skipped) L.push(`  - ${b.name} (${b.root}): ${b.reason}`);
   }
+  if (p.missing.length) L.push(`${p.missing.length} registered folder(s) no longer exist — dropped from the registry on --apply`);
   if (!p.behind && !p.refresh.length) L.push('everything is up to date');
   return L;
 }
@@ -155,6 +172,7 @@ function main(opts) {
     return 1;
   }
   for (const l of render(p)) out(l);
+  if (apply) pruneMissing(configDir, p.missing);
   if (!apply || (!p.behind && !p.refresh.length)) return 0;
 
   let installPath = p.installed.installPath;

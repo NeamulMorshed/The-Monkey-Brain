@@ -100,7 +100,7 @@ const RULES = [
     what: 'note capture',
   },
   {
-    re: /\bupdate (?:(?:the|my|our|all)\s+){0,2}(?:monkey[- ]?)?brains?\b(?!\s+(?:with|about|on|to|from|for)\b)|\bupdate (?:the )?(?:monkey[- ]?brain )?plugin\b/i,
+    re: /\bupdate (?:(?:the|my|our|all)\s+){0,2}(?:monkey[- ]?)?brains?\b(?!['’]s\b|\s+(?:with|about|on|to|from|for)\b)|\bupdate (?:the )?(?:monkey[- ]?brain )?plugin\b/i,
     question: true, // "how do I update the brain?" asks; it does not order
     skill: 'update',
     needsBrain: false,

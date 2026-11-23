@@ -23,12 +23,16 @@ function world(name, { installed, latest, schema }) {
   w(path.join(mp, '.claude-plugin', 'marketplace.json'), JSON.stringify({ plugins: [{ name: 'brain', version: latest }] }));
   w(path.join(mp, 'plugin', 'skills', 'init', 'brain-template', 'CLAUDE.md'), manual(schema.latest));
   const reg = {};
-  const addBrain = (id, { gitInit, commit, dirty, schemaV }) => {
+  const addBrain = (id, { gitInit, commit, dirty, hookDirty, schemaV }) => {
     const root = path.join(dir, id);
     w(path.join(root, '.brain', 'CLAUDE.md'), manual(schemaV || schema.brains));
     w(path.join(root, '.brain', 'wiki', 'log.md'), '# log\n');
+    w(path.join(root, '.brain', 'sessions', 'agents.md'), '# agents\n');
     if (gitInit) { git(root, 'init', '-q'); if (commit) { git(root, 'add', '-A'); git(root, 'commit', '-qm', 'x'); } }
-    if (dirty) w(path.join(root, '.brain', 'wiki', 'new.md'), 'dirty\n');
+    // review: only uncommitted edits to what the refresh rewrites (CLAUDE.md, reference.md, templates/) block it
+    if (dirty) w(path.join(root, '.brain', 'CLAUDE.md'), manual(schemaV || schema.brains) + 'local edit\n');
+    // hook-written sessions/ and wiki work are always dirty in an active brain; they must not block
+    if (hookDirty) { w(path.join(root, '.brain', 'sessions', 'agents.md'), '# agents\n- x\n'); w(path.join(root, '.brain', 'wiki', 'new.md'), 'wip\n'); }
     reg[id] = { root, name: id };
     return root;
   };
@@ -71,6 +75,7 @@ try {
   const clean = A.addBrain('clean', { gitInit: true, commit: true });
   const dirty = A.addBrain('dirty', { gitInit: true, commit: true, dirty: true });
   const nogit = A.addBrain('nogit', {});
+  A.addBrain('busy', { gitInit: true, commit: true, hookDirty: true });
   A.save();
   // a registered root that no longer exists
   const regFile = path.join(A.cfg, 'monkey-brain', 'projects.json');
@@ -82,8 +87,10 @@ try {
   assert.strictEqual(r.code, 0);
   assert.ok(/plugin 0\.35\.1 → 0\.36\.0/.test(r.text), 'plan names the plugin move: ' + r.text);
   assert.ok(/clean/.test(r.text) && /nogit/.test(r.text), 'clean + non-git brains are refreshed');
-  assert.ok(/dirty[^\n]*uncommitted \.brain\/ changes/.test(r.text), 'dirty brain skipped with reason');
-  assert.ok(/gone[^\n]*missing/.test(r.text), 'missing root skipped');
+  assert.ok(/dirty[^\n]*uncommitted changes to CLAUDE\.md, reference\.md or templates\//.test(r.text), 'dirty brain skipped with reason: ' + r.text);
+  assert.ok(/busy/.test(r.text) && !/busy[^\n]*uncommitted/.test(r.text), 'hook-written sessions/ + wiki work do not block a refresh: ' + r.text);
+  assert.ok(/1 registered folder\(s\) no longer exist/.test(r.text) && !/gone/.test(r.text), 'missing roots collapse into one count line: ' + r.text);
+  assert.ok(JSON.parse(fs.readFileSync(regFile, 'utf8')).gone, '--check leaves the registry alone');
   assert.ok(!r.calls.some((c) => /plugin update/.test(c) || /new-brain/.test(c)), '--check changes nothing');
   assert.ok(r.calls.some((c) => /marketplace update monkey-brain/.test(c)), 'marketplace refreshed');
   assert.strictEqual(fs.readFileSync(path.join(clean, '.brain', 'wiki', 'log.md'), 'utf8'), '# log\n');
@@ -93,7 +100,9 @@ try {
   const upd = r.calls.findIndex((c) => /plugin update brain@monkey-brain/.test(c));
   const nb = r.calls.filter((c) => c.includes(path.join(A.dir, 'new', 'skills', 'init', 'scripts', 'new-brain.js')) && /--update --project/.test(c));
   assert.ok(upd >= 0, 'plugin updated');
-  assert.strictEqual(nb.length, 2, 'two brains refreshed with the NEW version\'s new-brain.js: ' + r.calls.join('\n'));
+  const regAfter = JSON.parse(fs.readFileSync(regFile, 'utf8'));
+  assert.ok(!regAfter.gone && regAfter.clean, '--apply prunes missing roots and keeps the rest');
+  assert.strictEqual(nb.length, 3, 'three brains refreshed with the NEW version\'s new-brain.js: ' + r.calls.join('\n'));
   assert.ok(r.calls.indexOf(nb[0]) > upd, 'refresh runs after the plugin update');
   assert.ok(!r.calls.some((c) => c.includes(dirty + ' ') && /new-brain/.test(c)) && !nb.some((c) => c.endsWith(dirty)), 'dirty brain not refreshed');
   assert.ok(/## \[2026-11-24\] schema \| \/brain:update → engine 2\.2/.test(fs.readFileSync(path.join(clean, '.brain', 'wiki', 'log.md'), 'utf8')), 'log entry written');

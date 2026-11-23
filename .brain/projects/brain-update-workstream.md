@@ -1,10 +1,10 @@
 ---
 title: "Brain update — status"
 type: project
-status: active
+status: done
 tier: feature
-phase: review
-audit_score:
+phase: done
+audit_score: "brain-update done — 2 P1 + 1 P2 fixed in review"
 created: 2026-11-24
 updated: 2026-11-24
 related: ["[[brain-update]]", "[[brain-update-command]]"]
@@ -15,10 +15,7 @@ related: ["[[brain-update]]", "[[brain-update-command]]"]
 One command (`/brain:update`) that updates the plugin and refreshes every brain on the machine.
 
 ## Now
-- Built (0.36.0, selftest green) — in review; `/brain:review` on another model family next.
-- [[brain-update]] — spec drafted, feature tier (target 0.36.0).
+- [[brain-update]] — done in 0.36.0 ([[brain-update-review]]); ADR [[update-skips-only-rewritten-files]] proposed.
 
 ## Next
-1. `/brain:build brain-update` (test-first; AC-8's router case red first).
-2. `/brain:review` on another model family.
-3. Release 0.36.0 (tag + GitHub Release).
+1. Release 0.36.0 (tag + GitHub Release).

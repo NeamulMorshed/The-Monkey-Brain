@@ -141,3 +141,6 @@ Spec [[brain-update]] (feature tier, 9 ACs, target 0.36.0) and workstream [[brai
 
 ## [2026-11-24] build | brain-update — AC-1…9
 Built `update.js` (+ `update.test.js`), the `update` skill, router rule (red first, incl. the "all brains" misfire fix), docs and 0.36.0. Selftest green. Spec phase set to review.
+
+## [2026-11-24] review | brain-update → 0.36.0 done
+Reviewed on Opus (builder Sonnet): all 9 ACs met; [[brain-update-review]]. Fixed in review, test-first: active brains were always skipped (hook-written `sessions/` counted as uncommitted work) → only the files the refresh overwrites count (ADR [[update-skips-only-rewritten-files]], proposed); 11 dead registry entries collapse into one line and are pruned on `--apply`; "update the brain's index" no longer routes to `update`. Selftest 726.

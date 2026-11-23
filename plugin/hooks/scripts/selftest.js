@@ -759,6 +759,8 @@ try {
     t2 = routed(phrase);
     check(`AC-8 "${phrase}" routes to brain:update`, t2.ctx.includes('brain:update') && !t2.ctx.includes('brain:home'), t2.ctx);
   }
+  t2 = routed("update the brain's index");
+  check('AC-8 review: "update the brain\'s index" is wiki work, not a plugin update', !t2.ctx.includes('brain:update'), t2.ctx);
   t2 = routed('all brains');
   check('AC-8 the bare reply "all brains" does not route to brain:home', !t2.ctx.includes('brain:home'), t2.ctx);
   t2 = routed('show all my brains');
