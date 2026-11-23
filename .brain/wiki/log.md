@@ -138,3 +138,6 @@ Recon filed as [[brain-update-command]]: `claude plugin update` works from a ski
 
 ## [2026-11-24] plan | brain-update
 Spec [[brain-update]] (feature tier, 9 ACs, target 0.36.0) and workstream [[brain-update-workstream]]. Curator approved the short design ("go ahead"). Includes a red-first router case for the "all brains" → `/brain:home` misfire seen this session. Also released `brain-all-v0.15.1`; GitHub MCP authenticates again.
+
+## [2026-11-24] build | brain-update — AC-1…9
+Built `update.js` (+ `update.test.js`), the `update` skill, router rule (red first, incl. the "all brains" misfire fix), docs and 0.36.0. Selftest green. Spec phase set to review.

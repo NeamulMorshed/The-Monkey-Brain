@@ -100,7 +100,20 @@ const RULES = [
     what: 'note capture',
   },
   {
-    re: /\b(all|every) (my |our )?brains?\b|\bmonkey[- ]?brain home\b|\bbrain home\b|\bdashboard (for|of|across) (all|every) (my |our )?projects?\b|\bglobal (brain|monkey brain) dashboard\b/i,
+    re: /\bupdate (?:(?:the|my|our|all)\s+){0,2}(?:monkey[- ]?)?brains?\b(?!\s+(?:with|about|on|to|from|for)\b)|\bupdate (?:the )?(?:monkey[- ]?brain )?plugin\b/i,
+    question: true, // "how do I update the brain?" asks; it does not order
+    skill: 'update',
+    needsBrain: false,
+    what: 'plugin + brain update',
+  },
+  {
+    re: /\bis (?:the |my )?(?:monkey[- ]?brain |brain )?plugin up[- ]to[- ]date\b/i, // itself a question, and exactly what /brain:update --check answers
+    skill: 'update',
+    needsBrain: false,
+    what: 'plugin + brain update',
+  },
+  {
+    re: /\bevery (my |our )?brains?\b|\ball (my|our) brains?\b|\bshow (me )?all (the )?brains\b|\bmonkey[- ]?brain home\b|\bbrain home\b|\bdashboard (for|of|across) (all|every) (my |our )?projects?\b|\bglobal (brain|monkey brain) dashboard\b/i,
     skill: 'home',
     needsBrain: false,
     what: 'cross-project dashboard',

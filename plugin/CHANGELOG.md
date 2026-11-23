@@ -1,5 +1,12 @@
 # Changelog — brain plugin
 
+## 0.36.0 — 2026-11-24 (one-command update)
+
+Spec `specs/brain-update.md`. `/brain:update` brings the plugin and every brain on the machine up to date after one yes.
+- **`update.js --check`** refreshes the marketplace and prints one plan: plugin version move, brains to refresh, skipped brains with reasons (`uncommitted .brain/ changes`, `missing`). Changes nothing.
+- **`update.js --apply`** runs `claude plugin update brain@monkey-brain` only when behind, then the new version's `new-brain.js --update` per brain; logs a `schema` entry in each refreshed brain; no partial update on a missing `claude`, offline refresh or failed plugin update; one brain failing never stops the others.
+- **Router** — "update the brain", "update all brains", "is the plugin up to date" route to `update`; the bare reply "all brains" no longer misroutes to `home`.
+
 ## 0.35.1 — 2026-11-09 (skill-pack hardening)
 
 Fixes the four findings of the automated security review of 0.35.0. Selftest 715.

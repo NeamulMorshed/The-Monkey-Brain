@@ -3,7 +3,7 @@ title: "Brain update — status"
 type: project
 status: active
 tier: feature
-phase: plan
+phase: review
 audit_score:
 created: 2026-11-24
 updated: 2026-11-24
@@ -15,6 +15,7 @@ related: ["[[brain-update]]", "[[brain-update-command]]"]
 One command (`/brain:update`) that updates the plugin and refreshes every brain on the machine.
 
 ## Now
+- Built (0.36.0, selftest green) — in review; `/brain:review` on another model family next.
 - [[brain-update]] — spec drafted, feature tier (target 0.36.0).
 
 ## Next

@@ -751,6 +751,21 @@ try {
   t2 = routed('show me the dashboard');
   check('"show me the dashboard" (no "all") still routes to the per-project brain:dashboard', t2.ctx.includes('brain:dashboard') && !t2.ctx.includes('brain:home'), t2.ctx);
 
+  // ---------- /brain:update (spec brain-update) ----------
+  console.log('update.js + /brain:update routing');
+  const upd = spawnSync(process.execPath, [path.join(HERE, 'update.test.js')], { encoding: 'utf8', timeout: 60000 });
+  check('AC-1..6 update.test.js passes', upd.status === 0 && /update\.test\.js: ok/.test(upd.stdout), (upd.stdout + upd.stderr).slice(-400));
+  for (const phrase of ['update the brain', 'update monkey brain', 'is the plugin up to date?', 'update all brains', 'update all my brains']) {
+    t2 = routed(phrase);
+    check(`AC-8 "${phrase}" routes to brain:update`, t2.ctx.includes('brain:update') && !t2.ctx.includes('brain:home'), t2.ctx);
+  }
+  t2 = routed('all brains');
+  check('AC-8 the bare reply "all brains" does not route to brain:home', !t2.ctx.includes('brain:home'), t2.ctx);
+  t2 = routed('show all my brains');
+  check('AC-8 "show all my brains" still routes to brain:home', t2.ctx.includes('brain:home'), t2.ctx);
+  const updSkill = fs.existsSync(path.join(SKILLS, 'update', 'SKILL.md')) ? fs.readFileSync(path.join(SKILLS, 'update', 'SKILL.md'), 'utf8') : '';
+  check('AC-7 the update skill runs --check before --apply and asks one yes/no', /--check/.test(updSkill) && /--apply/.test(updSkill) && updSkill.indexOf('--check') < updSkill.indexOf('--apply') && /yes\/no|yes or no/i.test(updSkill) && /needs no \.brain/i.test(updSkill), 'skill missing or incomplete');
+
   for (const p of [PA, PB, PC]) fs.rmSync(p, { recursive: true, force: true });
   fs.rmSync(REGCFG, { recursive: true, force: true });
 
@@ -1754,7 +1769,7 @@ try {
   const descs = fs.readdirSync(SKILLS).map((n) => path.join(SKILLS, n, 'SKILL.md')).filter((p) => fs.existsSync(p)).map((p) => ({ n: path.basename(path.dirname(p)), d: (/^description:\s*(.*)$/m.exec(fs.readFileSync(p, 'utf8').split(/\r?\n---/)[0]) || [])[1] || '' }));
   const longDescs = descs.filter((x) => Buffer.byteLength(x.d) > 300 || /Requires a \.brain/.test(x.d)).map((x) => `${x.n}(${Buffer.byteLength(x.d)})`);
   const descTotal = descs.reduce((s, x) => s + Buffer.byteLength(x.d), 0);
-  check(`skill descriptions ≤ 300 B each, no "Requires a .brain/", total ≤ 6,500 (now ${descTotal}) (AC-6)`, descs.length === 25 && !longDescs.length && descTotal <= 6500, longDescs.join(' '));
+  check(`skill descriptions ≤ 300 B each, no "Requires a .brain/", total ≤ 6,500 (now ${descTotal}) (AC-6)`, descs.length === 26 && !longDescs.length && descTotal <= 6500, longDescs.join(' '));
   const agentDescBytes = ['brain-librarian', 'brain-researcher'].reduce((s, an) => s + Buffer.byteLength((/^description:\s*(.*)$/m.exec(fs.readFileSync(path.join(HERE, '..', '..', 'agents', `${an}.md`), 'utf8')) || [])[1] || ''), 0);
   const alwaysLoaded = Buffer.byteLength(tdManual) + descTotal + agentDescBytes;
   check(`always-loaded bytes ${alwaysLoaded} ≤ 17,491 — 9,000 below the 0.29.1 baseline of 26,491 (AC-7)`, alwaysLoaded <= 17491);
@@ -2453,10 +2468,12 @@ disable-model-invocation: true
     const pj =JSON.parse(fs.readFileSync(path.join(SKILLS, '..', '.claude-plugin', 'plugin.json'), 'utf8'));
     const mk = JSON.parse(fs.readFileSync(path.join(REPO_MP, '.claude-plugin', 'marketplace.json'), 'utf8'));
     const brainEntry = (mk.plugins || []).find((x) => x.name === 'brain') || {};
-    check('AC-12 plugin.json and marketplace.json say 0.35.1', pj.version === '0.35.1' && brainEntry.version === '0.35.1', `${pj.version} / ${brainEntry.version}`);
-    check('AC-12 CHANGELOG has a 0.35.1 entry and the README badge says v0.35.1', /^## 0\.35\.1 /m.test(fs.readFileSync(path.join(SKILLS, '..', 'CHANGELOG.md'), 'utf8')) && /plugin-v0\.35\.1-blue/.test(fs.readFileSync(path.join(REPO_MP, 'README.md'), 'utf8')) && /!\[Plugin v0\.35\.1\]/.test(fs.readFileSync(path.join(REPO_MP, 'README.md'), 'utf8')), 'version docs');
+    check('AC-12 plugin.json and marketplace.json say 0.36.0', pj.version === '0.36.0' && brainEntry.version === '0.36.0', `${pj.version} / ${brainEntry.version}`);
+    check('AC-12 CHANGELOG has a 0.36.0 entry and the README badge says v0.36.0', /^## 0.36.0 /m.test(fs.readFileSync(path.join(SKILLS, '..', 'CHANGELOG.md'), 'utf8')) && /plugin-v0.36.0-blue/.test(fs.readFileSync(path.join(REPO_MP, 'README.md'), 'utf8')) && /!\[Plugin v0.36.0]/.test(fs.readFileSync(path.join(REPO_MP, 'README.md'), 'utf8')), 'version docs');
     const noPacks = ['README.md', 'plugin/README.md', 'plugin/skills/README.md'].filter((f) => { const t = fs.readFileSync(path.join(REPO_MP, f), 'utf8'); return !/skill packs?/i.test(t) || !/web-motion/.test(t); });
     check('AC-12 README, plugin README and skills README mention the packs', noPacks.length === 0, noPacks.join(', '));
+    const noUpdateDoc = ['plugin/README.md', 'plugin/skills/README.md', 'schema/brain-template/reference.md'].filter((f) => !/\/brain:update|`update`/.test(fs.readFileSync(path.join(REPO_MP, f), 'utf8')));
+    check('AC-9 plugin README, skills README and reference.md list /brain:update', noUpdateDoc.length === 0, noUpdateDoc.join(', '));
   }
 
 } finally {

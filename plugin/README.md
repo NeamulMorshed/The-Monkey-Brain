@@ -94,7 +94,7 @@ back, feeding `decisions/` and `instincts/`) · `/brain:loop` (bounded build, re
 and design loops that stop on the brain's own criteria). **Daily drivers:**
 `/brain:digest` (standup · weekly review, filed to `sessions/`) · `/brain:dump` (classify
 and file a loose note) · `/brain:dashboard` (one-page offline HTML) · `/brain:ci` (GitHub
-Actions from the detected stack) · `/brain:home` (one dashboard across every registered project
+Actions from the detected stack) · `/brain:update` (update the plugin and refresh every brain, after one yes) · `/brain:home` (one dashboard across every registered project
 on the machine, with combined token usage — `hooks/scripts/registry.js` + `home.js`) ·
 `/brain:lock` (a committed, expiring team lock) · `/brain:learn` (SM-2 spaced repetition) ·
 `/brain:career` (private case studies, CV, skill matrix, mock interviews); idea validation, URL critiques and meeting prep are modes of

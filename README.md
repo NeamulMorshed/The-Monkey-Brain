@@ -7,7 +7,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 ![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-339933)
-![Plugin v0.35.1](https://img.shields.io/badge/plugin-v0.35.1-blue)
+![Plugin v0.36.0](https://img.shields.io/badge/plugin-v0.36.0-blue)
 
 The Monkey Brain turns Claude Code into a **librarian for your project**. Instead of re-reading
 raw documents on every question (RAG), it **compiles knowledge once** into a persistent,
@@ -247,7 +247,7 @@ gates; **(5)** depth on demand (packs and semantic search stay deferred until a 
 ```mermaid
 flowchart TB
     subgraph Engine["The Monkey Brain — the engine (this repo)"]
-        P["brain plugin: 25 skills, hooks, agents, MCP"]
+        P["brain plugin: 26 skills, hooks, agents, MCP"]
         BT["schema + brain-template (the method)"]
     end
     P -->|/brain:init scaffolds| I1[".brain/ in Project A"]
@@ -273,7 +273,7 @@ v2 adds **record layers** for the development lifecycle: `specs/`, `projects/`, 
 
 ### Inside the plugin
 
-- **25 skills** (`/brain:*`) — the knowledge SDLC, the develop lifecycle, token discipline, the
+- **26 skills** (`/brain:*`) — the knowledge SDLC, the develop lifecycle, token discipline, the
   product-design pack, the game pipeline, and doctor.
 - **10 lifecycle hook events (11 scripts)** — the enforcement + automation layer (Node, stdlib-only,
   one runtime on Windows/macOS/Linux).
@@ -295,7 +295,7 @@ The-Monkey-Brain/               ← THE ENGINE (this repo)
 ├── README.md                   ← you are here
 ├── .claude-plugin/             ← marketplace manifest (this repo is its own marketplace)
 ├── plugin/                     ← the `brain` plugin — see plugin/README.md
-│   ├── skills/                 ←   25 /brain:* skills (init, ingest, query, brief, lint, wrap,
+│   ├── skills/                 ←   26 /brain:* skills (init, ingest, query, brief, lint, wrap,
 │   │                           ←     research, plan, build, review, terse, compress,
 │   │                           ←     product-design, game, doctor, usage, loop, digest,
 │   │                           ←     dump, dashboard, home, ci, lock, learn, career)
@@ -361,6 +361,7 @@ these are the explicit form. Full detail (model routing, fan-out) lives in
 | `/brain:digest [week]` | Standup, or the weekly review — blocked / done / in-flight, filed to `sessions/` |
 | `/brain:dump <note>` | Classifies a loose note and files each part (decision, fact, next step, idea, link, correction) |
 | `/brain:dashboard` | One-page, self-contained HTML overview of the current project's brain |
+| `/brain:update` | Updates the plugin from the marketplace and refreshes every brain on the machine (`CLAUDE.md`, `reference.md`, `templates/`) after one yes |
 | `/brain:home` | One dashboard for **every** Monkey Brain project on this machine — status, open work, and combined token usage |
 | `/brain:ci` | Detects the project's stack and writes a GitHub Actions workflow |
 | `/brain:lock <spec\|brain>` | Takes the team work lock so two people don't edit the same thing |

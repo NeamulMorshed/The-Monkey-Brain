@@ -25,6 +25,7 @@ Each skill is a `<name>/SKILL.md` directory here, invoked as `/brain:<name>`
 | `digest` | Standup / weekly review (`hooks/scripts/digest.js`): blocked · done (log + git) · in flight, filed to `sessions/` | ✅ |
 | `dump` | Classify a loose note and file each part (decision ADR, memory, workstream Next, ideas page, Clippings, instinct) | ✅ |
 | `dashboard` | One-page offline HTML overview of the brain (`hooks/scripts/dashboard.js`, injected) → `sessions/dashboard.html` | ✅ |
+| `update` | Update the plugin from the marketplace and refresh every registered brain after one yes (`hooks/scripts/update.js --check` then `--apply`); skips brains with uncommitted `.brain/` work | ✅ |
 | `home` | Cross-project dashboard (`hooks/scripts/home.js` + `registry.js`) — every `.brain/` this machine has opened, its health/open work, and combined token usage → `~/.claude/monkey-brain/home.html` | ✅ |
 | `ci` | GitHub Actions workflow from the detected stack — Node, Python, Go, .NET, Rust (`hooks/scripts/ci.js`); never overwrites without asking | ✅ |
 | `lock` | Team work lock (`hooks/scripts/lock.js`): a committed, expiring `LOCK.md` on a spec or the whole brain; teammates see it at session start and guards keep their writes out of its scope | ✅ |
@@ -49,7 +50,7 @@ every main-model agent dispatch.
 | Work class | Skills | Frontmatter | Why |
 | --- | --- | --- | --- |
 | **Judgment & synthesis** | `plan` · `review` · `loop` · `career` · `wrap` · `query` · `lint` · `compress` · `product-design` · `game` · `doctor` | `effort: high`, session model | plans, final review, reconciliation, compression, design — never downgraded |
-| **Session work** | `research` · `ingest` · `dump` · `learn` · `init` · `ci` · `terse` · `lock` · `brief` · `digest` · `usage` · `dashboard` · `home` | `effort: medium` / `low`, session model | interactive, or a `!` script does the work — a pin would be a main-thread switch and a fork only adds a subagent bootstrap |
+| **Session work** | `research` · `ingest` · `dump` · `learn` · `init` · `ci` · `terse` · `lock` · `brief` · `digest` · `usage` · `dashboard` · `home` · `update` | `effort: medium` / `low`, session model | interactive, or a `!` script does the work — a pin would be a main-thread switch and a fork only adds a subagent bootstrap |
 | **Forked coding** | `build` | `model: sonnet` · `context: fork` | long test-first implementation in a Sonnet subagent; the active instincts are injected, blockers returned |
 
 **Parallel fan-out** (subagents in `../agents/`, run concurrently; only summaries
